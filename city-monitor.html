@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 城市动态监控</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .92);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 8%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 82% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+    }
+    button, a, input { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid rgba(47,109,246,.48);
+      outline-offset: 2px;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+    .app { min-height: 100dvh; display: grid; grid-template-rows: 56px 1fr; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: 270px 1fr 430px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.82);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs a, .mode-tabs button {
+      min-width: 64px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 15px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .mode-tabs .active { background: var(--ink); color: #fffdf7; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .workspace {
+      min-height: calc(100dvh - 56px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      padding: 10px 14px 14px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(16px);
+    }
+    .pad { padding: 14px; }
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .panel-title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .btn {
+      min-height: 34px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-solid);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .btn.primary { background: var(--ink); border-color: var(--ink); color: #fffdf7; }
+    .btn:hover { border-color: var(--ink); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,247,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      font-style: normal;
+    }
+    .pill.hot { color: var(--red); border-color: rgba(223,75,84,.35); background: rgba(223,75,84,.07); }
+    .pill.good { color: var(--green); border-color: rgba(24,168,115,.35); background: rgba(24,168,115,.08); }
+    .pill.warn { color: var(--amber); border-color: rgba(215,137,37,.35); background: rgba(215,137,37,.08); }
+    .pill.blue { color: var(--blue); border-color: rgba(47,109,246,.35); background: rgba(47,109,246,.08); }
+
+    .command-row {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr 1.1fr;
+      gap: 10px;
+    }
+    .brief-title h1 {
+      margin: 4px 0 6px;
+      font-size: 24px;
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+    .eyebrow { color: var(--blue); font-size: 11px; font-weight: 1000; letter-spacing: .08em; }
+    .brief-title p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .searchbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-self: stretch;
+      align-items: center;
+    }
+    .searchbar input {
+      width: 100%;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf7;
+      color: var(--ink);
+      font-weight: 900;
+    }
+    .breaking {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      border-color: rgba(223,75,84,.28);
+      background: linear-gradient(180deg, rgba(223,75,84,.07), rgba(255,253,247,.86));
+    }
+    .ticker { display: flex; gap: 8px; align-items: center; color: var(--red); font-weight: 1000; font-size: 12px; }
+    .ticker-line { color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(290px, 21%) minmax(620px, 1fr) minmax(330px, 24%);
+      gap: 10px;
+      min-height: 0;
+    }
+    .left-stack, .center-stack, .right-stack { min-height: 0; display: grid; gap: 10px; }
+    .left-stack { grid-template-rows: auto 1fr; }
+    .center-stack { grid-template-rows: minmax(280px, .72fr) minmax(320px, 1fr); }
+    .right-stack { grid-template-rows: auto minmax(230px, .9fr) 1fr; }
+
+    .source-list { display: grid; gap: 8px; }
+    .source-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      gap: 9px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.66);
+      text-align: left;
+    }
+    .source-row.active { border-color: var(--blue); background: rgba(47,109,246,.06); }
+    .source-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid));
+      color: var(--tone);
+      font-weight: 1000;
+    }
+    .source-row b { display: block; font-size: 12px; line-height: 1.3; }
+    .source-row span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .source-count { color: var(--tone); font-size: 14px; font-weight: 1000; text-align: right; }
+
+    .monitor-input {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .monitor-input input {
+      min-height: 36px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fffdf7;
+      font-weight: 900;
+    }
+    .monitor-tags, .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .monitor-results { display: grid; gap: 8px; margin-top: 10px; }
+    .monitor-match {
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--tone);
+      border-radius: 10px;
+      background: #fffdf7;
+      font-size: 11px;
+    }
+    .monitor-match b { display: block; line-height: 1.35; }
+    .monitor-match span { display: block; margin-top: 4px; color: var(--muted); font-weight: 800; }
+
+    .city-map {
+      position: relative;
+      overflow: hidden;
+      min-height: 280px;
+      background:
+        linear-gradient(90deg, rgba(216,205,188,.45) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(216,205,188,.45) 1px, transparent 1px),
+        radial-gradient(circle at 24% 32%, rgba(47,109,246,.11), transparent 24%),
+        radial-gradient(circle at 70% 44%, rgba(223,75,84,.10), transparent 24%),
+        #fffaf1;
+      background-size: 72px 72px, 72px 72px, auto, auto, auto;
+    }
+    .map-head {
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      z-index: 2;
+      max-width: 360px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.9);
+    }
+    .map-head b { display: block; font-size: 13px; }
+    .map-head span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .zone {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--tone) 45%, var(--line));
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--tone) 10%, transparent);
+      color: color-mix(in srgb, var(--tone) 76%, var(--ink));
+      font-size: 12px;
+      font-weight: 1000;
+    }
+    .hotspot {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--tone);
+      color: white;
+      box-shadow: 0 0 0 8px color-mix(in srgb, var(--tone) 16%, transparent);
+      font-size: 12px;
+      font-weight: 1000;
+    }
+    .hotspot small {
+      position: absolute;
+      left: 42px;
+      top: 4px;
+      min-width: 110px;
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,253,247,.95);
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .map-legend {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-width: 330px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.9);
+    }
+
+    .feed-panel { overflow: hidden; display: flex; flex-direction: column; }
+    .feed-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 9px; }
+    .feed-tabs button {
+      min-height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,247,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .feed-tabs button.active { background: var(--ink); color: #fffdf7; border-color: var(--ink); }
+    .feed-list {
+      display: grid;
+      gap: 7px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .feed-item {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+      text-align: left;
+    }
+    .feed-item.active { border-color: var(--blue); background: rgba(47,109,246,.06); }
+    .feed-src { color: var(--tone); font-size: 12px; font-weight: 1000; }
+    .feed-item b { display: block; font-size: 12px; line-height: 1.35; }
+    .feed-item p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.42; }
+    .feed-score { text-align: right; color: var(--tone); font-size: 13px; font-weight: 1000; }
+    .feed-score span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+
+    .signal-grid { display: grid; gap: 8px; }
+    .signal-card {
+      display: grid;
+      grid-template-columns: 5px 1fr auto;
+      gap: 10px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf7;
+    }
+    .signal-bar { width: 5px; border-radius: 999px; background: var(--tone); }
+    .signal-card b { display: block; font-size: 12px; line-height: 1.35; }
+    .signal-card p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .signal-card .score { color: var(--tone); font-size: 16px; font-weight: 1000; text-align: right; }
+
+    .city-brief {
+      display: grid;
+      gap: 10px;
+    }
+    .brief-metric {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .brief-metric div {
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.72);
+    }
+    .brief-metric span { color: var(--muted); font-size: 10px; font-weight: 900; }
+    .brief-metric b { display: block; margin-top: 5px; font-size: 18px; }
+    .brief-text { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .detail-list { display: grid; gap: 7px; }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fffdf7;
+      font-size: 11px;
+    }
+    .detail-row b { display: block; line-height: 1.35; }
+    .detail-row span { color: var(--muted); font-weight: 800; }
+    .health-table { width: 100%; border-collapse: collapse; }
+    .health-table th, .health-table td {
+      padding: 8px;
+      border-bottom: 1px solid rgba(216,205,188,.78);
+      text-align: left;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .health-table th { color: var(--muted); font-size: 10px; font-weight: 1000; }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr 1fr;
+      gap: 10px;
+    }
+    .cluster-list { display: grid; gap: 8px; }
+    .cluster-row {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 10px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf7;
+      font-size: 11px;
+    }
+    .cluster-row b { display: block; font-size: 12px; }
+    .cluster-row span { display: block; margin-top: 4px; color: var(--muted); font-weight: 800; }
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #eadfcd;
+      overflow: hidden;
+    }
+    .bar i { display: block; height: 100%; width: var(--w); border-radius: inherit; background: var(--tone); }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(20px);
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--ink);
+      color: #fffdf7;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+      z-index: 80;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 1180px) {
+      .topbar { grid-template-columns: 1fr; height: auto; padding: 12px; }
+      .mode-tabs, .status { justify-self: start; }
+      .command-row, .main-grid, .bottom-grid { grid-template-columns: 1fr; }
+      .left-stack, .center-stack, .right-stack { grid-template-rows: auto; }
+      .city-map { min-height: 430px; }
+    }
+    @media (max-width: 640px) {
+      .workspace { display: block; padding: 10px; }
+      .panel { margin-bottom: 10px; }
+      .mode-tabs { max-width: 100%; overflow-x: auto; }
+      .mode-tabs a, .mode-tabs button { min-width: 60px; height: 32px; padding: 0 10px; }
+      .searchbar, .monitor-input, .brief-metric, .feed-item, .source-row, .signal-card, .cluster-row { grid-template-columns: 1fr; }
+      .hotspot small { display: none; }
+      .health-table { min-width: 520px; }
+      .panel:has(.health-table) { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="city-monitor.html" aria-label="城市动态监控">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>WORLDLINE OBSERVER</span>
+      </a>
+      <nav class="mode-tabs" aria-label="主流程导航">
+        <button class="active">城市动态</button>
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="agent-council.html">会议</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status">
+        <span>无活动任务：城市常态监控</span>
+        <span>刷新策略 <strong>60s / 可见时刷新</strong></span>
+        <span class="live-dot"></span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="command-row">
+        <div class="panel pad brief-title">
+          <div class="eyebrow">CITY DYNAMICS MONITOR</div>
+          <h1>当前城市动态监控台</h1>
+          <p>没有具体任务时，系统持续从抖音、快手、头条、微博、公众号和其他媒体信息中抽取同城动态，识别跨源共振、异常升温和潜在事件苗头。</p>
+        </div>
+        <div class="panel pad">
+          <div class="panel-title">全源搜索 <span>对应 WorldMonitor 的搜索与命令入口</span></div>
+          <div class="searchbar">
+            <input id="globalSearch" value="同城 线下聚集 投诉 视频" aria-label="搜索城市动态" />
+            <button class="btn primary" id="searchBtn">搜索动态</button>
+          </div>
+          <div class="chip-row" style="margin-top:10px">
+            <span class="pill blue">同城优先</span>
+            <span class="pill">近 6 小时</span>
+            <span class="pill">跨源合并</span>
+            <span class="pill good">无任务模式</span>
+          </div>
+        </div>
+        <div class="panel pad breaking">
+          <div class="ticker"><span class="pill hot">BREAKING</span><span id="breakingTitle">本地短视频与微博共同推高“校门口聚集”语义</span></div>
+          <div class="ticker-line" id="breakingLine">系统未直接生成任务，但已将该语义纳入高敏观察词，等待人工确认是否升级。</div>
+        </div>
+      </section>
+
+      <section class="main-grid">
+        <aside class="left-stack">
+          <section class="panel pad">
+            <div class="panel-title">数据源层 <span>可开关、可加权、可看健康</span></div>
+            <div class="source-list" id="sourceList"></div>
+          </section>
+
+          <section class="panel pad">
+            <div class="panel-title">监控词与匹配 <span>用户自定义 Monitor</span></div>
+            <div class="monitor-input">
+              <input id="monitorKeyword" value="校门口, 讨说法" aria-label="监控词" />
+              <button class="btn" id="addMonitor">添加</button>
+            </div>
+            <div class="monitor-tags" id="monitorTags"></div>
+            <div class="monitor-results" id="monitorResults"></div>
+          </section>
+        </aside>
+
+        <section class="center-stack">
+          <section class="panel city-map">
+            <div class="map-head">
+              <b>城市动态层</b>
+              <span>按行政区、平台来源和语义热度叠加。点击左侧来源或下方资讯时，地图与简报同步更新。</span>
+            </div>
+            <div class="zone" style="--tone:var(--blue);left:7%;top:24%;width:25%;height:28%">城北</div>
+            <div class="zone" style="--tone:var(--amber);left:34%;top:18%;width:28%;height:32%">城中</div>
+            <div class="zone" style="--tone:var(--red);left:64%;top:22%;width:28%;height:34%">城东</div>
+            <div class="zone" style="--tone:var(--green);left:15%;top:58%;width:34%;height:28%">城西</div>
+            <div class="zone" style="--tone:var(--violet);left:55%;top:61%;width:33%;height:24%">城南</div>
+            <button class="hotspot" data-feed="F-001" style="--tone:var(--red);left:69%;top:35%">92<small>校门口聚集</small></button>
+            <button class="hotspot" data-feed="F-002" style="--tone:var(--amber);left:41%;top:45%">78<small>医院排队争执</small></button>
+            <button class="hotspot" data-feed="F-003" style="--tone:var(--amber);left:24%;top:66%">72<small>停水业主群</small></button>
+            <button class="hotspot" data-feed="F-004" style="--tone:var(--red);left:74%;top:65%">69<small>欠薪群聊</small></button>
+            <div class="map-legend">
+              <span class="pill hot">高敏</span>
+              <span class="pill warn">升温</span>
+              <span class="pill blue">讨论</span>
+              <span class="pill good">平稳</span>
+              <span class="pill">跨源命中 14</span>
+            </div>
+          </section>
+
+          <section class="panel pad feed-panel">
+            <div class="panel-title">实时内容流 <span>短视频、热榜、图文、公众号与媒体混合排序</span></div>
+            <div class="feed-tabs" id="feedTabs">
+              <button class="active" data-filter="all">全部</button>
+              <button data-filter="video">短视频</button>
+              <button data-filter="social">社交平台</button>
+              <button data-filter="wechat">公众号</button>
+              <button data-filter="media">媒体</button>
+              <button data-filter="risk">高敏</button>
+            </div>
+            <div class="feed-list" id="feedList"></div>
+          </section>
+        </section>
+
+        <aside class="right-stack">
+          <section class="panel pad city-brief">
+            <div class="panel-title">城市简报 <span id="briefId">BRIEF-CITY-001</span></div>
+            <div class="brief-metric">
+              <div><span>城市热度</span><b id="briefHeat">72</b></div>
+              <div><span>跨源强度</span><b id="briefCross">0.84</b></div>
+              <div><span>处置状态</span><b id="briefState">观察</b></div>
+            </div>
+            <p class="brief-text" id="briefText">-</p>
+            <div class="detail-list" id="briefDetails"></div>
+            <button class="btn primary" id="createTask">需要时创建事中任务</button>
+          </section>
+
+          <section class="panel pad">
+            <div class="panel-title">跨源信号聚合 <span>3 类以上共振进入 Composite</span></div>
+            <div class="signal-grid" id="signalGrid"></div>
+          </section>
+
+          <section class="panel pad">
+            <div class="panel-title">来源健康与刷新 <span>Smart Poll / 可见时刷新</span></div>
+            <table class="health-table">
+              <thead><tr><th>来源</th><th>状态</th><th>延迟</th><th>最近刷新</th></tr></thead>
+              <tbody id="healthRows"></tbody>
+            </table>
+          </section>
+        </aside>
+      </section>
+
+      <section class="bottom-grid">
+        <section class="panel pad">
+          <div class="panel-title">话题簇 <span>聚类后用于城市态势感知</span></div>
+          <div class="cluster-list" id="clusters"></div>
+        </section>
+        <section class="panel pad">
+          <div class="panel-title">待观察清单 <span>未必成事件，但需要持续看</span></div>
+          <div class="detail-list" id="watchList"></div>
+        </section>
+        <section class="panel pad">
+          <div class="panel-title">从监控到任务的边界 <span>只在必要时升级</span></div>
+          <div class="detail-list">
+            <div class="detail-row"><span><b>常态监控</b><span>只看城市动态、平台热度和跨源变化，不要求用户先选择任务。</span></span><i class="pill good">默认</i></div>
+            <div class="detail-row"><span><b>观察升级</b><span>出现线下集合点、明确责任归因、证据缺口或官方回应缺位时，提示人工确认。</span></span><i class="pill warn">条件触发</i></div>
+            <div class="detail-row"><span><b>事中任务</b><span>人工确认后才进入数据、主线、推演、会议、汇报链路。</span></span><i class="pill blue">人工接管</i></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">已更新</div>
+
+  <script>
+    const sources = [
+      { id: "douyin", name: "抖音", type: "短视频", count: 4826, health: "正常", latency: "18s", refresh: "15:51:20", tone: "var(--red)" },
+      { id: "kuaishou", name: "快手", type: "短视频/直播", count: 2138, health: "正常", latency: "23s", refresh: "15:51:18", tone: "var(--amber)" },
+      { id: "toutiao", name: "头条", type: "资讯/评论", count: 1845, health: "正常", latency: "31s", refresh: "15:51:08", tone: "var(--blue)" },
+      { id: "weibo", name: "微博", type: "热榜/本地号", count: 3264, health: "正常", latency: "14s", refresh: "15:51:22", tone: "var(--violet)" },
+      { id: "wechat", name: "公众号", type: "文章/推送", count: 726, health: "延迟", latency: "4m", refresh: "15:47:13", tone: "var(--green)" },
+      { id: "media", name: "其他媒体", type: "新闻/论坛/客户端", count: 1159, health: "正常", latency: "52s", refresh: "15:50:44", tone: "var(--blue)" }
+    ];
+
+    const feeds = [
+      {
+        id: "F-001",
+        source: "抖音",
+        sourceId: "douyin",
+        category: "video",
+        title: "校门口聚集视频被连续转发，评论集中追问“是否有人负责”",
+        summary: "同城号 18 分钟内出现 7 条搬运，微博本地号开始接力扩散，公众号尚未跟进。",
+        score: 92,
+        risk: true,
+        tone: "var(--red)",
+        heat: 92,
+        cross: "0.88",
+        state: "观察升级",
+        brief: "校门口聚集相关内容在短视频与微博中同步升温，评论从事实询问转向责任追问。当前不直接生成任务，但如果出现明确集合时间或官方回应缺位，应提示人工确认是否接管。",
+        details: [
+          ["跨源命中", "抖音 7 条、微博 3 条、头条评论 2 组"],
+          ["主要语义", "校门口、家属、说法、责任、视频"],
+          ["缺口", "现场人数、是否仍在聚集、官方是否已到场"]
+        ]
+      },
+      {
+        id: "F-002",
+        source: "微博",
+        sourceId: "weibo",
+        category: "social",
+        title: "医院排队争执进入本地热议，窗口服务时长被集中质疑",
+        summary: "微博本地榜和头条评论同向升温，快手出现二次剪辑，现场暂未发现聚集。",
+        score: 78,
+        risk: false,
+        tone: "var(--amber)",
+        heat: 78,
+        cross: "0.73",
+        state: "持续观察",
+        brief: "医院排队争执属于公共服务体验类话题，目前主要是线上表达和投诉扩散，尚未形成明显线下动员。建议继续观察投诉渠道与医院回应是否同步。",
+        details: [
+          ["跨源命中", "微博、头条、快手二次剪辑"],
+          ["主要语义", "排队久、老人、窗口态度、流程"],
+          ["缺口", "视频时间、窗口身份、院方解释"]
+        ]
+      },
+      {
+        id: "F-003",
+        source: "公众号",
+        sourceId: "wechat",
+        category: "wechat",
+        title: "小区停水通知被公众号转载，业主群讨论维修费用和通知滞后",
+        summary: "业主群截图外溢后被公众号整合，短视频平台出现老人取水片段。",
+        score: 72,
+        risk: false,
+        tone: "var(--amber)",
+        heat: 72,
+        cross: "0.71",
+        state: "持续观察",
+        brief: "停水话题已从业主群转入公众号文章和短视频，诉求集中在恢复时间、老人用水和维修费用。若出现物业门口聚集或拒绝沟通，应升级为观察任务。",
+        details: [
+          ["跨源命中", "公众号、业主群、短视频"],
+          ["主要语义", "停水、老人、维修费、物业"],
+          ["缺口", "恢复时间、临时供水点、物业解释"]
+        ]
+      },
+      {
+        id: "F-004",
+        source: "快手",
+        sourceId: "kuaishou",
+        category: "video",
+        title: "园区欠薪群聊截图外溢，员工讨论下班后一起去办公室沟通",
+        summary: "快手直播间评论、微信群截图和头条问答同时出现，利益诉求明确。",
+        score: 69,
+        risk: true,
+        tone: "var(--red)",
+        heat: 69,
+        cross: "0.80",
+        state: "观察升级",
+        brief: "欠薪相关信号虽未登上大范围热榜，但组织动员能力较强，且出现明确集合地点。应纳入重点观察，优先核验企业、园区和员工代表信息。",
+        details: [
+          ["跨源命中", "快手、微信群截图、头条问答"],
+          ["主要语义", "欠薪、工资条、一起去、园区"],
+          ["缺口", "欠薪人数、金额、企业回应、人社介入"]
+        ]
+      },
+      {
+        id: "F-005",
+        source: "头条",
+        sourceId: "toutiao",
+        category: "media",
+        title: "商场退费争议被本地媒体报道，消费者要求统一退款时间表",
+        summary: "头条评论活跃，微博热度一般，公众号出现整理文章。",
+        score: 61,
+        risk: false,
+        tone: "var(--blue)",
+        heat: 61,
+        cross: "0.64",
+        state: "低烈度观察",
+        brief: "退费争议当前仍以线上表达为主，诉求清晰但线下动员较弱。若商场继续给出分散口径，可能形成二次传播。",
+        details: [
+          ["跨源命中", "头条、公众号、本地媒体"],
+          ["主要语义", "退费、客服、时间表"],
+          ["缺口", "商场统一口径、退款入口"]
+        ]
+      }
+    ];
+
+    const compositeSignals = [
+      { title: "短视频 + 微博 + 头条评论共振", summary: "校门口聚集语义同时出现在三个来源，情绪从围观转向责任追问。", score: 92, tone: "var(--red)" },
+      { title: "欠薪群聊与直播评论共同升温", summary: "利益诉求明确且出现集合地点，虽未上热榜但线下动员风险较高。", score: 80, tone: "var(--amber)" },
+      { title: "公共服务体验类讨论扩散", summary: "医院排队和停水两个话题共享“回应不清/流程不透明”叙事。", score: 74, tone: "var(--blue)" }
+    ];
+
+    const clusters = [
+      ["公共服务体验", "医院排队、停水通知、窗口态度", "var(--amber)", "76%"],
+      ["校园与未成年人", "校门口视频、家属追问、隐私保护", "var(--red)", "88%"],
+      ["劳动与薪资", "欠薪、工资条、园区集合", "var(--red)", "69%"],
+      ["消费维权", "退费、客服、商场回应", "var(--blue)", "58%"]
+    ];
+
+    const state = {
+      source: "all",
+      filter: "all",
+      selected: feeds[0].id,
+      monitors: ["校门口", "讨说法", "欠薪", "停水"]
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+    const selectedFeed = () => feeds.find((item) => item.id === state.selected) || feeds[0];
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    function filteredFeeds() {
+      return feeds.filter((item) => {
+        const bySource = state.source === "all" || item.sourceId === state.source;
+        const byFilter = state.filter === "all"
+          || item.category === state.filter
+          || (state.filter === "risk" && item.risk)
+          || (state.filter === "media" && ["media", "wechat"].includes(item.category));
+        return bySource && byFilter;
+      });
+    }
+
+    function renderSources() {
+      $("#sourceList").innerHTML = sources.map((source) => `
+        <button class="source-row ${state.source === source.id ? "active" : ""}" data-source="${source.id}" style="--tone:${source.tone}">
+          <span class="source-icon">${source.name.slice(0, 1)}</span>
+          <span><b>${source.name}</b><span>${source.type} · ${source.health} · 延迟 ${source.latency}</span></span>
+          <strong class="source-count">${source.count}</strong>
+        </button>
+      `).join("");
+
+      $$(".source-row").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.source = state.source === button.dataset.source ? "all" : button.dataset.source;
+          const visible = filteredFeeds();
+          if (visible[0]) state.selected = visible[0].id;
+          render();
+        });
+      });
+    }
+
+    function renderFeed() {
+      $("#feedList").innerHTML = filteredFeeds().map((item) => `
+        <button class="feed-item ${item.id === state.selected ? "active" : ""}" data-feed="${item.id}" style="--tone:${item.tone}">
+          <span class="feed-src">${item.source}</span>
+          <span><b>${item.title}</b><p>${item.summary}</p></span>
+          <span class="feed-score">${item.score}<span>${item.state}</span></span>
+        </button>
+      `).join("");
+
+      $$(".feed-item, .hotspot").forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = button.dataset.feed;
+          if (feeds.some((item) => item.id === id)) state.selected = id;
+          render();
+        });
+      });
+    }
+
+    function renderBrief() {
+      const item = selectedFeed();
+      $("#breakingTitle").textContent = item.title;
+      $("#breakingLine").textContent = item.summary;
+      $("#briefId").textContent = item.id;
+      $("#briefHeat").textContent = item.heat;
+      $("#briefCross").textContent = item.cross;
+      $("#briefState").textContent = item.state;
+      $("#briefText").textContent = item.brief;
+      $("#briefDetails").innerHTML = item.details.map((detail) => `
+        <div class="detail-row"><span><b>${detail[0]}</b><span>${detail[1]}</span></span><i class="pill ${detail[0] === "缺口" ? "warn" : "blue"}">${item.source}</i></div>
+      `).join("");
+    }
+
+    function renderSignals() {
+      $("#signalGrid").innerHTML = compositeSignals.map((sig) => `
+        <div class="signal-card" style="--tone:${sig.tone}">
+          <i class="signal-bar"></i>
+          <span><b>${sig.title}</b><p>${sig.summary}</p></span>
+          <span class="score">${sig.score}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderHealth() {
+      $("#healthRows").innerHTML = sources.map((source) => `
+        <tr>
+          <td>${source.name}</td>
+          <td><span class="pill ${source.health === "正常" ? "good" : "warn"}">${source.health}</span></td>
+          <td class="mono">${source.latency}</td>
+          <td class="mono">${source.refresh}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderClusters() {
+      $("#clusters").innerHTML = clusters.map((cluster) => `
+        <div class="cluster-row" style="--tone:${cluster[2]}">
+          <span><b>${cluster[0]}</b><span>${cluster[1]}</span></span>
+          <span><span class="bar" style="--w:${cluster[3]};--tone:${cluster[2]}"><i></i></span><span>${cluster[3]}</span></span>
+        </div>
+      `).join("");
+      $("#watchList").innerHTML = feeds.filter((item) => item.score >= 69).map((item) => `
+        <div class="detail-row"><span><b>${item.title}</b><span>${item.source} · ${item.state} · 跨源 ${item.cross}</span></span><i class="pill ${item.risk ? "hot" : "warn"}">${item.score}</i></div>
+      `).join("");
+    }
+
+    function renderMonitors() {
+      $("#monitorTags").innerHTML = state.monitors.map((word) => `<span class="pill blue">${word}</span>`).join("");
+      const matches = feeds.filter((item) => state.monitors.some((word) => `${item.title}${item.summary}`.includes(word)));
+      $("#monitorResults").innerHTML = matches.slice(0, 4).map((item) => `
+        <button class="monitor-match" data-feed="${item.id}" style="--tone:${item.tone}">
+          <b>${item.title}</b>
+          <span>${item.source} · 匹配监控词 · 热度 ${item.score}</span>
+        </button>
+      `).join("") || `<div class="monitor-match" style="--tone:var(--blue)"><b>暂无匹配</b><span>添加更具体的地点、主体或诉求词。</span></div>`;
+      $$(".monitor-match").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.dataset.feed) state.selected = button.dataset.feed;
+          render();
+        });
+      });
+    }
+
+    function render() {
+      renderSources();
+      renderFeed();
+      renderBrief();
+      renderSignals();
+      renderHealth();
+      renderClusters();
+      renderMonitors();
+      $$("#feedTabs button").forEach((button) => button.classList.toggle("active", button.dataset.filter === state.filter));
+    }
+
+    $("#addMonitor").addEventListener("click", () => {
+      const words = $("#monitorKeyword").value.split(",").map((word) => word.trim()).filter(Boolean);
+      state.monitors = Array.from(new Set([...state.monitors, ...words]));
+      localStorage.setItem("cityMonitorKeywords", JSON.stringify(state.monitors));
+      render();
+      showToast("监控词已更新");
+    });
+    $("#searchBtn").addEventListener("click", () => {
+      const query = $("#globalSearch").value.trim();
+      const found = feeds.find((item) => `${item.title}${item.summary}`.includes(query.slice(0, 2))) || feeds[0];
+      state.selected = found.id;
+      render();
+      showToast(`已按“${query}”刷新城市动态`);
+    });
+    $("#createTask").addEventListener("click", () => {
+      const item = selectedFeed();
+      localStorage.setItem("cityMonitorEscalation", JSON.stringify({ feedId: item.id, title: item.title, at: new Date().toISOString() }));
+      showToast("已生成待确认事中任务草稿");
+    });
+    $$("#feedTabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.filter = button.dataset.filter;
+        const visible = filteredFeeds();
+        if (visible[0]) state.selected = visible[0].id;
+        render();
+      });
+    });
+
+    try {
+      const stored = JSON.parse(localStorage.getItem("cityMonitorKeywords") || "[]");
+      if (Array.isArray(stored) && stored.length) state.monitors = stored;
+    } catch {}
+    render();
+  </script>
+</body>
+</html>
