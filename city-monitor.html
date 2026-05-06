@@ -3,68 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WORLDLINE OBSERVER · 城市动态监控</title>
+  <title>WORLDLINE OBSERVER · 城市态势感知</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <style>
     :root {
-      --bg: #f3efe7;
-      --panel: rgba(255, 253, 247, .92);
-      --panel-solid: #fffdf7;
-      --ink: #14181d;
-      --muted: #5f6874;
-      --line: #d8cdbc;
+      --bg: #f5f2eb;
+      --panel: rgba(255, 253, 247, .94);
+      --panel-strong: #fffdf7;
+      --ink: #15191f;
+      --muted: #64707d;
+      --line: #d9cfbf;
       --blue: #2f6df6;
-      --green: #18a873;
-      --amber: #d78925;
-      --red: #df4b54;
-      --violet: #7f63c9;
-      --soft: 0 10px 24px rgba(42, 34, 22, .07);
-      --r: 14px;
+      --green: #1a9b6a;
+      --amber: #d38628;
+      --red: #d84f57;
+      --slate: #465465;
+      --violet: #7761c8;
+      --shadow: 0 12px 26px rgba(45, 38, 28, .08);
+      --r: 12px;
       --ease: cubic-bezier(.16, 1, .3, 1);
     }
     * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
     body {
       margin: 0;
-      min-height: 100dvh;
       color: var(--ink);
       background:
-        radial-gradient(circle at 14% 8%, rgba(215, 137, 37, .08), transparent 28%),
-        radial-gradient(circle at 82% 4%, rgba(47, 109, 246, .07), transparent 30%),
-        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+        linear-gradient(180deg, rgba(255,255,255,.64), transparent 220px),
+        linear-gradient(90deg, rgba(217,207,191,.28) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(217,207,191,.22) 1px, transparent 1px),
+        var(--bg);
+      background-size: auto, 64px 64px, 64px 64px, auto;
       font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
       font-variant-numeric: tabular-nums;
       letter-spacing: 0;
     }
-    button, a, input { font: inherit; color: inherit; }
+    button, input, select, a { font: inherit; color: inherit; }
     button { border: 0; background: transparent; cursor: pointer; }
     a { text-decoration: none; }
     button:active, a:active { transform: translateY(1px) scale(.99); }
-    button:focus-visible, a:focus-visible, input:focus-visible {
-      outline: 2px solid rgba(47,109,246,.48);
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid rgba(47,109,246,.45);
       outline-offset: 2px;
     }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-
     .app { min-height: 100dvh; display: grid; grid-template-rows: 56px 1fr; }
+
     .topbar {
       position: sticky;
       top: 0;
       z-index: 30;
       display: grid;
-      grid-template-columns: 270px 1fr 430px;
+      grid-template-columns: 278px 1fr 520px;
+      gap: 16px;
       align-items: center;
-      gap: 18px;
       padding: 0 16px;
-      border-bottom: 1px solid rgba(216,205,188,.92);
-      background: rgba(255,253,247,.82);
+      border-bottom: 1px solid rgba(217,207,191,.92);
+      background: rgba(255,253,247,.88);
       backdrop-filter: blur(16px);
     }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 1000; letter-spacing: .08em; white-space: nowrap; }
     .brand-mark {
       width: 25px;
       height: 25px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      background: linear-gradient(135deg, #2f6df6, #8dd7ff);
       position: relative;
     }
     .brand-mark::after {
@@ -75,7 +78,7 @@
       width: 4px;
       height: 20px;
       border-radius: 3px;
-      background: white;
+      background: #fffdf7;
       transform: rotate(42deg);
     }
     .mode-tabs {
@@ -96,37 +99,39 @@
       border-radius: 12px;
       color: var(--muted);
       font-weight: 900;
+      white-space: nowrap;
     }
-    .mode-tabs .active { background: var(--ink); color: #fffdf7; box-shadow: var(--soft); }
-    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .mode-tabs .active { background: var(--ink); color: #fffdf7; box-shadow: var(--shadow); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 13px; color: var(--muted); font-size: 12px; font-weight: 900; white-space: nowrap; }
     .status strong { color: var(--green); }
-    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(26,155,106,.14); }
 
     .workspace {
-      min-height: calc(100dvh - 56px);
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 286px minmax(760px, 1fr) 382px;
+      grid-template-rows: minmax(640px, 1fr) auto;
       gap: 10px;
       padding: 10px 14px 14px;
+      min-height: calc(100dvh - 56px);
     }
     .panel {
       min-width: 0;
       min-height: 0;
-      border: 1px solid rgba(216,205,188,.92);
+      border: 1px solid rgba(217,207,191,.94);
       border-radius: var(--r);
       background: var(--panel);
-      box-shadow: var(--soft);
-      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
     }
     .pad { padding: 14px; }
     .panel-title {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      gap: 12px;
+      gap: 10px;
       margin-bottom: 10px;
       font-size: 14px;
-      font-weight: 900;
+      font-weight: 1000;
     }
     .panel-title span { color: var(--muted); font-size: 11px; font-weight: 800; }
     .btn {
@@ -136,14 +141,16 @@
       padding: 0 12px;
       border: 1px solid var(--line);
       border-radius: 10px;
-      background: var(--panel-solid);
+      background: var(--panel-strong);
       color: var(--ink);
       font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
     }
-    .btn.primary { background: var(--ink); border-color: var(--ink); color: #fffdf7; }
     .btn:hover { border-color: var(--ink); }
+    .btn.primary { border-color: var(--ink); background: var(--ink); color: #fffdf7; }
+    .btn.danger { border-color: rgba(216,79,87,.36); background: rgba(216,79,87,.08); color: var(--red); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 7px; }
     .pill {
       display: inline-flex;
       align-items: center;
@@ -151,327 +158,314 @@
       padding: 3px 8px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255,253,247,.7);
+      background: rgba(255,253,247,.74);
       color: var(--muted);
       font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
       font-style: normal;
     }
-    .pill.hot { color: var(--red); border-color: rgba(223,75,84,.35); background: rgba(223,75,84,.07); }
-    .pill.good { color: var(--green); border-color: rgba(24,168,115,.35); background: rgba(24,168,115,.08); }
-    .pill.warn { color: var(--amber); border-color: rgba(215,137,37,.35); background: rgba(215,137,37,.08); }
+    .pill.hot { color: var(--red); border-color: rgba(216,79,87,.35); background: rgba(216,79,87,.08); }
+    .pill.warn { color: var(--amber); border-color: rgba(211,134,40,.35); background: rgba(211,134,40,.08); }
+    .pill.good { color: var(--green); border-color: rgba(26,155,106,.35); background: rgba(26,155,106,.08); }
     .pill.blue { color: var(--blue); border-color: rgba(47,109,246,.35); background: rgba(47,109,246,.08); }
 
-    .command-row {
+    .left-rail {
       display: grid;
-      grid-template-columns: 1.2fr 2fr 1.1fr;
-      gap: 10px;
-    }
-    .brief-title h1 {
-      margin: 4px 0 6px;
-      font-size: 24px;
-      line-height: 1.16;
-      letter-spacing: 0;
-    }
-    .eyebrow { color: var(--blue); font-size: 11px; font-weight: 1000; letter-spacing: .08em; }
-    .brief-title p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
-    .searchbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      align-self: stretch;
-      align-items: center;
-    }
-    .searchbar input {
-      width: 100%;
-      min-height: 42px;
-      padding: 0 12px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fffdf7;
-      color: var(--ink);
-      font-weight: 900;
-    }
-    .breaking {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 8px;
-      border-color: rgba(223,75,84,.28);
-      background: linear-gradient(180deg, rgba(223,75,84,.07), rgba(255,253,247,.86));
-    }
-    .ticker { display: flex; gap: 8px; align-items: center; color: var(--red); font-weight: 1000; font-size: 12px; }
-    .ticker-line { color: var(--muted); font-size: 12px; line-height: 1.45; }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: minmax(290px, 21%) minmax(620px, 1fr) minmax(330px, 24%);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
       gap: 10px;
       min-height: 0;
     }
-    .left-stack, .center-stack, .right-stack { min-height: 0; display: grid; gap: 10px; }
-    .left-stack { grid-template-rows: auto 1fr; }
-    .center-stack { grid-template-rows: minmax(280px, .72fr) minmax(320px, 1fr); }
-    .right-stack { grid-template-rows: auto minmax(230px, .9fr) 1fr; }
-
-    .source-list { display: grid; gap: 8px; }
-    .source-row {
+    .control-grid { display: grid; gap: 8px; }
+    .field label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .field input, .field select {
       width: 100%;
-      display: grid;
-      grid-template-columns: 40px 1fr auto;
-      gap: 9px;
-      align-items: center;
-      padding: 9px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,253,247,.66);
-      text-align: left;
-    }
-    .source-row.active { border-color: var(--blue); background: rgba(47,109,246,.06); }
-    .source-icon {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      border-radius: 11px;
-      background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid));
-      color: var(--tone);
-      font-weight: 1000;
-    }
-    .source-row b { display: block; font-size: 12px; line-height: 1.3; }
-    .source-row span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 800; }
-    .source-count { color: var(--tone); font-size: 14px; font-weight: 1000; text-align: right; }
-
-    .monitor-input {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .monitor-input input {
       min-height: 36px;
-      padding: 0 11px;
+      padding: 0 10px;
       border: 1px solid var(--line);
       border-radius: 10px;
-      background: #fffdf7;
+      background: var(--panel-strong);
       font-weight: 900;
     }
-    .monitor-tags, .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-    .monitor-results { display: grid; gap: 8px; margin-top: 10px; }
-    .monitor-match {
+    .segmented { display: flex; gap: 5px; flex-wrap: wrap; }
+    .segmented button {
+      min-height: 30px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-strong);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .segmented button.active { background: var(--ink); border-color: var(--ink); color: #fffdf7; }
+    .layer-list, .source-list { display: grid; gap: 7px; min-height: 0; overflow: auto; }
+    .filter-btn {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
       padding: 8px;
       border: 1px solid var(--line);
-      border-left: 4px solid var(--tone);
       border-radius: 10px;
-      background: #fffdf7;
-      font-size: 11px;
+      background: rgba(255,253,247,.74);
+      text-align: left;
     }
-    .monitor-match b { display: block; line-height: 1.35; }
-    .monitor-match span { display: block; margin-top: 4px; color: var(--muted); font-weight: 800; }
+    .filter-btn.active { border-color: color-mix(in srgb, var(--tone) 54%, var(--line)); background: color-mix(in srgb, var(--tone) 9%, var(--panel-strong)); }
+    .filter-dot {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--tone) 15%, #fffdf7);
+      color: var(--tone);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .filter-btn b { display: block; font-size: 12px; line-height: 1.2; }
+    .filter-btn span span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.25; font-weight: 800; }
+    .filter-btn strong { color: var(--tone); font-size: 12px; }
+    .url-box {
+      padding: 10px;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.68);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+      word-break: break-all;
+    }
 
-    .city-map {
-      position: relative;
-      overflow: hidden;
-      min-height: 280px;
-      background:
-        linear-gradient(90deg, rgba(216,205,188,.45) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(216,205,188,.45) 1px, transparent 1px),
-        radial-gradient(circle at 24% 32%, rgba(47,109,246,.11), transparent 24%),
-        radial-gradient(circle at 70% 44%, rgba(223,75,84,.10), transparent 24%),
-        #fffaf1;
-      background-size: 72px 72px, 72px 72px, auto, auto, auto;
+    .center {
+      display: grid;
+      grid-template-rows: auto minmax(470px, 1fr) auto;
+      gap: 10px;
+      min-height: 0;
     }
-    .map-head {
-      position: absolute;
-      left: 14px;
-      top: 12px;
-      z-index: 2;
-      max-width: 360px;
-      padding: 10px 12px;
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+      padding: 14px;
+    }
+    .eyebrow { color: var(--blue); font-size: 11px; font-weight: 1000; letter-spacing: .08em; }
+    h1 { margin: 4px 0 7px; font-size: 24px; line-height: 1.15; letter-spacing: 0; }
+    .hero p { margin: 0; max-width: 900px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .metric-strip { display: grid; grid-template-columns: repeat(5, minmax(108px, 1fr)); gap: 8px; }
+    .metric {
+      padding: 10px;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,253,247,.9);
+      border-radius: 10px;
+      background: rgba(255,253,247,.8);
     }
-    .map-head b { display: block; font-size: 13px; }
-    .map-head span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.35; }
-    .zone {
+    .metric span { color: var(--muted); font-size: 10px; font-weight: 900; }
+    .metric b { display: block; margin-top: 5px; font-size: 22px; line-height: 1; }
+    .metric small { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; font-weight: 800; }
+
+    .map-panel { position: relative; overflow: hidden; }
+    .map-stage {
+      position: relative;
+      height: 100%;
+      min-height: 470px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(217,207,191,.56) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(217,207,191,.48) 1px, transparent 1px),
+        radial-gradient(circle at 52% 50%, rgba(47,109,246,.10), transparent 31%),
+        #fffaf0;
+      background-size: 70px 70px, 70px 70px, auto, auto;
+    }
+    .district {
       position: absolute;
       display: grid;
       place-items: center;
-      border: 1px solid color-mix(in srgb, var(--tone) 45%, var(--line));
-      border-radius: 18px;
-      background: color-mix(in srgb, var(--tone) 10%, transparent);
-      color: color-mix(in srgb, var(--tone) 76%, var(--ink));
+      border: 1px solid color-mix(in srgb, var(--tone) 40%, var(--line));
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--tone) 8%, transparent);
+      color: color-mix(in srgb, var(--tone) 72%, var(--ink));
       font-size: 12px;
       font-weight: 1000;
+      pointer-events: none;
     }
-    .hotspot {
+    .flow-line {
       position: absolute;
-      width: 34px;
-      height: 34px;
+      height: 3px;
+      border-radius: 999px;
+      opacity: .52;
+      background: linear-gradient(90deg, transparent, var(--tone), transparent);
+      transform-origin: left center;
+    }
+    .event-marker {
+      position: absolute;
+      z-index: 4;
+      min-width: 36px;
+      height: 36px;
       display: grid;
       place-items: center;
       border-radius: 50%;
       background: var(--tone);
-      color: white;
-      box-shadow: 0 0 0 8px color-mix(in srgb, var(--tone) 16%, transparent);
-      font-size: 12px;
+      color: #fffdf7;
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--tone) 16%, transparent);
+      font-size: 11px;
       font-weight: 1000;
+      transform: translate(-50%, -50%);
     }
-    .hotspot small {
+    .event-marker.dim { opacity: .14; pointer-events: none; }
+    .event-marker.active { outline: 3px solid rgba(21,25,31,.24); }
+    .event-marker label {
       position: absolute;
       left: 42px;
-      top: 4px;
-      min-width: 110px;
-      padding: 4px 7px;
+      top: 1px;
+      min-width: 156px;
+      max-width: 220px;
+      padding: 6px 8px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255,253,247,.95);
+      border-radius: 10px;
+      background: rgba(255,253,247,.96);
       color: var(--ink);
-      font-size: 10px;
-      font-weight: 900;
+      font-size: 11px;
+      line-height: 1.25;
+      text-align: left;
+      pointer-events: none;
     }
-    .map-legend {
+    .event-marker label span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .map-caption {
       position: absolute;
-      right: 14px;
-      bottom: 12px;
-      z-index: 2;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      max-width: 330px;
-      padding: 8px;
+      left: 14px;
+      top: 14px;
+      z-index: 6;
+      width: min(440px, calc(100% - 28px));
+      padding: 12px;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: rgba(255,253,247,.9);
     }
-
-    .feed-panel { overflow: hidden; display: flex; flex-direction: column; }
-    .feed-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 9px; }
-    .feed-tabs button {
-      min-height: 28px;
-      padding: 0 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255,253,247,.7);
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 900;
-    }
-    .feed-tabs button.active { background: var(--ink); color: #fffdf7; border-color: var(--ink); }
-    .feed-list {
+    .map-caption b { display: block; font-size: 15px; margin-bottom: 5px; }
+    .map-caption span { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .timeline {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 5;
       display: grid;
-      gap: 7px;
-      overflow: auto;
-      padding-right: 2px;
-    }
-    .feed-item {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 54px 1fr auto;
+      grid-template-columns: auto 1fr auto;
       gap: 10px;
-      align-items: start;
-      padding: 9px;
+      align-items: center;
+      padding: 10px;
       border: 1px solid var(--line);
       border-radius: 12px;
-      background: rgba(255,253,247,.68);
-      text-align: left;
+      background: rgba(255,253,247,.92);
     }
-    .feed-item.active { border-color: var(--blue); background: rgba(47,109,246,.06); }
-    .feed-src { color: var(--tone); font-size: 12px; font-weight: 1000; }
-    .feed-item b { display: block; font-size: 12px; line-height: 1.35; }
-    .feed-item p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.42; }
-    .feed-score { text-align: right; color: var(--tone); font-size: 13px; font-weight: 1000; }
-    .feed-score span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
-
-    .signal-grid { display: grid; gap: 8px; }
-    .signal-card {
-      display: grid;
-      grid-template-columns: 5px 1fr auto;
-      gap: 10px;
-      padding: 9px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fffdf7;
-    }
-    .signal-bar { width: 5px; border-radius: 999px; background: var(--tone); }
-    .signal-card b { display: block; font-size: 12px; line-height: 1.35; }
-    .signal-card p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
-    .signal-card .score { color: var(--tone); font-size: 16px; font-weight: 1000; text-align: right; }
-
-    .city-brief {
-      display: grid;
-      gap: 10px;
-    }
-    .brief-metric {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .brief-metric div {
-      padding: 9px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,253,247,.72);
-    }
-    .brief-metric span { color: var(--muted); font-size: 10px; font-weight: 900; }
-    .brief-metric b { display: block; margin-top: 5px; font-size: 18px; }
-    .brief-text { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
-    .detail-list { display: grid; gap: 7px; }
-    .detail-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      padding: 8px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fffdf7;
-      font-size: 11px;
-    }
-    .detail-row b { display: block; line-height: 1.35; }
-    .detail-row span { color: var(--muted); font-weight: 800; }
-    .health-table { width: 100%; border-collapse: collapse; }
-    .health-table th, .health-table td {
-      padding: 8px;
-      border-bottom: 1px solid rgba(216,205,188,.78);
-      text-align: left;
-      font-size: 11px;
-      line-height: 1.35;
-    }
-    .health-table th { color: var(--muted); font-size: 10px; font-weight: 1000; }
+    .timeline-line { position: relative; height: 3px; background: #ded4c5; border-radius: 999px; }
+    .tick { position: absolute; top: -8px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fffdf7; background: var(--blue); box-shadow: 0 0 0 1px var(--line); }
+    .tick.hot { background: var(--red); }
+    .tick.warn { background: var(--amber); }
+    .tick.good { background: var(--green); }
 
     .bottom-grid {
       display: grid;
-      grid-template-columns: 1.1fr .9fr 1fr;
+      grid-template-columns: 1.15fr .85fr;
       gap: 10px;
     }
-    .cluster-list { display: grid; gap: 8px; }
-    .cluster-row {
+    .media-matrix {
       display: grid;
-      grid-template-columns: 1fr 120px;
-      gap: 10px;
-      align-items: center;
-      padding: 9px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fffdf7;
-      font-size: 11px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
     }
-    .cluster-row b { display: block; font-size: 12px; }
-    .cluster-row span { display: block; margin-top: 4px; color: var(--muted); font-weight: 800; }
-    .bar {
-      height: 8px;
-      border-radius: 999px;
-      background: #eadfcd;
+    .media-card {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.74);
       overflow: hidden;
     }
-    .bar i { display: block; height: 100%; width: var(--w); border-radius: inherit; background: var(--tone); }
+    .media-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+    }
+    .media-icon {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--tone) 14%, #fffdf7);
+      color: var(--tone);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .media-head b { font-size: 12px; line-height: 1.2; }
+    .media-head span { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .media-body { padding: 9px; display: grid; gap: 7px; }
+    .signal-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .spark { height: 34px; display: flex; align-items: end; gap: 3px; }
+    .spark i { flex: 1; min-width: 3px; border-radius: 999px 999px 0 0; background: var(--tone); opacity: .72; }
+
+    .trend-list, .feed-list, .detail-list { display: grid; gap: 8px; }
+    .trend-row, .feed-row, .detail-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.78);
+      text-align: left;
+      font-size: 11px;
+    }
+    .trend-row b, .feed-row b, .detail-row b { display: block; color: var(--ink); font-size: 12px; line-height: 1.35; }
+    .trend-row span, .feed-row span, .detail-row span { color: var(--muted); font-weight: 800; line-height: 1.35; }
+    .trend-row.active, .feed-row.active { border-color: var(--blue); background: rgba(47,109,246,.06); }
+
+    .right-stack {
+      display: grid;
+      grid-template-rows: auto minmax(250px, 1fr) auto;
+      gap: 10px;
+      min-height: 0;
+    }
+    .selected-title h2 { margin: 0 0 7px; font-size: 20px; line-height: 1.25; }
+    .selected-title p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+    .meta-grid div { padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.75); }
+    .meta-grid span { color: var(--muted); font-size: 10px; font-weight: 900; }
+    .meta-grid b { display: block; margin-top: 5px; font-size: 18px; }
+    .panel-scroll { min-height: 0; overflow: auto; }
+    .feed-row { grid-template-columns: 46px 1fr auto; align-items: center; }
+    .feed-src {
+      width: 38px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: color-mix(in srgb, var(--tone) 13%, #fffdf7);
+      color: var(--tone);
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .action-block { display: grid; gap: 8px; }
     .toast {
       position: fixed;
       left: 50%;
       bottom: 18px;
-      transform: translateX(-50%) translateY(20px);
+      z-index: 80;
+      transform: translateX(-50%) translateY(18px);
       padding: 10px 14px;
       border-radius: 12px;
       background: var(--ink);
@@ -479,35 +473,40 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity .2s var(--ease), transform .2s var(--ease);
-      z-index: 80;
       font-size: 12px;
       font-weight: 900;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1260px) {
       .topbar { grid-template-columns: 1fr; height: auto; padding: 12px; }
       .mode-tabs, .status { justify-self: start; }
-      .command-row, .main-grid, .bottom-grid { grid-template-columns: 1fr; }
-      .left-stack, .center-stack, .right-stack { grid-template-rows: auto; }
-      .city-map { min-height: 430px; }
+      .workspace { grid-template-columns: 280px minmax(0, 1fr); }
+      .right-stack { grid-column: 1 / -1; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      .media-matrix { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 640px) {
+    @media (max-width: 760px) {
       .workspace { display: block; padding: 10px; }
       .panel { margin-bottom: 10px; }
+      .hero, .metric-strip, .media-matrix, .meta-grid { grid-template-columns: 1fr; }
+      .right-stack { display: block; }
+      .left-rail { display: block; }
+      .layer-list, .source-list { max-height: none; overflow: visible; }
+      .map-stage { min-height: 520px; }
+      .event-marker label { display: none; }
+      .timeline { grid-template-columns: 1fr; }
+      .topbar { position: static; }
       .mode-tabs { max-width: 100%; overflow-x: auto; }
-      .mode-tabs a, .mode-tabs button { min-width: 60px; height: 32px; padding: 0 10px; }
-      .searchbar, .monitor-input, .brief-metric, .feed-item, .source-row, .signal-card, .cluster-row { grid-template-columns: 1fr; }
-      .hotspot small { display: none; }
-      .health-table { min-width: 520px; }
-      .panel:has(.health-table) { overflow-x: auto; }
+      .mode-tabs a, .mode-tabs button { min-width: 60px; padding: 0 10px; }
+      .status { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <a class="brand" href="city-monitor.html" aria-label="城市动态监控">
+      <a class="brand" href="city-monitor.html" aria-label="城市态势感知">
         <span class="brand-mark" aria-hidden="true"></span>
         <span>WORLDLINE OBSERVER</span>
       </a>
@@ -521,445 +520,604 @@
         <a href="decision-brief.html">汇报</a>
       </nav>
       <div class="status">
-        <span>无活动任务：城市常态监控</span>
-        <span>刷新策略 <strong>60s / 可见时刷新</strong></span>
+        <span>城市 <strong id="cityBadge">青润市</strong></span>
+        <span>时窗 <strong id="timeBadge">24h</strong></span>
+        <span>信号健康 <strong id="healthBadge">96.4%</strong></span>
         <span class="live-dot"></span>
       </div>
     </header>
 
     <main class="workspace">
-      <section class="command-row">
-        <div class="panel pad brief-title">
-          <div class="eyebrow">CITY DYNAMICS MONITOR</div>
-          <h1>当前城市动态监控台</h1>
-          <p>没有具体任务时，系统持续从抖音、快手、头条、微博、公众号和其他媒体信息中抽取同城动态，识别跨源共振、异常升温和潜在事件苗头。</p>
-        </div>
-        <div class="panel pad">
-          <div class="panel-title">全源搜索 <span>对应 WorldMonitor 的搜索与命令入口</span></div>
-          <div class="searchbar">
-            <input id="globalSearch" value="同城 线下聚集 投诉 视频" aria-label="搜索城市动态" />
-            <button class="btn primary" id="searchBtn">搜索动态</button>
-          </div>
-          <div class="chip-row" style="margin-top:10px">
-            <span class="pill blue">同城优先</span>
-            <span class="pill">近 6 小时</span>
-            <span class="pill">跨源合并</span>
-            <span class="pill good">无任务模式</span>
-          </div>
-        </div>
-        <div class="panel pad breaking">
-          <div class="ticker"><span class="pill hot">BREAKING</span><span id="breakingTitle">本地短视频与微博共同推高“校门口聚集”语义</span></div>
-          <div class="ticker-line" id="breakingLine">系统未直接生成任务，但已将该语义纳入高敏观察词，等待人工确认是否升级。</div>
-        </div>
-      </section>
-
-      <section class="main-grid">
-        <aside class="left-stack">
-          <section class="panel pad">
-            <div class="panel-title">数据源层 <span>可开关、可加权、可看健康</span></div>
-            <div class="source-list" id="sourceList"></div>
-          </section>
-
-          <section class="panel pad">
-            <div class="panel-title">监控词与匹配 <span>用户自定义 Monitor</span></div>
-            <div class="monitor-input">
-              <input id="monitorKeyword" value="校门口, 讨说法" aria-label="监控词" />
-              <button class="btn" id="addMonitor">添加</button>
-            </div>
-            <div class="monitor-tags" id="monitorTags"></div>
-            <div class="monitor-results" id="monitorResults"></div>
-          </section>
-        </aside>
-
-        <section class="center-stack">
-          <section class="panel city-map">
-            <div class="map-head">
-              <b>城市动态层</b>
-              <span>按行政区、平台来源和语义热度叠加。点击左侧来源或下方资讯时，地图与简报同步更新。</span>
-            </div>
-            <div class="zone" style="--tone:var(--blue);left:7%;top:24%;width:25%;height:28%">城北</div>
-            <div class="zone" style="--tone:var(--amber);left:34%;top:18%;width:28%;height:32%">城中</div>
-            <div class="zone" style="--tone:var(--red);left:64%;top:22%;width:28%;height:34%">城东</div>
-            <div class="zone" style="--tone:var(--green);left:15%;top:58%;width:34%;height:28%">城西</div>
-            <div class="zone" style="--tone:var(--violet);left:55%;top:61%;width:33%;height:24%">城南</div>
-            <button class="hotspot" data-feed="F-001" style="--tone:var(--red);left:69%;top:35%">92<small>校门口聚集</small></button>
-            <button class="hotspot" data-feed="F-002" style="--tone:var(--amber);left:41%;top:45%">78<small>医院排队争执</small></button>
-            <button class="hotspot" data-feed="F-003" style="--tone:var(--amber);left:24%;top:66%">72<small>停水业主群</small></button>
-            <button class="hotspot" data-feed="F-004" style="--tone:var(--red);left:74%;top:65%">69<small>欠薪群聊</small></button>
-            <div class="map-legend">
-              <span class="pill hot">高敏</span>
-              <span class="pill warn">升温</span>
-              <span class="pill blue">讨论</span>
-              <span class="pill good">平稳</span>
-              <span class="pill">跨源命中 14</span>
-            </div>
-          </section>
-
-          <section class="panel pad feed-panel">
-            <div class="panel-title">实时内容流 <span>短视频、热榜、图文、公众号与媒体混合排序</span></div>
-            <div class="feed-tabs" id="feedTabs">
-              <button class="active" data-filter="all">全部</button>
-              <button data-filter="video">短视频</button>
-              <button data-filter="social">社交平台</button>
-              <button data-filter="wechat">公众号</button>
-              <button data-filter="media">媒体</button>
-              <button data-filter="risk">高敏</button>
-            </div>
-            <div class="feed-list" id="feedList"></div>
-          </section>
-        </section>
-
-        <aside class="right-stack">
-          <section class="panel pad city-brief">
-            <div class="panel-title">城市简报 <span id="briefId">BRIEF-CITY-001</span></div>
-            <div class="brief-metric">
-              <div><span>城市热度</span><b id="briefHeat">72</b></div>
-              <div><span>跨源强度</span><b id="briefCross">0.84</b></div>
-              <div><span>处置状态</span><b id="briefState">观察</b></div>
-            </div>
-            <p class="brief-text" id="briefText">-</p>
-            <div class="detail-list" id="briefDetails"></div>
-            <button class="btn primary" id="createTask">需要时创建事中任务</button>
-          </section>
-
-          <section class="panel pad">
-            <div class="panel-title">跨源信号聚合 <span>3 类以上共振进入 Composite</span></div>
-            <div class="signal-grid" id="signalGrid"></div>
-          </section>
-
-          <section class="panel pad">
-            <div class="panel-title">来源健康与刷新 <span>Smart Poll / 可见时刷新</span></div>
-            <table class="health-table">
-              <thead><tr><th>来源</th><th>状态</th><th>延迟</th><th>最近刷新</th></tr></thead>
-              <tbody id="healthRows"></tbody>
-            </table>
-          </section>
-        </aside>
-      </section>
-
-      <section class="bottom-grid">
+      <aside class="left-rail">
         <section class="panel pad">
-          <div class="panel-title">话题簇 <span>聚类后用于城市态势感知</span></div>
-          <div class="cluster-list" id="clusters"></div>
-        </section>
-        <section class="panel pad">
-          <div class="panel-title">待观察清单 <span>未必成事件，但需要持续看</span></div>
-          <div class="detail-list" id="watchList"></div>
-        </section>
-        <section class="panel pad">
-          <div class="panel-title">从监控到任务的边界 <span>只在必要时升级</span></div>
-          <div class="detail-list">
-            <div class="detail-row"><span><b>常态监控</b><span>只看城市动态、平台热度和跨源变化，不要求用户先选择任务。</span></span><i class="pill good">默认</i></div>
-            <div class="detail-row"><span><b>观察升级</b><span>出现线下集合点、明确责任归因、证据缺口或官方回应缺位时，提示人工确认。</span></span><i class="pill warn">条件触发</i></div>
-            <div class="detail-row"><span><b>事中任务</b><span>人工确认后才进入数据、主线、推演、会议、汇报链路。</span></span><i class="pill blue">人工接管</i></div>
+          <div class="panel-title">态势视图 <span>URL state</span></div>
+          <div class="control-grid">
+            <div class="field">
+              <label for="citySelect">城市</label>
+              <select id="citySelect">
+                <option value="qingrun">青润市</option>
+                <option value="north">北城新区</option>
+                <option value="river">江湾片区</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="searchInput">搜索态势关键词</label>
+              <input id="searchInput" placeholder="输入校门口、停水、欠薪、医院、暴雨等关键词" />
+            </div>
+            <div>
+              <label class="field-label">时间范围</label>
+              <div class="segmented" id="timeButtons">
+                <button data-time="1h">1h</button>
+                <button data-time="6h">6h</button>
+                <button data-time="24h">24h</button>
+                <button data-time="7d">7d</button>
+              </div>
+            </div>
+            <div>
+              <label class="field-label">模态</label>
+              <div class="segmented" id="modalityButtons"></div>
+            </div>
           </div>
         </section>
+
+        <section class="panel pad">
+          <div class="panel-title">城市风险图层 <span>全开为常态</span></div>
+          <div class="layer-list" id="layerList"></div>
+        </section>
+
+        <section class="panel pad">
+          <div class="panel-title">来源范围 <span>只影响呈现</span></div>
+          <div class="source-list" id="sourceList"></div>
+        </section>
+
+        <section class="panel pad">
+          <div class="panel-title">当前视图链接 <span>可复现</span></div>
+          <div class="url-box mono" id="urlPreview"></div>
+          <button class="btn primary" id="copyLink" style="width:100%;margin-top:8px">复制当前态势链接</button>
+        </section>
+      </aside>
+
+      <section class="center">
+        <section class="panel hero">
+          <div>
+            <div class="eyebrow">CITY SITUATIONAL AWARENESS</div>
+            <h1>先知道这座城市正在发生什么，再决定是否接管成事件</h1>
+            <p>这里不是任务页，也不是单一事件模板。它把文字、音频、视频、直播、图片和官方信息统一落到城市空间与时间轴上，值班用户可以先掌握全城动态，再从异常信号进入事中接管。</p>
+          </div>
+          <div class="metric-strip" id="metricStrip"></div>
+        </section>
+
+        <section class="panel map-panel">
+          <div class="map-stage" id="mapStage">
+            <div class="map-caption">
+              <b>青润市实时态势图</b>
+              <span>标记代表聚合后的城市动态，不代表单条数据。点击任意节点查看多模态证据、热度曲线、传播路径和是否需要转入事中处置。</span>
+            </div>
+            <div id="districtLayer"></div>
+            <div id="flowLayer"></div>
+            <div id="markerLayer"></div>
+            <div class="timeline">
+              <button class="btn primary" id="playTimeline">播放态势演进</button>
+              <div class="timeline-line" id="timelineLine"></div>
+              <button class="btn" id="resetFilters">重置筛选</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <section class="panel pad">
+            <div class="panel-title">多模态态势矩阵 <span id="matrixHint">按当前筛选聚合</span></div>
+            <div class="media-matrix" id="mediaMatrix"></div>
+          </section>
+          <section class="panel pad">
+            <div class="panel-title">城市热点排序 <span>非任务也可浏览</span></div>
+            <div class="trend-list" id="trendList"></div>
+          </section>
+        </section>
       </section>
+
+      <aside class="right-stack">
+        <section class="panel pad">
+          <div class="panel-title">选中动态详情 <span id="selectedId">SIG-000</span></div>
+          <div class="selected-title">
+            <h2 id="detailTitle"></h2>
+            <p id="detailSummary"></p>
+          </div>
+          <div class="meta-grid">
+            <div><span>热度</span><b id="detailHeat">0</b></div>
+            <div><span>风险</span><b id="detailRisk">0</b></div>
+            <div><span>可信</span><b id="detailTrust">0</b></div>
+          </div>
+          <div class="detail-list" id="detailRows"></div>
+        </section>
+
+        <section class="panel pad panel-scroll">
+          <div class="panel-title">实时内容流 <span>文字 / 音频 / 视频 / 直播</span></div>
+          <div class="feed-list" id="feedList"></div>
+        </section>
+
+        <section class="panel pad">
+          <div class="panel-title">事中接管判断 <span>当前选中</span></div>
+          <div class="action-block">
+            <div class="detail-row">
+              <span><b>系统建议</b><span id="decisionText"></span></span>
+              <i class="pill hot" id="decisionLevel"></i>
+            </div>
+            <button class="btn primary" id="takeoverBtn">进入事中接管</button>
+            <div class="btn-row">
+              <button class="btn" id="draftBtn">加入值班摘要</button>
+              <button class="btn" id="watchBtn">持续观察</button>
+            </div>
+          </div>
+        </section>
+      </aside>
     </main>
   </div>
-
-  <div class="toast" id="toast">已更新</div>
+  <div class="toast" id="toast"></div>
 
   <script>
-    const sources = [
-      { id: "douyin", name: "抖音", type: "短视频", count: 4826, health: "正常", latency: "18s", refresh: "15:51:20", tone: "var(--red)" },
-      { id: "kuaishou", name: "快手", type: "短视频/直播", count: 2138, health: "正常", latency: "23s", refresh: "15:51:18", tone: "var(--amber)" },
-      { id: "toutiao", name: "头条", type: "资讯/评论", count: 1845, health: "正常", latency: "31s", refresh: "15:51:08", tone: "var(--blue)" },
-      { id: "weibo", name: "微博", type: "热榜/本地号", count: 3264, health: "正常", latency: "14s", refresh: "15:51:22", tone: "var(--violet)" },
-      { id: "wechat", name: "公众号", type: "文章/推送", count: 726, health: "延迟", latency: "4m", refresh: "15:47:13", tone: "var(--green)" },
-      { id: "media", name: "其他媒体", type: "新闻/论坛/客户端", count: 1159, health: "正常", latency: "52s", refresh: "15:50:44", tone: "var(--blue)" }
+    const DEFAULT_STATE = {
+      lat: 31.2380,
+      lon: 121.4860,
+      zoom: 11.20,
+      view: "city",
+      timeRange: "24h",
+      layers: ["conflicts", "bases", "hotspots", "weather", "economic", "waterways", "outages", "military", "natural", "sanctions"],
+      modalities: ["text", "audio", "video", "live", "image", "official"],
+      sources: ["douyin", "kuaishou", "toutiao", "weibo", "wechat", "media"]
+    };
+
+    const layerDefs = [
+      { id: "conflicts", label: "聚集与冲突", desc: "线下聚集、对峙、维权、围观", tone: "var(--red)", code: "聚" },
+      { id: "bases", label: "重点场所", desc: "学校、医院、园区、枢纽", tone: "var(--blue)", code: "点" },
+      { id: "hotspots", label: "网络热点", desc: "本地热榜、转评赞异常", tone: "var(--amber)", code: "热" },
+      { id: "weather", label: "天气扰动", desc: "暴雨、积水、高温、灾害前兆", tone: "var(--green)", code: "天" },
+      { id: "economic", label: "民生经济", desc: "欠薪、退费、价格、就业", tone: "var(--amber)", code: "民" },
+      { id: "waterways", label: "交通水系", desc: "桥梁、河道、道路、站点", tone: "var(--blue)", code: "交" },
+      { id: "outages", label: "停服中断", desc: "断水、断电、停运、停课", tone: "var(--red)", code: "断" },
+      { id: "military", label: "现场力量", desc: "警情、管控、救援、疏导", tone: "var(--slate)", code: "力" },
+      { id: "natural", label: "自然事件", desc: "火情、积水、坍塌、地质灾害", tone: "var(--green)", code: "灾" },
+      { id: "sanctions", label: "回应处置", desc: "通报、辟谣、限流、官方动作", tone: "var(--violet)", code: "应" },
+      { id: "nuclear", label: "高危设施", desc: "危化、施工、敏感设施周边", tone: "var(--red)", code: "危" },
+      { id: "iranAttacks", label: "高烈度专题", desc: "突发重大事件专题槽", tone: "var(--red)", code: "专" }
     ];
 
-    const feeds = [
+    const modalityDefs = [
+      { id: "text", label: "文字", code: "文", tone: "var(--slate)" },
+      { id: "audio", label: "音频", code: "音", tone: "var(--violet)" },
+      { id: "video", label: "视频", code: "视", tone: "var(--red)" },
+      { id: "live", label: "直播", code: "直", tone: "var(--amber)" },
+      { id: "image", label: "图片", code: "图", tone: "var(--green)" },
+      { id: "official", label: "官方", code: "官", tone: "var(--blue)" }
+    ];
+
+    const sourceDefs = [
+      { id: "douyin", label: "抖音", desc: "短视频与直播", tone: "var(--red)" },
+      { id: "kuaishou", label: "快手", desc: "下沉短视频", tone: "var(--amber)" },
+      { id: "toutiao", label: "头条", desc: "资讯推荐流", tone: "var(--blue)" },
+      { id: "weibo", label: "微博", desc: "热搜与本地号", tone: "var(--violet)" },
+      { id: "wechat", label: "公众号", desc: "长文与社区转发", tone: "var(--green)" },
+      { id: "media", label: "其他媒体", desc: "新闻站点与论坛", tone: "var(--slate)" }
+    ];
+
+    const districts = [
+      { name: "城北区", x: 18, y: 18, w: 22, h: 18, tone: "var(--blue)" },
+      { name: "城中区", x: 42, y: 24, w: 23, h: 22, tone: "var(--amber)" },
+      { name: "城东区", x: 70, y: 23, w: 22, h: 21, tone: "var(--green)" },
+      { name: "城西区", x: 18, y: 56, w: 24, h: 23, tone: "var(--red)" },
+      { name: "江湾片区", x: 57, y: 60, w: 31, h: 24, tone: "var(--violet)" }
+    ];
+
+    const events = [
       {
-        id: "F-001",
-        source: "抖音",
-        sourceId: "douyin",
-        category: "video",
-        title: "校门口聚集视频被连续转发，评论集中追问“是否有人负责”",
-        summary: "同城号 18 分钟内出现 7 条搬运，微博本地号开始接力扩散，公众号尚未跟进。",
-        score: 92,
-        risk: true,
-        tone: "var(--red)",
-        heat: 92,
-        cross: "0.88",
-        state: "观察升级",
-        brief: "校门口聚集相关内容在短视频与微博中同步升温，评论从事实询问转向责任追问。当前不直接生成任务，但如果出现明确集合时间或官方回应缺位，应提示人工确认是否接管。",
-        details: [
-          ["跨源命中", "抖音 7 条、微博 3 条、头条评论 2 组"],
-          ["主要语义", "校门口、家属、说法、责任、视频"],
-          ["缺口", "现场人数、是否仍在聚集、官方是否已到场"]
-        ]
+        id: "SIG-041", title: "校门口聚集与责任追问升温", layer: "conflicts", district: "城西区", x: 30, y: 55,
+        heat: 92, risk: 89, trust: 0.76, status: "需接管", trend: "+41%", sources: ["douyin", "weibo", "toutiao"], modalities: ["video", "live", "text", "audio"],
+        summary: "现场视频、家长语音、微博长帖和本地号转述同时出现，热度在 42 分钟内快速放大，核心叙事从求证事实转向责任归属。",
+        clues: ["短视频出现校门口聚集画面，3 条搬运账号使用相近标题", "家长群语音被转述，重点质疑知情时间与校方回应", "本地微博号开始汇总时间线，评论区出现线下同行表达"],
+        gaps: ["现场人数是否继续增加", "官方是否已到场沟通", "学生隐私信息是否被二次传播"],
+        decision: "满足高热度、线下聚集、多模态互证和回应缺口四项条件，建议进入事中接管。"
       },
       {
-        id: "F-002",
-        source: "微博",
-        sourceId: "weibo",
-        category: "social",
-        title: "医院排队争执进入本地热议，窗口服务时长被集中质疑",
-        summary: "微博本地榜和头条评论同向升温，快手出现二次剪辑，现场暂未发现聚集。",
-        score: 78,
-        risk: false,
-        tone: "var(--amber)",
-        heat: 78,
-        cross: "0.73",
-        state: "持续观察",
-        brief: "医院排队争执属于公共服务体验类话题，目前主要是线上表达和投诉扩散，尚未形成明显线下动员。建议继续观察投诉渠道与医院回应是否同步。",
-        details: [
-          ["跨源命中", "微博、头条、快手二次剪辑"],
-          ["主要语义", "排队久、老人、窗口态度、流程"],
-          ["缺口", "视频时间、窗口身份、院方解释"]
-        ]
+        id: "SIG-033", title: "小区停水引发业主群集中投诉", layer: "outages", district: "城北区", x: 23, y: 28,
+        heat: 76, risk: 61, trust: 0.82, status: "观察", trend: "+18%", sources: ["wechat", "douyin", "media"], modalities: ["text", "video", "image"],
+        summary: "停水通知、业主群截图和老人取水视频同步出现，主要诉求集中在恢复时间和临时供水点。",
+        clues: ["公众号转载物业通知，评论追问恢复时间", "短视频出现排队接水画面", "社区群截图中出现集体去街道反映的讨论"],
+        gaps: ["影响楼栋数量", "是否已有临时供水安排", "物业与供水公司责任边界"],
+        decision: "当前风险以服务投诉为主，建议持续观察并补齐恢复时间。"
       },
       {
-        id: "F-003",
-        source: "公众号",
-        sourceId: "wechat",
-        category: "wechat",
-        title: "小区停水通知被公众号转载，业主群讨论维修费用和通知滞后",
-        summary: "业主群截图外溢后被公众号整合，短视频平台出现老人取水片段。",
-        score: 72,
-        risk: false,
-        tone: "var(--amber)",
-        heat: 72,
-        cross: "0.71",
-        state: "持续观察",
-        brief: "停水话题已从业主群转入公众号文章和短视频，诉求集中在恢复时间、老人用水和维修费用。若出现物业门口聚集或拒绝沟通，应升级为观察任务。",
-        details: [
-          ["跨源命中", "公众号、业主群、短视频"],
-          ["主要语义", "停水、老人、维修费、物业"],
-          ["缺口", "恢复时间、临时供水点、物业解释"]
-        ]
+        id: "SIG-028", title: "医院窗口排队争执进入本地热议", layer: "hotspots", district: "城中区", x: 49, y: 39,
+        heat: 71, risk: 56, trust: 0.68, status: "观察", trend: "+23%", sources: ["kuaishou", "weibo", "media"], modalities: ["video", "text", "audio"],
+        summary: "短视频片段被剪辑为窗口态度争议，本地论坛出现当事双方不同说法，尚未形成线下动员。",
+        clues: ["快手片段被二次剪辑，标题强化冲突", "微博本地号引用视频截图", "疑似现场录音缺少完整上下文"],
+        gaps: ["完整排队过程", "窗口工作人员身份", "院方是否已回应"],
+        decision: "传播仍在升温但线下风险低，建议纳入热点观察。"
       },
       {
-        id: "F-004",
-        source: "快手",
-        sourceId: "kuaishou",
-        category: "video",
-        title: "园区欠薪群聊截图外溢，员工讨论下班后一起去办公室沟通",
-        summary: "快手直播间评论、微信群截图和头条问答同时出现，利益诉求明确。",
-        score: 69,
-        risk: true,
-        tone: "var(--red)",
-        heat: 69,
-        cross: "0.80",
-        state: "观察升级",
-        brief: "欠薪相关信号虽未登上大范围热榜，但组织动员能力较强，且出现明确集合地点。应纳入重点观察，优先核验企业、园区和员工代表信息。",
-        details: [
-          ["跨源命中", "快手、微信群截图、头条问答"],
-          ["主要语义", "欠薪、工资条、一起去、园区"],
-          ["缺口", "欠薪人数、金额、企业回应、人社介入"]
-        ]
+        id: "SIG-052", title: "园区欠薪群聊截图外溢", layer: "economic", district: "江湾片区", x: 72, y: 67,
+        heat: 83, risk: 78, trust: 0.72, status: "预警", trend: "+34%", sources: ["kuaishou", "toutiao", "wechat"], modalities: ["text", "image", "video"],
+        summary: "员工群截图、工资条局部图片与短视频口播互相引用，出现约定时间集体到园区办公室的表达。",
+        clues: ["群聊提到统一时间到园区门口", "头条问答出现公司名模糊搜索增长", "短视频口播提到欠薪周期超过两个月"],
+        gaps: ["欠薪人数与金额", "是否已有劳动监察介入", "企业经营状态"],
+        decision: "出现线下动员苗头和利益诉求，建议生成预警任务并持续补证。"
       },
       {
-        id: "F-005",
-        source: "头条",
-        sourceId: "toutiao",
-        category: "media",
-        title: "商场退费争议被本地媒体报道，消费者要求统一退款时间表",
-        summary: "头条评论活跃，微博热度一般，公众号出现整理文章。",
-        score: 61,
-        risk: false,
-        tone: "var(--blue)",
-        heat: 61,
-        cross: "0.64",
-        state: "低烈度观察",
-        brief: "退费争议当前仍以线上表达为主，诉求清晰但线下动员较弱。若商场继续给出分散口径，可能形成二次传播。",
-        details: [
-          ["跨源命中", "头条、公众号、本地媒体"],
-          ["主要语义", "退费、客服、时间表"],
-          ["缺口", "商场统一口径、退款入口"]
-        ]
+        id: "SIG-019", title: "暴雨积水造成交通节点拥堵", layer: "weather", district: "城东区", x: 77, y: 36,
+        heat: 64, risk: 42, trust: 0.91, status: "稳定", trend: "+12%", sources: ["weibo", "media"], modalities: ["image", "text", "video"],
+        summary: "道路积水图片和拥堵反馈增多，主要影响通勤效率，与其它民生投诉存在时间叠加。",
+        clues: ["路段图片来自多个账号", "交通广播提示绕行", "评论集中在排水和公交延误"],
+        gaps: ["积水点是否消退", "公交绕行持续时间"],
+        decision: "自然扰动明确，社会风险低，建议作为背景图层解释其它投诉。"
+      },
+      {
+        id: "SIG-067", title: "网传处置通报引发二次质疑", layer: "sanctions", district: "城中区", x: 58, y: 48,
+        heat: 79, risk: 74, trust: 0.59, status: "预警", trend: "+29%", sources: ["weibo", "toutiao", "wechat"], modalities: ["official", "text", "image"],
+        summary: "网民认为通报口径过短，关键事实缺少时间、责任和后续安排，质疑从原事件扩展到信息透明度。",
+        clues: ["官方截图被多账号转发解读", "评论高频词包括避重就轻、什么时候说清楚", "公众号长文开始拼接历史案例"],
+        gaps: ["通报原文版本", "是否有后续说明计划", "关键事实是否受隐私保护限制"],
+        decision: "回应可信度不足可能抬升事件风险，建议与对应主事件合并研判。"
       }
     ];
 
-    const compositeSignals = [
-      { title: "短视频 + 微博 + 头条评论共振", summary: "校门口聚集语义同时出现在三个来源，情绪从围观转向责任追问。", score: 92, tone: "var(--red)" },
-      { title: "欠薪群聊与直播评论共同升温", summary: "利益诉求明确且出现集合地点，虽未上热榜但线下动员风险较高。", score: 80, tone: "var(--amber)" },
-      { title: "公共服务体验类讨论扩散", summary: "医院排队和停水两个话题共享“回应不清/流程不透明”叙事。", score: 74, tone: "var(--blue)" }
+    const contentFeed = [
+      { id: "F-001", eventId: "SIG-041", source: "douyin", modality: "video", title: "校门口人群聚集片段被连续转发", time: "10:18", score: 94 },
+      { id: "F-002", eventId: "SIG-041", source: "weibo", modality: "text", title: "本地号整理学生坠楼后家属到校时间线", time: "10:23", score: 91 },
+      { id: "F-003", eventId: "SIG-041", source: "douyin", modality: "live", title: "围观直播出现，但画面中隐私遮挡不足", time: "10:26", score: 88 },
+      { id: "F-004", eventId: "SIG-041", source: "wechat", modality: "audio", title: "家长群语音转述校方沟通细节", time: "10:31", score: 82 },
+      { id: "F-005", eventId: "SIG-052", source: "kuaishou", modality: "video", title: "园区员工口播欠薪经过", time: "10:35", score: 78 },
+      { id: "F-006", eventId: "SIG-033", source: "wechat", modality: "text", title: "物业停水通知下方评论集中追问恢复时间", time: "10:41", score: 71 },
+      { id: "F-007", eventId: "SIG-028", source: "kuaishou", modality: "audio", title: "医院窗口争执录音片段缺少前后文", time: "10:44", score: 64 },
+      { id: "F-008", eventId: "SIG-019", source: "media", modality: "image", title: "城东主干路积水图片被交通账号引用", time: "10:47", score: 58 },
+      { id: "F-009", eventId: "SIG-067", source: "toutiao", modality: "official", title: "处置通报截图被解读为信息不足", time: "10:52", score: 80 }
     ];
-
-    const clusters = [
-      ["公共服务体验", "医院排队、停水通知、窗口态度", "var(--amber)", "76%"],
-      ["校园与未成年人", "校门口视频、家属追问、隐私保护", "var(--red)", "88%"],
-      ["劳动与薪资", "欠薪、工资条、园区集合", "var(--red)", "69%"],
-      ["消费维权", "退费、客服、商场回应", "var(--blue)", "58%"]
-    ];
-
-    const state = {
-      source: "all",
-      filter: "all",
-      selected: feeds[0].id,
-      monitors: ["校门口", "讨说法", "欠薪", "停水"]
-    };
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-    const selectedFeed = () => feeds.find((item) => item.id === state.selected) || feeds[0];
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    function parseList(value, fallback, valid) {
+      const items = (value || fallback.join(",")).split(",").map((item) => item.trim()).filter(Boolean);
+      const filtered = items.filter((item) => valid.includes(item));
+      return filtered.length ? Array.from(new Set(filtered)) : [...fallback];
+    }
+
+    function parseState() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        lat: clamp(Number(params.get("lat") || DEFAULT_STATE.lat), -85, 85),
+        lon: clamp(Number(params.get("lon") || DEFAULT_STATE.lon), -180, 180),
+        zoom: clamp(Number(params.get("zoom") || DEFAULT_STATE.zoom), 1, 18),
+        view: params.get("view") || DEFAULT_STATE.view,
+        timeRange: params.get("timeRange") || DEFAULT_STATE.timeRange,
+        layers: parseList(params.get("layers"), DEFAULT_STATE.layers, layerDefs.map((item) => item.id)),
+        modalities: parseList(params.get("modalities"), DEFAULT_STATE.modalities, modalityDefs.map((item) => item.id)),
+        sources: parseList(params.get("sources"), DEFAULT_STATE.sources, sourceDefs.map((item) => item.id)),
+        selected: params.get("signalId") || events[0].id,
+      query: params.get("q") || ""
+      };
+    }
+
+    const state = parseState();
+
+    function currentUrl() {
+      const params = new URLSearchParams();
+      params.set("lat", state.lat.toFixed(4));
+      params.set("lon", state.lon.toFixed(4));
+      params.set("zoom", state.zoom.toFixed(2));
+      params.set("view", state.view);
+      params.set("timeRange", state.timeRange);
+      params.set("layers", state.layers.join(","));
+      params.set("modalities", state.modalities.join(","));
+      params.set("sources", state.sources.join(","));
+      params.set("signalId", state.selected);
+      params.set("q", state.query);
+      return `${window.location.pathname}?${params.toString()}`;
+    }
+
+    function syncUrl() {
+      window.history.replaceState(null, "", currentUrl());
+      $("#urlPreview").textContent = window.location.href;
+      $("#timeBadge").textContent = state.timeRange;
+    }
 
     function showToast(message) {
       const toast = $("#toast");
       toast.textContent = message;
       toast.classList.add("show");
       window.clearTimeout(showToast.timer);
-      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1600);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1500);
     }
 
-    function filteredFeeds() {
-      return feeds.filter((item) => {
-        const bySource = state.source === "all" || item.sourceId === state.source;
-        const byFilter = state.filter === "all"
-          || item.category === state.filter
-          || (state.filter === "risk" && item.risk)
-          || (state.filter === "media" && ["media", "wechat"].includes(item.category));
-        return bySource && byFilter;
+    function selectedEvent() {
+      return events.find((event) => event.id === state.selected) || events[0];
+    }
+
+    function layerDef(id) {
+      return layerDefs.find((item) => item.id === id) || layerDefs[0];
+    }
+
+    function modalityDef(id) {
+      return modalityDefs.find((item) => item.id === id) || modalityDefs[0];
+    }
+
+    function sourceDef(id) {
+      return sourceDefs.find((item) => item.id === id) || sourceDefs[0];
+    }
+
+    function eventVisible(event) {
+      const layerOk = state.layers.includes(event.layer);
+      const sourceOk = event.sources.some((source) => state.sources.includes(source));
+      const modalityOk = event.modalities.some((modality) => state.modalities.includes(modality));
+      const query = state.query.trim();
+      const queryOk = !query || query.split(/\s+/).some((word) => event.title.includes(word) || event.summary.includes(word));
+      return layerOk && sourceOk && modalityOk && queryOk;
+    }
+
+    function visibleEvents() {
+      return events.filter(eventVisible);
+    }
+
+    function renderFilters() {
+      $("#timeButtons").querySelectorAll("button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.time === state.timeRange);
       });
-    }
 
-    function renderSources() {
-      $("#sourceList").innerHTML = sources.map((source) => `
-        <button class="source-row ${state.source === source.id ? "active" : ""}" data-source="${source.id}" style="--tone:${source.tone}">
-          <span class="source-icon">${source.name.slice(0, 1)}</span>
-          <span><b>${source.name}</b><span>${source.type} · ${source.health} · 延迟 ${source.latency}</span></span>
-          <strong class="source-count">${source.count}</strong>
-        </button>
+      $("#modalityButtons").innerHTML = modalityDefs.map((item) => `
+        <button class="${state.modalities.includes(item.id) ? "active" : ""}" data-modality="${item.id}">${item.label}</button>
       `).join("");
-
-      $$(".source-row").forEach((button) => {
+      $("#modalityButtons").querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
-          state.source = state.source === button.dataset.source ? "all" : button.dataset.source;
-          const visible = filteredFeeds();
-          if (visible[0]) state.selected = visible[0].id;
+          const id = button.dataset.modality;
+          state.modalities = state.modalities.includes(id) ? state.modalities.filter((item) => item !== id) : [...state.modalities, id];
+          if (!state.modalities.length) state.modalities = [id];
+          ensureSelectedVisible();
+          render();
+        });
+      });
+
+      $("#layerList").innerHTML = layerDefs.map((item) => {
+        const count = events.filter((event) => event.layer === item.id).length;
+        return `
+          <button class="filter-btn ${state.layers.includes(item.id) ? "active" : ""}" data-layer="${item.id}" style="--tone:${item.tone}">
+            <i class="filter-dot">${item.code}</i>
+            <span><b>${item.label}</b><span>${item.desc}</span></span>
+            <strong>${count}</strong>
+          </button>
+        `;
+      }).join("");
+      $("#layerList").querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = button.dataset.layer;
+          state.layers = state.layers.includes(id) ? state.layers.filter((item) => item !== id) : [...state.layers, id];
+          if (!state.layers.length) state.layers = [id];
+          ensureSelectedVisible();
+          render();
+        });
+      });
+
+      $("#sourceList").innerHTML = sourceDefs.map((item) => {
+        const count = contentFeed.filter((feed) => feed.source === item.id).length;
+        return `
+          <button class="filter-btn ${state.sources.includes(item.id) ? "active" : ""}" data-source="${item.id}" style="--tone:${item.tone}">
+            <i class="filter-dot">${item.label.slice(0, 1)}</i>
+            <span><b>${item.label}</b><span>${item.desc}</span></span>
+            <strong>${count}</strong>
+          </button>
+        `;
+      }).join("");
+      $("#sourceList").querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = button.dataset.source;
+          state.sources = state.sources.includes(id) ? state.sources.filter((item) => item !== id) : [...state.sources, id];
+          if (!state.sources.length) state.sources = [id];
+          ensureSelectedVisible();
           render();
         });
       });
     }
 
-    function renderFeed() {
-      $("#feedList").innerHTML = filteredFeeds().map((item) => `
-        <button class="feed-item ${item.id === state.selected ? "active" : ""}" data-feed="${item.id}" style="--tone:${item.tone}">
-          <span class="feed-src">${item.source}</span>
-          <span><b>${item.title}</b><p>${item.summary}</p></span>
-          <span class="feed-score">${item.score}<span>${item.state}</span></span>
-        </button>
-      `).join("");
+    function ensureSelectedVisible() {
+      if (!visibleEvents().some((event) => event.id === state.selected)) {
+        const next = visibleEvents()[0] || events[0];
+        state.selected = next.id;
+      }
+    }
 
-      $$(".feed-item, .hotspot").forEach((button) => {
+    function renderMetrics() {
+      const rows = visibleEvents();
+      const avgRisk = rows.length ? Math.round(rows.reduce((sum, item) => sum + item.risk, 0) / rows.length) : 0;
+      const multimodal = rows.filter((item) => item.modalities.length >= 3).length;
+      const needTakeover = rows.filter((item) => item.risk >= 80 || item.status === "需接管").length;
+      const liveCount = contentFeed.filter((item) => state.modalities.includes(item.modality) && state.sources.includes(item.source)).length;
+      const metrics = [
+        ["当前动态", rows.length, "通过图层、来源、模态筛选"],
+        ["平均风险", avgRisk, "跨事件综合风险"],
+        ["多模态互证", multimodal, "至少三类内容形态"],
+        ["实时内容", liveCount, "近时窗内容片段"],
+        ["建议接管", needTakeover, "需进入事中处理"]
+      ];
+      $("#metricStrip").innerHTML = metrics.map((item, index) => `
+        <div class="metric">
+          <span>${item[0]}</span>
+          <b class="mono">${item[1]}</b>
+          <small>${item[2]}</small>
+        </div>
+      `).join("");
+    }
+
+    function renderMap() {
+      $("#districtLayer").innerHTML = districts.map((district) => `
+        <div class="district" style="--tone:${district.tone};left:${district.x}%;top:${district.y}%;width:${district.w}%;height:${district.h}%">${district.name}</div>
+      `).join("");
+      $("#flowLayer").innerHTML = [
+        { x: 28, y: 53, w: 330, r: -18, tone: "var(--red)" },
+        { x: 49, y: 38, w: 260, r: 16, tone: "var(--amber)" },
+        { x: 23, y: 28, w: 310, r: 28, tone: "var(--blue)" },
+        { x: 58, y: 48, w: 220, r: -30, tone: "var(--violet)" }
+      ].map((line) => `<i class="flow-line" style="left:${line.x}%;top:${line.y}%;width:${line.w}px;transform:rotate(${line.r}deg);--tone:${line.tone}"></i>`).join("");
+      $("#markerLayer").innerHTML = events.map((event) => {
+        const layer = layerDef(event.layer);
+        const visible = eventVisible(event);
+        return `
+          <button class="event-marker ${visible ? "" : "dim"} ${event.id === state.selected ? "active" : ""}" data-id="${event.id}" style="--tone:${layer.tone};left:${event.x}%;top:${event.y}%">
+            ${event.risk}
+            <label>${event.title}<span>${event.district} · ${event.status} · ${event.trend}</span></label>
+          </button>
+        `;
+      }).join("");
+      $("#markerLayer").querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
-          const id = button.dataset.feed;
-          if (feeds.some((item) => item.id === id)) state.selected = id;
+          const event = events.find((item) => item.id === button.dataset.id);
+          if (!event || !eventVisible(event)) return;
+          state.selected = event.id;
+          render();
+        });
+      });
+      $("#timelineLine").innerHTML = [
+        ["8%", "good"], ["27%", "warn"], ["48%", "hot"], ["66%", "warn"], ["82%", "hot"]
+      ].map((item) => `<i class="tick ${item[1]}" style="left:${item[0]}"></i>`).join("");
+    }
+
+    function renderSelected() {
+      const event = selectedEvent();
+      const layer = layerDef(event.layer);
+      $("#selectedId").textContent = event.id;
+      $("#detailTitle").textContent = event.title;
+      $("#detailSummary").textContent = event.summary;
+      $("#detailHeat").textContent = event.heat;
+      $("#detailRisk").textContent = event.risk;
+      $("#detailTrust").textContent = event.trust;
+      $("#detailRows").innerHTML = [
+        ["所属图层", `${layer.label} / ${event.district}`, "blue"],
+        ["内容形态", event.modalities.map((item) => modalityDef(item).label).join("、"), "good"],
+        ["主要来源", event.sources.map((item) => sourceDef(item).label).join("、"), "warn"],
+        ["关键线索", event.clues.join("；"), "blue"],
+        ["待补缺口", event.gaps.join("；"), "hot"]
+      ].map((row) => `
+        <div class="detail-row">
+          <span><b>${row[0]}</b><span>${row[1]}</span></span>
+          <i class="pill ${row[2]}">${event.status}</i>
+        </div>
+      `).join("");
+      $("#decisionText").textContent = event.decision;
+      $("#decisionLevel").textContent = event.risk >= 80 ? "高优先级" : event.risk >= 65 ? "预警" : "观察";
+    }
+
+    function renderFeeds() {
+      const rows = contentFeed.filter((item) => {
+        const event = events.find((entry) => entry.id === item.eventId);
+        return event && eventVisible(event) && state.sources.includes(item.source) && state.modalities.includes(item.modality);
+      });
+      $("#feedList").innerHTML = rows.map((item) => {
+        const source = sourceDef(item.source);
+        const modality = modalityDef(item.modality);
+        return `
+          <button class="feed-row ${item.eventId === state.selected ? "active" : ""}" data-event="${item.eventId}" style="--tone:${source.tone}">
+            <span class="feed-src">${source.label.slice(0, 2)}</span>
+            <span><b>${item.title}</b><span>${item.time} · ${source.label} · ${modality.label}</span></span>
+            <i class="pill ${item.score >= 85 ? "hot" : "warn"}">${item.score}</i>
+          </button>
+        `;
+      }).join("") || `<div class="detail-row"><span><b>当前筛选无内容</b><span>打开更多来源、模态或图层后恢复内容流。</span></span><i class="pill">0</i></div>`;
+      $("#feedList").querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selected = button.dataset.event;
           render();
         });
       });
     }
 
-    function renderBrief() {
-      const item = selectedFeed();
-      $("#breakingTitle").textContent = item.title;
-      $("#breakingLine").textContent = item.summary;
-      $("#briefId").textContent = item.id;
-      $("#briefHeat").textContent = item.heat;
-      $("#briefCross").textContent = item.cross;
-      $("#briefState").textContent = item.state;
-      $("#briefText").textContent = item.brief;
-      $("#briefDetails").innerHTML = item.details.map((detail) => `
-        <div class="detail-row"><span><b>${detail[0]}</b><span>${detail[1]}</span></span><i class="pill ${detail[0] === "缺口" ? "warn" : "blue"}">${item.source}</i></div>
-      `).join("");
+    function renderMatrix() {
+      $("#mediaMatrix").innerHTML = modalityDefs.slice(0, 4).map((item) => {
+        const rows = contentFeed.filter((feed) => feed.modality === item.id && state.sources.includes(feed.source));
+        const eventCount = new Set(rows.map((feed) => feed.eventId)).size;
+        const maxScore = rows.length ? Math.max(...rows.map((feed) => feed.score)) : 0;
+        return `
+          <div class="media-card" style="--tone:${item.tone}">
+            <div class="media-head">
+              <i class="media-icon">${item.code}</i>
+              <span><b>${item.label}</b><span>${eventCount} 个关联动态</span></span>
+              <i class="pill ${maxScore >= 85 ? "hot" : "blue"}">${maxScore}</i>
+            </div>
+            <div class="media-body">
+              <div class="spark">${[34, 58, 47, 73, 61, maxScore || 36].map((value) => `<i style="height:${value}%"></i>`).join("")}</div>
+              ${rows.slice(0, 2).map((row) => `<div class="signal-line"><span>${row.title}</span><b>${row.time}</b></div>`).join("") || `<div class="signal-line"><span>暂无片段</span><b>--</b></div>`}
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
-    function renderSignals() {
-      $("#signalGrid").innerHTML = compositeSignals.map((sig) => `
-        <div class="signal-card" style="--tone:${sig.tone}">
-          <i class="signal-bar"></i>
-          <span><b>${sig.title}</b><p>${sig.summary}</p></span>
-          <span class="score">${sig.score}</span>
-        </div>
-      `).join("");
-    }
-
-    function renderHealth() {
-      $("#healthRows").innerHTML = sources.map((source) => `
-        <tr>
-          <td>${source.name}</td>
-          <td><span class="pill ${source.health === "正常" ? "good" : "warn"}">${source.health}</span></td>
-          <td class="mono">${source.latency}</td>
-          <td class="mono">${source.refresh}</td>
-        </tr>
-      `).join("");
-    }
-
-    function renderClusters() {
-      $("#clusters").innerHTML = clusters.map((cluster) => `
-        <div class="cluster-row" style="--tone:${cluster[2]}">
-          <span><b>${cluster[0]}</b><span>${cluster[1]}</span></span>
-          <span><span class="bar" style="--w:${cluster[3]};--tone:${cluster[2]}"><i></i></span><span>${cluster[3]}</span></span>
-        </div>
-      `).join("");
-      $("#watchList").innerHTML = feeds.filter((item) => item.score >= 69).map((item) => `
-        <div class="detail-row"><span><b>${item.title}</b><span>${item.source} · ${item.state} · 跨源 ${item.cross}</span></span><i class="pill ${item.risk ? "hot" : "warn"}">${item.score}</i></div>
-      `).join("");
-    }
-
-    function renderMonitors() {
-      $("#monitorTags").innerHTML = state.monitors.map((word) => `<span class="pill blue">${word}</span>`).join("");
-      const matches = feeds.filter((item) => state.monitors.some((word) => `${item.title}${item.summary}`.includes(word)));
-      $("#monitorResults").innerHTML = matches.slice(0, 4).map((item) => `
-        <button class="monitor-match" data-feed="${item.id}" style="--tone:${item.tone}">
-          <b>${item.title}</b>
-          <span>${item.source} · 匹配监控词 · 热度 ${item.score}</span>
+    function renderTrends() {
+      const rows = [...visibleEvents()].sort((a, b) => b.heat - a.heat);
+      $("#trendList").innerHTML = rows.map((event, index) => `
+        <button class="trend-row ${event.id === state.selected ? "active" : ""}" data-event="${event.id}">
+          <span><b>${index + 1}. ${event.title}</b><span>${event.district} · ${layerDef(event.layer).label} · ${event.sources.map((item) => sourceDef(item).label).join("/")}</span></span>
+          <i class="pill ${event.risk >= 80 ? "hot" : "warn"}">${event.heat}</i>
         </button>
-      `).join("") || `<div class="monitor-match" style="--tone:var(--blue)"><b>暂无匹配</b><span>添加更具体的地点、主体或诉求词。</span></div>`;
-      $$(".monitor-match").forEach((button) => {
+      `).join("") || `<div class="detail-row"><span><b>暂无热点</b><span>当前筛选条件下未命中城市动态。</span></span><i class="pill">0</i></div>`;
+      $("#trendList").querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
-          if (button.dataset.feed) state.selected = button.dataset.feed;
+          state.selected = button.dataset.event;
           render();
         });
       });
     }
 
     function render() {
-      renderSources();
-      renderFeed();
-      renderBrief();
-      renderSignals();
-      renderHealth();
-      renderClusters();
-      renderMonitors();
-      $$("#feedTabs button").forEach((button) => button.classList.toggle("active", button.dataset.filter === state.filter));
+      ensureSelectedVisible();
+      syncUrl();
+      renderFilters();
+      renderMetrics();
+      renderMap();
+      renderSelected();
+      renderFeeds();
+      renderMatrix();
+      renderTrends();
+      $("#searchInput").value = state.query;
     }
 
-    $("#addMonitor").addEventListener("click", () => {
-      const words = $("#monitorKeyword").value.split(",").map((word) => word.trim()).filter(Boolean);
-      state.monitors = Array.from(new Set([...state.monitors, ...words]));
-      localStorage.setItem("cityMonitorKeywords", JSON.stringify(state.monitors));
-      render();
-      showToast("监控词已更新");
-    });
-    $("#searchBtn").addEventListener("click", () => {
-      const query = $("#globalSearch").value.trim();
-      const found = feeds.find((item) => `${item.title}${item.summary}`.includes(query.slice(0, 2))) || feeds[0];
-      state.selected = found.id;
-      render();
-      showToast(`已按“${query}”刷新城市动态`);
-    });
-    $("#createTask").addEventListener("click", () => {
-      const item = selectedFeed();
-      localStorage.setItem("cityMonitorEscalation", JSON.stringify({ feedId: item.id, title: item.title, at: new Date().toISOString() }));
-      showToast("已生成待确认事中任务草稿");
-    });
-    $$("#feedTabs button").forEach((button) => {
+    $("#timeButtons").querySelectorAll("button").forEach((button) => {
       button.addEventListener("click", () => {
-        state.filter = button.dataset.filter;
-        const visible = filteredFeeds();
-        if (visible[0]) state.selected = visible[0].id;
+        state.timeRange = button.dataset.time;
         render();
       });
     });
+    $("#searchInput").addEventListener("input", (event) => {
+      state.query = event.target.value;
+      ensureSelectedVisible();
+      render();
+    });
+    $("#citySelect").addEventListener("change", (event) => {
+      $("#cityBadge").textContent = event.target.options[event.target.selectedIndex].textContent;
+      showToast("城市视图已切换");
+    });
+    $("#resetFilters").addEventListener("click", () => {
+      state.layers = [...DEFAULT_STATE.layers];
+      state.modalities = [...DEFAULT_STATE.modalities];
+      state.sources = [...DEFAULT_STATE.sources];
+      state.query = "";
+      state.selected = events[0].id;
+      render();
+      showToast("已恢复全城态势默认视图");
+    });
+    $("#playTimeline").addEventListener("click", () => showToast("态势演进已播放到最近 24 小时"));
+    $("#copyLink").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("当前态势链接已复制");
+      } catch {
+        showToast("当前态势链接已生成");
+      }
+    });
+    $("#takeoverBtn").addEventListener("click", () => {
+      const event = selectedEvent();
+      localStorage.setItem("citySituationTakeover", JSON.stringify({ signalId: event.id, title: event.title, at: new Date().toISOString() }));
+      window.location.href = `data-hub.html?caseId=campus-death-high-intensity&signalId=${encodeURIComponent(event.id)}&from=city-monitor`;
+    });
+    $("#draftBtn").addEventListener("click", () => showToast("已加入值班摘要草稿"));
+    $("#watchBtn").addEventListener("click", () => showToast("已加入持续观察队列"));
 
-    try {
-      const stored = JSON.parse(localStorage.getItem("cityMonitorKeywords") || "[]");
-      if (Array.isArray(stored) && stored.length) state.monitors = stored;
-    } catch {}
     render();
   </script>
 </body>
