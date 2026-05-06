@@ -125,22 +125,57 @@
       min-height: 0;
       overflow: hidden;
     }
-    .dialogue { min-height: 0; overflow: hidden; padding: 8px 14px 4px; }
-    .statement {
+    .dialogue {
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
       display: grid;
-      grid-template-columns: 118px 1fr 198px 54px;
-      gap: 10px;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid rgba(216,205,188,.78);
-      font-size: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-content: start;
+      scrollbar-width: none;
     }
-    .speaker { display: flex; align-items: center; gap: 8px; font-weight: 900; }
-    .speaker i { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 10px; background: color-mix(in srgb, var(--tone) 16%, white); color: var(--tone); font-style: normal; }
-    .statement p { margin: 0; color: var(--muted); line-height: 1.42; }
+    .dialogue::-webkit-scrollbar { display: none; }
+    .statement {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid rgba(216,205,188,.88);
+      border-radius: 14px;
+      background: rgba(255,253,247,.82);
+      font-size: 12px;
+      box-shadow: 0 10px 22px rgba(48,38,22,.05);
+    }
+    .statement.active { border-color: var(--tone); background: color-mix(in srgb, var(--tone) 8%, var(--panel-solid)); }
+    .speaker-mark {
+      display: grid;
+      gap: 6px;
+      justify-items: center;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .speaker-mark i {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: color-mix(in srgb, var(--tone) 16%, white);
+      color: var(--tone);
+      font-style: normal;
+      font-size: 13px;
+    }
+    .bubble { min-width: 0; display: grid; gap: 8px; }
+    .bubble header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .bubble b { color: var(--ink); font-size: 13px; line-height: 1.2; }
+    .bubble small { color: var(--tone); font-size: 10px; font-weight: 900; white-space: nowrap; }
+    .statement p { margin: 0; color: var(--muted); line-height: 1.55; }
     .impact-tags { display: flex; gap: 5px; flex-wrap: wrap; }
     .impact-tags span { min-height: 24px; padding: 4px 7px; border-radius: 8px; background: color-mix(in srgb, var(--tone) 10%, var(--panel-solid)); color: var(--tone); font-size: 11px; font-weight: 900; }
-    .statement time { color: var(--muted); font-size: 11px; font-weight: 800; }
     .round-summary { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin: 0 14px 8px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.72); color: var(--muted); font-size: 12px; line-height: 1.35; }
     .primary-btn, .outline-btn { min-height: 34px; display: inline-grid; place-items: center; padding: 0 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel-solid); font-size: 12px; font-weight: 900; white-space: nowrap; }
     .primary-btn { background: var(--ink); border-color: var(--ink); color: white; }
@@ -200,8 +235,8 @@
       <aside class="left">
         <section class="panel pad mainline">
           <div class="title">当前主线与节点 <a href="worldline-observer.html">回到推演</a></div>
-          <h1>城市更新 / 老旧小区改造补偿争议</h1>
-          <p>当前节点：群体不满升级，线下聚集风险。会议目标是模拟多方主体反应，判断支点变化，并决定是否注入世界线重跑。</p>
+          <h1>校园安全 / 未成年人保护责任争议</h1>
+          <p>当前节点：回应不足导致责任叙事固化。会议目标是模拟家属、校方、主管部门、媒体与基层侧反应，判断证据保全和线下风险是否需要注入世界线重跑。</p>
           <div class="timebar">
             <div style="--v:72%;--tone:var(--red)"><span>T+72h</span><i></i><b>长期高压</b></div>
             <div style="--v:51%;--tone:var(--amber)"><span>透明度</span><i></i><b>不足</b></div>
@@ -235,7 +270,7 @@
           <div class="title">演变变化面板 <a href="agent-council.html?rerun=1" id="rerunBtn">重新分析</a></div>
           <div class="conflict-card">
             <b>当前最大矛盾</b>
-            <p id="conflictText">补偿透明度不足与居民公平预期之间出现落差，模糊回应会强化二次解读。</p>
+            <p id="conflictText">证据保全状态、家属沟通时限与责任归因之间出现落差，模糊回应会强化“隐瞒/压事”的二次解读。</p>
           </div>
           <div class="title" style="margin-top:12px">分支概率变化 <span>相对初始</span></div>
           <div class="prob-list" id="probList"></div>
@@ -256,7 +291,7 @@
     <section class="stress">
       <section class="panel pad hypothesis">
         <div class="title">假设压力测试 <span>用户输入</span></div>
-        <textarea id="hypothesisInput">如果 24 小时内发布 FAQ，并明确补偿测算依据与沟通时间表，会怎样？</textarea>
+        <textarea id="hypothesisInput">如果 2 小时内发布证据保全清单，并明确家属参与核验与联合调查时间表，会怎样？</textarea>
         <button class="primary-btn" id="runHypothesis">运行压力测试</button>
       </section>
       <section class="panel pad">
@@ -276,47 +311,76 @@
   <script>
     const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
     const agents = [
-      { id: "resident", name: "居民群体", code: "民", tone: "violet", stance: "核心关切", delta: "-0.08" },
-      { id: "street", name: "街道/社区", code: "街", tone: "green", stance: "执行压力", delta: "-0.07" },
-      { id: "department", name: "主管部门", code: "管", tone: "blue", stance: "政策合规", delta: "-0.01" },
-      { id: "company", name: "施工方/企业", code: "企", tone: "amber", stance: "工期成本", delta: "-0.06" },
-      { id: "media", name: "媒体/自媒体", code: "媒", tone: "red", stance: "传播扩散", delta: "-0.12" },
-      { id: "grid", name: "网格/基层", code: "网", tone: "amber", stance: "现场反馈", delta: "-0.09" },
-      { id: "market", name: "市场观察者", code: "市", tone: "blue", stance: "外溢风险", delta: "-0.02" }
+      { id: "family", name: "家属代表", code: "家", tone: "violet", stance: "事实与责任", delta: "-0.08" },
+      { id: "school", name: "校方/属地", code: "校", tone: "green", stance: "现场分流", delta: "-0.07" },
+      { id: "edu", name: "教育主管部门", code: "教", tone: "blue", stance: "调查机制", delta: "-0.01" },
+      { id: "related", name: "被指涉学生家庭", code: "涉", tone: "amber", stance: "隐私保护", delta: "-0.06" },
+      { id: "media", name: "媒体/自媒体", code: "媒", tone: "red", stance: "传播判断", delta: "-0.12" },
+      { id: "grid", name: "网信/基层", code: "网", tone: "amber", stance: "现场反馈", delta: "-0.09" },
+      { id: "public", name: "公众观察者", code: "众", tone: "blue", stance: "外溢风险", delta: "-0.02" }
     ];
     const rounds = [
-      { id: 0, name: "第1轮 各方初始反应", summary: "整体呈现“短期降温但长期升温风险上升”的特征，核心矛盾集中在补偿透明度不足。", conflict: "补偿透明度不足与居民公平预期之间出现落差，模糊回应会强化二次解读。", probs: [28, 26, 32, 14] },
-      { id: 1, name: "第2轮 外部信号介入", summary: "媒体和社区群放大模糊口径，居民信任进一步下降，C 线概率上升。", conflict: "外部传播把局部诉求解释为规则不透明，信息落差成为主要扩散点。", probs: [24, 27, 37, 12] },
-      { id: 2, name: "第3轮 方案响应动作", summary: "若发布具体 FAQ 与沟通时间表，A/B 分支回升，组织化表达概率下降。", conflict: "行动是否足够具体，决定居民是否从观望转向继续追问。", probs: [35, 30, 24, 11] },
-      { id: 3, name: "第4轮 概率变化与总结", summary: "会议建议把“FAQ + 小范围说明会 + 统一口径”作为首要干预组合，并写入世界线重跑。", conflict: "最小有效动作是把补偿测算依据、沟通窗口和执行责任同时公开。", probs: [41, 28, 21, 10] }
+      { id: 0, name: "第1轮 各方初始反应", summary: "初始状态不是单纯舆情，而是死亡事实、家属问责、证据缺口和未成年人隐私同时存在。C 线已高于普通事件阈值。", conflict: "证据保全状态、家属沟通时限与责任归因之间出现落差，模糊回应会强化“隐瞒/压事”的二次解读。", probs: [22, 24, 39, 15] },
+      { id: 1, name: "第2轮 外部信号介入", summary: "学生群截图、现场视频二次剪辑和同城账号扩散进入后，责任叙事更容易固化，隐私泄露风险同步抬升。", conflict: "外部传播把“待核验线索”解释为“已发生事实”，信息缺口成为主要扩散点。", probs: [18, 25, 44, 13] },
+      { id: 2, name: "第3轮 方案响应动作", summary: "如果联合调查、证据清单和家属核验机制同时出现，A/B 分支回升；如果只做安抚性表述，C 线仍会维持高位。", conflict: "行动是否足够具体，决定家属和围观人群是否从追问转向等待调查。", probs: [34, 31, 25, 10] },
+      { id: 3, name: "第4轮 概率变化与总结", summary: "会议建议把“证据清单 + 家属核验 + 统一口径 + 隐私保护”作为首要干预组合，并写入世界线重跑。", conflict: "最小有效动作是把证据保全范围、沟通窗口、调查责任和隐私边界同时公开。", probs: [41, 28, 21, 10] }
     ];
-    const statements = {
-      resident: "模糊回应无法解决我们的核心问题，尤其是补偿依据不清。部分居民会观望，但核心质疑者会继续追问口径和时间表。",
-      street: "短期内可以降低现场压力，但如果没有明确时间表，解释成本会在明天增加，需要尽快统一口径。",
-      department: "尚未完成最终测算，贸然发布会有政策合规风险，但模糊回应会被认为态度消极。",
-      company: "担心持续争议导致停工或舆情升级，工期和成本压力增加，希望尽快明确边界。",
-      media: "模糊回应容易被二次解读，适合做话题，会推动更多爆料和对比内容。",
-      grid: "今天已经收到更多线下询问，建议尽快组织小范围说明或 FAQ，避免误解扩大。",
-      market: "区域舆情上升会影响投资信心和区域形象，关注政府后续动作是否及时、透明。"
-    };
+    const roundStatements = [
+      {
+        family: "现在最核心不是让大家散开，而是把孩子出事前后到底发生了什么讲清楚。监控、报警、急救、通知家属的时间线必须保全并给家属核验。",
+        school: "现场压力已经很高，校门口聚集和拍摄会继续放大风险。校方可以先确认已启动封存和联络机制，但需要避免未经核验的信息伤害未成年人。",
+        edu: "死亡事件必须进入联合调查，不能只由学校单方面说明。第一轮应明确调查牵头、证据范围、家属沟通人和更新时间。",
+        related: "被指涉学生及家庭也面临隐私和安全风险，不能把未经核实的截图当事实传播。需要先保护身份信息，再按程序核验。",
+        media: "如果回应只有“正在调查”，传播侧会继续追问三个点：是否欺凌、是否延误处置、监控是否完整。模糊表达会被二次剪辑放大。",
+        grid: "现场围观和同城传播已经相互强化。基层需要一条可复述口径：哪些事实已确认、哪些正在核验、下一次更新时间是什么。",
+        public: "普通公众会从未成年人保护和校园安全角度理解事件。只要关键证据不透明，情绪会从同情家属转向质疑管理责任。"
+      },
+      {
+        family: "学生群截图开始传播后，家属会更坚持“此前是否有人欺负孩子”的追问。若校方只说不清楚，家属会要求第三方介入和调取全量记录。",
+        school: "外部信号进入后，单靠校内解释已经不够。需要把证据保全动作前置展示，并同步申请属地协助维护校门口秩序。",
+        edu: "第二轮风险在于待核验证据被当成既定事实。主管部门应建立事实表：已确认、待核验、不能公开但已保全，三类分别处理。",
+        related: "如果匿名截图指向具体学生，相关家庭会担心被网暴。处置必须禁止公布未成年人信息，并用制度化核验替代网络审判。",
+        media: "外部账号会寻找“学校隐瞒”“家属被阻拦”的画面。若现场处置动作粗糙，视频会比正式说明更有传播力。",
+        grid: "同城围观账号已经出现到校拍摄倾向。应把现场动线、劝离方式和沟通室安排好，避免发生新的冲突片段。",
+        public: "公众开始对比历史校园事件，讨论会从个案延伸到反欺凌机制。此时任何轻飘飘措辞都会触发反感。"
+      },
+      {
+        family: "若能看到证据清单编号、监控封存范围和家属核验时间，家属核心成员会转向等待调查；否则仍会继续到校讨说法。",
+        school: "校方需要让渡一部分解释权给联合调查组。学校可负责安抚和资料配合，避免继续成为唯一被质疑对象。",
+        edu: "建议发布联合调查机制：牵头单位、证据清单、家属联系人、隐私保护要求、下一次通报时间。信息边界越清楚，越能降低误读。",
+        related: "只要说明会明确“未经核验不得点名”，相关家庭的对抗心理会下降；否则可能出现反向指责，让事件变成学生家庭之间的冲突。",
+        media: "具体动作会降低爆点，但如果没有时间表，媒体仍会用“迟迟未回应核心疑问”做标题。建议提供可追踪的阶段节点。",
+        grid: "现场侧需要把家属代表引导到固定沟通空间，围观人群分流，避免所有沟通都发生在镜头前。",
+        public: "如果看到联合调查和隐私保护同时出现，公众的关注会从情绪宣泄转向等待结果。透明度上升能压住一部分阴谋化解释。"
+      },
+      {
+        family: "会议结论应写清：家属不是只要安抚，而是要事实、责任和时间表。只要这三项可核验，线下继续聚集的必要性会下降。",
+        school: "学校后续口径要避免评价孩子、家属或网传截图真假，只说已保全、已移交、何时反馈。少解释态度，多交付动作。",
+        edu: "世界线重跑应注入四个变量：证据清单公开、家属核验机制、隐私保护强度、联合调查更新时间。它们决定 A/B/C/D 概率再分配。",
+        related: "隐私保护要写进任务，而不是放在提醒里。涉未成年人内容一旦失控，D 线会被快速抬高。",
+        media: "如果今晚能发布阶段性机制，报道会从“校方隐瞒”转向“调查是否有效”；如果没有，第二天早高峰会继续升温。",
+        grid: "现场任务要具体到人：家属沟通、门口秩序、短视频风险巡查、学校周边舆情回传。否则一线会各说各话。",
+        public: "总结上，公众不要求立刻给最终责任，但要求看到真实调查正在发生。可验证过程比一句态度表态更能稳定预期。"
+      }
+    ];
     const hypotheses = [
-      { title: "发布 FAQ 并明确时间表", desc: "当日内公开补偿测算依据、申诉入口和处理时限。", impact: "A线 +12%，C线 -8%", tone: "green" },
-      { title: "只发布正在核实", desc: "回应存在但缺少具体承诺，等待情绪下降。", impact: "C线 +11%，信任 -0.08", tone: "red" },
-      { title: "组织居民代表小范围说明", desc: "把争议从线上扩散转回线下沟通。", impact: "B线 +6%，C线 -5%", tone: "green" },
-      { title: "统一各部门口径", desc: "避免使用“正在核实”等模糊表述。", impact: "误读风险 -9%", tone: "blue" },
-      { title: "延迟到下周回应", desc: "等待补偿数据完全核定后再发布。", impact: "二次升温 +13%", tone: "amber" }
+      { title: "发布证据清单与核验时间表", desc: "2 小时内公开已保全证据类型、家属参与核验方式和下一次更新时间。", impact: "A线 +12%，C线 -8%", tone: "green" },
+      { title: "只发布正在调查", desc: "回应存在但缺少证据清单、家属沟通和时间表。", impact: "C线 +11%，信任 -0.08", tone: "red" },
+      { title: "组织家属代表闭门沟通", desc: "把校门口对峙转回可记录、可复核的沟通场景。", impact: "B线 +6%，C线 -5%", tone: "green" },
+      { title: "统一校方与属地口径", desc: "避免多方同时使用含糊表述或互相推诿。", impact: "误读风险 -9%", tone: "blue" },
+      { title: "延迟到明天回应", desc: "等待更多内部核验后再发布。", impact: "二次升温 +13%", tone: "amber" }
     ];
     const pivots = [
-      ["居民信任", "-0.08", "模糊回应未解释补偿口径"],
-      ["舆情扩散风险", "+0.10", "媒体二次解读概率上升"],
-      ["补偿公平感", "-0.06", "规则解释不足"],
-      ["信息透明度", "-0.05", "回应未提供新信息"],
-      ["街道沟通能力", "-0.02", "需要重新组织说明"]
+      ["家属信任", "-0.08", "证据保全状态尚未被家属核验"],
+      ["隐私扩散风险", "+0.10", "未成年人信息和截图被二次传播"],
+      ["责任公平感", "-0.06", "欺凌线索与处置记录解释不足"],
+      ["信息透明度", "-0.05", "回应未提供完整时间线"],
+      ["校方沟通能力", "-0.02", "需要转入联合调查机制"]
     ];
-    const evidence = [["12345 热线咨询", "32 条"], ["社区群讨论摘要", "18 条"], ["网络上报", "6 条"], ["项目公告/文件", "7 条"], ["历史类似案例", "5 条"]];
-    const states = [["居民信任", "0.42 ↓"], ["信息透明度", "0.51 ↓"], ["补偿公平感", "0.38 ↓"], ["街道沟通能力", "0.55 →"], ["施工扰民预期", "0.47 →"], ["舆情扩散风险", "0.63 ↑"]];
+    const evidence = [["现场视频片段", "32 条"], ["学生群/家长群截图", "18 条"], ["校方/部门说明", "7 条"], ["平台热榜与评论", "6 条"], ["历史类似案例", "5 条"]];
+    const states = [["家属信任", "0.42 ↓"], ["信息透明度", "0.51 ↓"], ["责任公平感", "0.38 ↓"], ["校方沟通能力", "0.55 →"], ["现场处置预期", "0.47 →"], ["隐私扩散风险", "0.63 ↑"]];
     let round = 0;
-    let activeAgent = "resident";
+    let activeAgent = "family";
     const $ = s => document.querySelector(s);
     const $$ = s => [...document.querySelectorAll(s)];
 
@@ -353,12 +417,16 @@
 
     function renderDialogue() {
       const ordered = activeAgent ? agents.filter(a => a.id === activeAgent).concat(agents.filter(a => a.id !== activeAgent)) : agents;
+      const statements = roundStatements[round] || roundStatements[0];
+      const tagByRound = ["初始反应", "外部信号", "响应动作", "会议结论"];
       $("#dialogue").innerHTML = ordered.map((a, index) => `
-        <div class="statement" style="--tone:${colors[a.tone]}">
-          <div class="speaker"><i>${a.code}</i><span>${a.name}<br><small>Agent</small></span></div>
-          <p>${statements[a.id]}</p>
-          <div class="impact-tags"><span>${round >= 1 ? "传播影响" : "初始反应"}</span><span>${a.stance}</span></div>
-          <time>10:${32 + index}</time>
+        <div class="statement ${a.id === activeAgent ? "active" : ""}" style="--tone:${colors[a.tone]}">
+          <div class="speaker-mark"><i>${a.code}</i><span>12:${20 + index}</span></div>
+          <div class="bubble">
+            <header><b>${a.name} Agent</b><small>${a.stance}</small></header>
+            <p>${statements[a.id]}</p>
+            <div class="impact-tags"><span>${tagByRound[round]}</span><span>${a.stance}</span></div>
+          </div>
         </div>
       `).join("");
     }
@@ -367,7 +435,7 @@
       const r = rounds[round];
       $("#conflictText").textContent = r.conflict;
       $("#roundSummary").textContent = r.summary;
-      const labels = ["A 短期缓和", "B 低烈度拉锯", "C 二次升温", "D 外部叠加"];
+      const labels = ["A 证据公开观望", "B 低烈度拉锯", "C 责任叙事固化", "D 隐私冲突叠加"];
       const tones = ["green", "blue", "red", "amber"];
       $("#probList").innerHTML = labels.map((label, i) => `
         <div class="prob-row" style="--tone:${colors[tones[i]]};--v:${r.probs[i]}%">
@@ -377,10 +445,10 @@
       $("#stanceGrid").innerHTML = agents.slice(0, 4).map(a => `<div class="stance" style="--tone:${colors[a.tone]}"><span>${a.name}</span><b>${a.delta}</b></div>`).join("");
       $("#pivotList").innerHTML = pivots.map((p, i) => `<div><span>${i + 1}</span><b>${p[0]}</b><span>${p[1]}</span></div>`).join("");
       $("#nextList").innerHTML = [
-        ["1", "发布解释型 FAQ", "缓和优先"],
-        ["2", "组织小范围说明会", "缓和优先"],
-        ["3", "统一各部门口径", "降低误解"],
-        ["4", "监测自媒体转发倾向", "风险管控"]
+        ["1", "发布证据保全清单与核验时间表", "缓和优先"],
+        ["2", "组织家属代表闭门沟通", "缓和优先"],
+        ["3", "统一校方、属地和主管部门口径", "降低误解"],
+        ["4", "监测短视频和隐私外泄倾向", "风险管控"]
       ].map(x => `<div><span>${x[0]}</span><b>${x[1]}</b><span>${x[2]}</span></div>`).join("");
     }
 
@@ -412,7 +480,7 @@
       toast(`已进入 ${rounds[round].name}`);
     });
     $("#runHypothesis").addEventListener("click", () => {
-      round = $("#hypothesisInput").value.includes("FAQ") ? 3 : 1;
+      round = /证据|核验|联合调查|时间表/.test($("#hypothesisInput").value) ? 3 : 1;
       renderAll();
       toast("压力测试已完成，右侧概率与支点变化已刷新");
     });

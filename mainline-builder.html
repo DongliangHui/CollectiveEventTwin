@@ -586,14 +586,15 @@
     .confirm-card p { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.45; font-weight: 800; }
     .confirm-card .primary {
       width: auto;
-      justify-self: start;
+      min-width: 160px;
+      justify-self: center;
       margin-top: 9px;
       min-height: 28px;
-      padding: 0 10px;
-      border: 1px solid rgba(47,109,246,.34);
+      padding: 0 14px;
+      border: 1px solid var(--ink);
       border-radius: 8px;
-      background: rgba(47,109,246,.08);
-      color: var(--blue);
+      background: var(--ink);
+      color: #fff;
       font-size: 10px;
     }
     .add-node {
@@ -837,6 +838,123 @@
     }
     .flow b { display: block; color: var(--ink); font-size: 12px; }
     .flow .active { border-color: var(--green); background: rgba(24,168,115,.08); color: var(--green); }
+
+    .structure-drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      justify-items: end;
+      background: rgba(20,24,29,.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s var(--ease);
+    }
+    .structure-drawer.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drawer-panel {
+      width: min(440px, calc(100vw - 28px));
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 0;
+      padding: 18px;
+      border-left: 1px solid var(--line);
+      background: rgba(255,253,247,.98);
+      box-shadow: -24px 0 52px rgba(48,38,22,.18);
+      transform: translateX(28px);
+      transition: transform .24s var(--ease);
+    }
+    .structure-drawer.open .drawer-panel { transform: translateX(0); }
+    .drawer-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .drawer-head h2 { margin: 4px 0 0; font-size: 18px; line-height: 1.2; }
+    .drawer-head p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; font-weight: 800; }
+    .drawer-close {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--solid);
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .drawer-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px 0;
+      display: grid;
+      gap: 10px;
+      scrollbar-width: none;
+    }
+    .drawer-body::-webkit-scrollbar { display: none; }
+    .drawer-section {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--solid);
+    }
+    .drawer-section b {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .drawer-section b span {
+      flex: none;
+      color: var(--blue);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+    }
+    .drawer-section p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .drawer-metric {
+      min-width: 0;
+      padding: 9px;
+      border: 1px solid rgba(217,206,189,.85);
+      border-radius: 10px;
+      background: rgba(255,253,247,.78);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .drawer-metric b {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 15px;
+    }
+    .drawer-list { margin: 8px 0 0; padding-left: 16px; color: var(--muted); font-size: 12px; line-height: 1.55; font-weight: 800; }
+    .drawer-foot {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .drawer-foot .primary, .drawer-foot .secondary { margin: 0; }
 
     .toast {
       position: fixed;
@@ -1160,6 +1278,23 @@
     </footer>
   </div>
   <div class="toast" id="toast"></div>
+  <section class="structure-drawer" id="structureDrawer" aria-hidden="true">
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <header class="drawer-head">
+        <div>
+          <span class="pill" id="drawerType" style="--tone:var(--blue)">主线编辑</span>
+          <h2 id="drawerTitle">补充主线结构</h2>
+          <p id="drawerIntro">把新增项先作为可追溯草稿纳入图谱，后续再由证据和人工确认提升置信度。</p>
+        </div>
+        <button class="drawer-close" id="drawerClose" aria-label="关闭">×</button>
+      </header>
+      <div class="drawer-body" id="drawerBody"></div>
+      <footer class="drawer-foot">
+        <button class="secondary" id="drawerCancel">取消</button>
+        <button class="primary" id="drawerConfirm">加入当前主线</button>
+      </footer>
+    </div>
+  </section>
 
   <script>
     const $ = selector => document.querySelector(selector);
@@ -1179,6 +1314,102 @@
       el.classList.add("show");
       window.clearTimeout(toast.timer);
       toast.timer = window.setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    const structurePanels = {
+      addTrigger: {
+        type: "核心诱因",
+        tone: "var(--amber)",
+        title: "添加诱因：责任归因与处置延迟",
+        intro: "诱因用于解释零散信号为什么会合并成高烈度主线。这里先把系统识别到的候选诱因纳入草稿，等待证据补强。",
+        metrics: [["建议权重", "0.31"], ["相关信号", "12条"], ["置信度", "0.74"], ["影响路径", "C线↑"]],
+        sections: [
+          ["候选诱因", "家属质疑“事发前是否存在欺凌、校方是否及时介入、关键监控是否完整保全”，把死亡事实与责任归因连接起来。", "TRG-004"],
+          ["触发依据", "校门口视频、学生群截图、家长群转述和校方初始说明之间存在时间线缺口。", "SIG-001"],
+          ["纳入后影响", "若该诱因被确认，主线将从单纯突发事件升级为“校园安全与未成年人保护责任争议”。", "IMPACT"]
+        ],
+        checklist: ["补齐事发前班级/宿舍/楼道时序", "核验学生群截图源头与传播链", "标记涉未成年人内容的脱敏边界"]
+      },
+      addPivot: {
+        type: "关键支点",
+        tone: "var(--green)",
+        title: "添加支点：证据保全公开窗口",
+        intro: "支点用于判断世界线是否转向。该支点会影响家属信任、公众质疑和线下聚集强度。",
+        metrics: [["影响度", "0.27"], ["可干预性", "高"], ["时限", "2小时"], ["关联任务", "5项"]],
+        sections: [
+          ["支点定义", "是否能公开说明监控、报警、急救、沟通记录的保全状态，并给出家属可参与核验的时间表。", "PVT-006"],
+          ["支撑证据", "现场视频爆发后，评论中反复追问“监控在哪里”“什么时候通知家属”“是否保护现场”。", "E-021"],
+          ["变化方向", "公开证据清单会使 A/B 分支上升；继续使用模糊口径会推动 C/D 分支。", "WORLD"]
+        ],
+        checklist: ["生成证据清单版本号", "绑定责任部门与更新时间", "同步给会商简报和任务中心"]
+      },
+      addGap: {
+        type: "证据缺口",
+        tone: "var(--red)",
+        title: "添加缺口：事发前欺凌线索未核验",
+        intro: "缺口不是结论，而是系统提醒：当前判断最容易被反证或被外部叙事放大的位置。",
+        metrics: [["缺口等级", "高"], ["影响节点", "4个"], ["风险抬升", "+0.18"], ["补证时限", "6小时"]],
+        sections: [
+          ["缺口描述", "学生群/家长群中出现“此前被欺凌”的说法，但缺少时间、主体、原始截图链和校方处置记录。", "GAP-003"],
+          ["为什么重要", "如果缺口长期未补，公众会把“未知”解释为“隐瞒”，并强化线下聚集与媒体追问。", "WHY"],
+          ["补证动作", "建立截图来源表、访谈清单和校内记录调阅任务，只展示脱敏后的事实状态。", "TASK"]
+        ],
+        checklist: ["创建核验任务并分配责任人", "标记隐私与未成年人保护级别", "回写事实面板为“待核验”"]
+      }
+    };
+
+    let activeStructurePanel = null;
+
+    function openStructurePanel(id) {
+      const data = structurePanels[id];
+      if (!data) return;
+      activeStructurePanel = id;
+      const drawer = $("#structureDrawer");
+      $("#drawerType").textContent = data.type;
+      $("#drawerType").style.setProperty("--tone", data.tone);
+      $("#drawerTitle").textContent = data.title;
+      $("#drawerIntro").textContent = data.intro;
+      $("#drawerBody").innerHTML = `
+        <section class="drawer-section">
+          <b>系统建议 <span>${data.type}</span></b>
+          <div class="drawer-grid">
+            ${data.metrics.map(([label, value]) => `<div class="drawer-metric">${label}<b>${value}</b></div>`).join("")}
+          </div>
+        </section>
+        ${data.sections.map(section => `
+          <section class="drawer-section">
+            <b>${section[0]} <span>${section[2]}</span></b>
+            <p>${section[1]}</p>
+          </section>
+        `).join("")}
+        <section class="drawer-section">
+          <b>确认前动作 <span>CHECK</span></b>
+          <ul class="drawer-list">${data.checklist.map(item => `<li>${item}</li>`).join("")}</ul>
+        </section>
+      `;
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+      emphasizePanel(".canvas-panel");
+    }
+
+    function closeStructurePanel() {
+      const drawer = $("#structureDrawer");
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    function confirmStructurePanel() {
+      const data = structurePanels[activeStructurePanel];
+      if (!data) return closeStructurePanel();
+      setExplainHeading("主线草稿更新", `人工补充 <b>${data.type}</b>`);
+      $("#explainBody").insertAdjacentHTML("afterbegin", `
+        <div class="explain-block">
+          <b>${data.title}</b>
+          <p>${data.sections[0][1]}</p>
+        </div>
+      `);
+      closeStructurePanel();
+      toast(`${data.type}已加入当前主线草稿`);
     }
 
     function setActive(listSelector, target) {
@@ -1444,6 +1675,11 @@
       if (!el) return;
       el.addEventListener("click", event => {
         if (id === "withGaps") event.preventDefault();
+        if (["addTrigger", "addPivot", "addGap"].includes(id)) {
+          event.preventDefault();
+          openStructurePanel(id);
+          return;
+        }
         if (id === "newMainline") emphasizePanel(".manual-panel");
         if (id === "addEvidence") emphasizePanel(".quality-panel");
         const labels = {
@@ -1458,6 +1694,16 @@
         };
         toast(labels[id]);
       });
+    });
+
+    $("#drawerClose").addEventListener("click", closeStructurePanel);
+    $("#drawerCancel").addEventListener("click", closeStructurePanel);
+    $("#drawerConfirm").addEventListener("click", confirmStructurePanel);
+    $("#structureDrawer").addEventListener("click", event => {
+      if (event.target.id === "structureDrawer") closeStructurePanel();
+    });
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeStructurePanel();
     });
 
     window.addEventListener("resize", () => requestAnimationFrame(drawConnections));

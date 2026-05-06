@@ -141,7 +141,7 @@
     .workspace {
       min-height: 0;
       display: grid;
-      grid-template-columns: 292px minmax(0, 1fr) 396px;
+      grid-template-columns: 304px minmax(0, 1fr) 396px;
       gap: 10px;
       padding: 0 14px 10px;
       overflow: hidden;
@@ -204,6 +204,39 @@
     }
     .filter-chip.active, .tag-row button.active, .pill.active { background: var(--ink); color: white; border-color: var(--ink); }
     .check-list { display: grid; gap: 6px; }
+    .source-major {
+      border: 1px solid rgba(216,205,188,.82);
+      border-radius: 12px;
+      background: rgba(255,253,247,.62);
+      overflow: hidden;
+    }
+    .source-major + .source-major { margin-top: 7px; }
+    .source-major summary {
+      min-height: 34px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 9px;
+      cursor: pointer;
+      list-style: none;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .source-major summary::-webkit-details-marker { display: none; }
+    .source-major summary span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .source-major summary small { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .source-major .source-sublist {
+      display: grid;
+      gap: 5px;
+      padding: 0 8px 8px;
+      border-top: 1px solid rgba(216,205,188,.58);
+    }
+    .source-major .check-item {
+      min-height: 28px;
+      border-radius: 8px;
+      background: transparent;
+    }
     .check-item {
       min-height: 30px;
       display: flex;
@@ -295,9 +328,9 @@
     .filter-summary span { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; font-weight: 800; }
     .filter-summary strong { color: var(--ink); }
 
-    .center { display: grid; grid-template-rows: 112px minmax(0, 1fr) 204px; gap: 10px; min-height: 0; overflow: hidden; }
-    .search-panel { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 10px 12px; align-items: start; }
-    .search-box { display: grid; gap: 8px; }
+    .center { display: grid; grid-template-rows: 176px minmax(0, 1fr) 204px; gap: 10px; min-height: 0; overflow: hidden; }
+    .search-panel { display: grid; grid-template-columns: 1fr; gap: 9px; padding: 12px 14px; align-items: start; }
+    .search-box { display: grid; grid-template-rows: auto 42px auto; gap: 9px; }
     .stage-note { color: var(--muted); font-size: 11px; font-weight: 800; }
     .search-line {
       display: grid;
@@ -328,7 +361,7 @@
     }
     .primary-btn { background: var(--ink); border-color: var(--ink); color: white; }
     .text-btn { border-color: transparent; background: transparent; color: var(--muted); }
-    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; max-height: 58px; overflow: hidden; }
+    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; max-height: none; overflow: visible; }
     .strategy {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -598,12 +631,12 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
       <nav class="mode-tabs">
-        <a href="risk-dashboard.html?caseId=iran-war-escalation&regionId=hormuz&mainlineId=ML-001&signalId=SIG-001">驾驶舱</a>
-        <a class="active" href="data-hub.html?caseId=iran-war-escalation&regionId=hormuz&mainlineId=ML-001&signalId=SIG-001">数据</a>
-        <a href="mainline-builder.html?caseId=iran-war-escalation&mainlineId=ML-001&signalId=SIG-001">主线</a>
-        <a href="worldline-observer.html?caseId=iran-war-escalation&mainlineId=ML-001&worldStateId=WS-001&nodeId=NODE-C3">推演</a>
-        <a href="agent-council.html?caseId=iran-war-escalation&mainlineId=ML-001&nodeId=NODE-C3&councilId=COUNCIL-001">会议</a>
-        <a href="decision-brief.html?caseId=iran-war-escalation&reportId=REPORT-001&mainlineId=ML-001">汇报</a>
+        <a href="risk-dashboard.html?caseId=campus-death-high-intensity&regionId=campus-core&mainlineId=ML-001&signalId=SIG-001">驾驶舱</a>
+        <a class="active" href="data-hub.html?caseId=campus-death-high-intensity&regionId=campus-core&mainlineId=ML-001&signalId=SIG-001">数据</a>
+        <a href="mainline-builder.html?caseId=campus-death-high-intensity&mainlineId=ML-001&signalId=SIG-001">主线</a>
+        <a href="worldline-observer.html?caseId=campus-death-high-intensity&mainlineId=ML-001&worldStateId=WS-001&nodeId=NODE-C3">推演</a>
+        <a href="agent-council.html?caseId=campus-death-high-intensity&mainlineId=ML-001&nodeId=NODE-C3&councilId=COUNCIL-001">会议</a>
+        <a href="decision-brief.html?caseId=campus-death-high-intensity&reportId=REPORT-001&mainlineId=ML-001">汇报</a>
       </nav>
       <div class="status"><span>数据批次 batch-20260425-001</span><span>接口健康 <strong id="healthText">28/28 正常</strong></span><i class="live-dot"></i></div>
     </header>
@@ -625,7 +658,7 @@
           <div class="search-box">
             <div class="title">数据 / 信号检索工作台 <span>当前阶段：数据检索与抓取</span></div>
             <div class="search-line">
-              <input id="queryInput" value="霍尔木兹 通航受限 战争险 近24小时" />
+              <input id="queryInput" value="青澜中学 学生坠亡 疑似欺凌 近24小时" />
               <button class="primary-btn" id="searchBtn">检索</button>
             </div>
             <div class="tag-row" id="quickTags"></div>
@@ -664,15 +697,15 @@
           <div class="draft-card">
             <b>系统初步识别</b>
             <div class="draft-list">
-              <span><strong>可能诱因</strong><em>通航不确定 / 保险重定价 / 核查争议</em></span>
-              <span><strong>可能支点</strong><em>霍尔木兹通航、航运保险、能源价格</em></span>
-              <span><strong>归属主线</strong><em>ML-001 霍尔木兹通航受限与能源外溢</em></span>
+              <span><strong>可能诱因</strong><em>校方回应不确定 / 证据保全 / 责任归因</em></span>
+              <span><strong>可能支点</strong><em>现场视频、家属沟通、未成年人隐私</em></span>
+              <span><strong>归属主线</strong><em>ML-001 校园死亡事件事实责任与线下风险</em></span>
             </div>
           </div>
           <div class="draft-card">
             <b>证据缺口</b>
             <div class="draft-list">
-              <span><strong>AIS 连续轨迹</strong><em>待补</em></span>
+              <span><strong>现场视频连续轨迹</strong><em>待补</em></span>
               <span><strong>保险报价原文</strong><em>待核验</em></span>
               <span><strong>官方执行口径</strong><em>待确认</em></span>
             </div>
@@ -731,79 +764,88 @@
 
   <script>
     const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
-    const sourceOptions = ["全部接口", "AIS / 航运报价", "船东论坛", "能源市场", "G7 / 官方声明", "IAEA / 机构摘要", "历史案例"];
-    const regionOptions = ["全部区域", "霍尔木兹", "波斯湾", "红海", "黎巴嫩边境", "伊朗核设施", "海湾基地", "全球市场"];
-    const tagOptions = ["全部标签", "通航受限", "航运保险", "能源价格", "核查争议", "代理人外溢", "外交斡旋", "相似案例"];
-    const keywordOptions = ["War Risk Premium", "AIS 等待", "护航机制", "IAEA 访问", "临检", "拒保"];
-    const riskOptions = ["高价值前兆", "待人工核验", "证据缺口", "缓和证据", "已入草稿"];
+    const sourceGroups = [
+      { name: "全部接口", desc: "统一检索入口", items: ["全部接口"] },
+      { name: "现场视频 / 传播证据", desc: "同城短视频、直播、围观回传", items: ["同城短视频", "现场回传", "直播切片"] },
+      { name: "学生群 / 家长群", desc: "截图、转述、匿名爆料", items: ["学生群截图", "家长群转述", "匿名学生爆料"] },
+      { name: "公众情绪场", desc: "评论区、热榜、媒体/KOL", items: ["评论区聚类", "本地媒体", "KOL转述"] },
+      { name: "校方 / 部门回应", desc: "校方、教育主管、属地口径", items: ["校方回应", "教育主管部门", "属地联络"] },
+      { name: "证据保全 / 机构摘要", desc: "监控、报警、医疗、沟通记录", items: ["监控索引", "报警记录", "家校沟通记录"] },
+      { name: "历史案例", desc: "相似高烈度事件复盘", items: ["校园欺凌案例", "未成年人隐私案例", "回应失效案例"] }
+    ];
+    const sourceOptions = sourceGroups.flatMap(group => group.items);
+    const regionOptions = ["全部区域", "青澜中学", "校门口", "学生群体", "同城平台", "教育主管部门", "未成年人隐私风险区"];
+    const tagOptions = ["全部标签", "现场视频", "校园欺凌指控", "证据保全争议", "回应可信度", "未成年人隐私", "线下聚集", "相似案例"];
+    const keywordOptions = ["孩子没了", "学校压事", "此前反馈", "监控封存", "联合调查", "未成年人隐私"];
+    const riskOptions = ["高价值前兆", "待人工核验", "证据缺口", "降温证据", "已入草稿"];
     const statusOptions = ["未入草稿", "已入草稿", "待核验", "参考", "已排除"];
     const quickTags = ["全部", "同渠道", "同标签", "同区域", "关键词", "近24小时", "高价值前兆", "待人工核验"];
     const signals = [
       {
-        id: "SIG-001", p: "P0", tone: "red", sourceId: "AIS / 航运报价",
-        title: "IRGC 临检扩大与霍尔木兹通航风险升温",
-        sub: "AIS 等待船舶增加，船东论坛讨论保险拒保条款",
-        source: "AIS / 船东论坛", time: "04-26 22:15", area: "霍尔木兹", object: "油轮通道", tag: "通航受限",
+        id: "SIG-001", p: "P0", tone: "red", sourceId: "同城短视频",
+        title: "校门口现场视频与家属聚集快速扩散",
+        sub: "校门口哭喊、警车、家属质问画面被同城账号连续转发",
+        source: "同城短视频 / 现场回传", time: "05-02 10:06", area: "青澜中学", object: "现场视频通道", tag: "现场视频",
         sim: "0.91", trust: "A", status: "未入草稿", action: "加入草稿",
-        why: ["与当前主线草稿语义相似度 0.91", "命中风险语义：通航受限 / 能源外溢", "关联对象覆盖霍尔木兹、航运保险、能源价格", "船舶等待、保险报价、论坛讨论三个渠道重复出现", "可补强当前主线的起点信号与支撑证据"],
+        why: ["与当前主线草稿相似度 0.91", "命中死亡事实、家属聚集、同城扩散三个高烈度语义", "评论区同时出现“校园欺凌”“孩子没了”“学校给说法”", "现场视频、家属陈述、学生群截图三个渠道重复出现", "可补强当前主线的起点信号与支撑证据"],
         positions: ["起点信号", "支撑证据", "关键支点"],
-        excerpts: [["AIS 船舶状态", "霍尔木兹东向油轮等待时间较前一日上升约 22%", "A"], ["船东论坛", "多名运营方提到 War Risk Premium 重新报价", "B"], ["保险摘要", "部分承保方要求重新确认航线风险", "B"]],
-        recs: [["同航线相似信号", "14 条"], ["通航受限同标签", "23 条"], ["保险费率原文片段", "8 条"], ["可能同属 ML-001", "5 条"]]
+        excerpts: [["现场视频状态", "青澜中学校门口视频被连续转发，画面出现家属聚集和警车。", "A"], ["评论区聚类", "“孩子没了”“学校不管”“必须给说法”成为高频词。", "B"], ["现场回传", "家属人数在半小时内增加，围观学生和家长开始聚集。", "B"]],
+        recs: [["同传播路径相似信号", "14 条"], ["线下秩序同标签", "23 条"], ["现场视频原文片段", "8 条"], ["可能同属 ML-001", "5 条"]]
       },
       {
-        id: "SIG-012", p: "P1", tone: "amber", sourceId: "IAEA / 机构摘要",
-        title: "IAEA 核查窗口推迟，制裁合法性争议升温",
-        sub: "核查可达性下降与制裁讨论同时出现",
-        source: "IAEA / 官方声明", time: "04-27 08:10", area: "伊朗核设施", object: "Fordow / Yazd", tag: "核查争议",
+        id: "SIG-012", p: "P1", tone: "amber", sourceId: "监控索引",
+        title: "关键证据保全滞后，责任归因争议升温",
+        sub: "监控、报警记录、家校沟通记录尚未形成统一可核验索引",
+        source: "证据保全 / 校方/部门回应", time: "05-02 10:42", area: "校方证据证据点", object: "监控室 / 教学楼", tag: "证据保全争议",
         sim: "0.83", trust: "B", status: "已入草稿", action: "查看详情",
-        why: ["与外部制裁节奏和外交压力同时相关", "影响能源外溢主线中的外部军事事件支点", "当前存在官方口径与媒体转述差异", "可补强证据缺口但需要人工确认原文"],
-        positions: ["证据缺口", "外部事件支点"],
-        excerpts: [["机构摘要", "核查访问窗口被描述为不完整", "B"], ["官方声明", "将继续寻求安全访问安排", "A"]],
-        recs: [["IAEA 原文", "3 条"], ["制裁声明同标签", "9 条"], ["历史核查争议案例", "2 条"]]
+        why: ["家属核心诉求集中在监控与沟通记录", "影响责任主线中的学校知情不作为判断", "当前存在家属陈述与校方口径差异", "可补强证据缺口但需要人工确认原文和保全状态"],
+        positions: ["证据缺口", "责任支点"],
+        excerpts: [["证据保全摘要", "监控、报警、医疗和沟通记录尚未统一编号。", "B"], ["校方回应", "回应提到配合调查，但未说明保全清单。", "A"]],
+        recs: [["监控封存清单", "3 条"], ["沟通记录同标签", "9 条"], ["历史证据缺口案例", "2 条"]]
       },
       {
-        id: "SIG-017", p: "P1", tone: "red", sourceId: "船东论坛",
-        title: "黎以边境火箭弹频率上升，北部战线外溢",
-        sub: "边境事件与代理人组织表态出现同向变化",
-        source: "以色列 / 黎巴嫩事件", time: "04-27 09:40", area: "黎巴嫩边境", object: "真主党 / 以军", tag: "代理人外溢",
+        id: "SIG-017", p: "P1", tone: "red", sourceId: "学生群截图",
+        title: "学生群截图称此前存在欺凌，责任归因外溢",
+        sub: "学生群与家长群出现“之前被欺负”“老师知道”的转述",
+        source: "学生群 / 学生群事件", time: "05-02 11:18", area: "学生群边界", object: "学生群截图 / 以学生为主", tag: "校园欺凌指控",
         sim: "0.87", trust: "B", status: "待核验", action: "补证后加入",
-        why: ["代理人战线可能改变美国与海湾国家反应", "与霍尔木兹主线存在外溢压力关系", "事件频率升高但指挥链证据不足", "适合作为分支风险补证材料"],
+        why: ["学生爆料会改变公众对责任对象的判断", "与死亡事实主线存在责任归因关系", "截图来源和上下文仍不足，不能直接定性", "适合作为责任主线补证材料"],
         positions: ["分支支点", "证据缺口"],
-        excerpts: [["边境事件摘要", "短时段火箭弹事件较上周同期增加", "B"], ["媒体转述", "相关组织表态出现更强对抗措辞", "C"]],
-        recs: [["同区域事件", "11 条"], ["代理人网络标签", "16 条"], ["官方战报原文", "4 条"]]
+        excerpts: [["学生群摘要", "短时间内多条消息提到此前冲突和老师是否知情。", "B"], ["媒体转述", "相关截图被二次转发并附带强情绪标题。", "C"]],
+        recs: [["同群组事件", "11 条"], ["校园欺凌指控标签", "16 条"], ["原始截图上下文", "4 条"]]
       },
       {
-        id: "SIG-021", p: "P1", tone: "amber", sourceId: "能源市场",
-        title: "Brent 风险溢价与油轮股同步上行",
-        sub: "能源价格与航运保险定价出现联动",
-        source: "能源市场 / 交易摘要", time: "04-27 10:20", area: "全球市场", object: "Brent / 油轮股", tag: "能源价格",
+        id: "SIG-021", p: "P1", tone: "amber", sourceId: "评论区聚类",
+        title: "回应可信度与平台热度同步上行",
+        sub: "公众情绪与校方回应可信度出现反向联动",
+        source: "公众情绪场 / 交叉摘要", time: "05-02 12:05", area: "同城平台", object: "评论区 / 热榜", tag: "回应可信度",
         sim: "0.79", trust: "A", status: "未入草稿", action: "加入草稿",
-        why: ["能解释通航受限为何传导到资产价格", "与保险费率重定价共同支撑能源外溢路径", "市场信号强但需避免被短线噪声放大"],
+        why: ["能解释笼统回应为何不能降温", "与家属沟通记录共同支撑信任真空路径", "平台信号强但需避免被短线噪声放大"],
         positions: ["影响对象", "支撑证据"],
-        excerpts: [["市场摘要", "Brent 风险价上移至 105 附近", "A"], ["航运股摘要", "油轮板块出现避险买盘", "B"]],
-        recs: [["同资产价格信号", "18 条"], ["保险费率联动", "8 条"], ["历史油价冲击", "5 条"]]
+        excerpts: [["平台摘要", "“又是正在调查”“是不是压事”评论量快速增加。", "A"], ["媒体摘要", "本地账号开始追问证据保全和后续时间表。", "B"]],
+        recs: [["同情绪信号", "18 条"], ["回应可信度联动", "8 条"], ["历史回应失效案例", "5 条"]]
       },
       {
-        id: "SIG-029", p: "P2", tone: "green", sourceId: "G7 / 官方声明",
-        title: "G7 护航机制讨论出现，封锁预期短线降温",
-        sub: "护航讨论压低极端封锁预期，但短期执行不确定性仍在",
-        source: "G7 / 海湾国家", time: "04-27 11:05", area: "波斯湾", object: "护航机制", tag: "外交斡旋",
+        id: "SIG-029", p: "P2", tone: "green", sourceId: "教育主管部门",
+        title: "联合调查机制出现，压事质疑短线降温",
+        sub: "主管部门明确联合调查、证据保全和下次更新时间",
+        source: "教育主管部门 / 属地", time: "05-02 13:20", area: "教育主管部门", object: "联合调查机制", tag: "降温证据",
         sim: "0.72", trust: "A", status: "未入草稿", action: "作为缓和证据",
-        why: ["这是主线中的缓和条件，不应和高风险信号混在一起判断", "可用于后续世界线中降低极端封锁概率", "当前仍缺少执行时间表和参与范围"],
+        why: ["这是主线中的缓和条件，不应和高风险信号混在一起判断", "可用于后续世界线中降低极端外溢概率", "当前仍需确认调查组构成和执行时间表"],
         positions: ["缓和证据", "分支条件"],
-        excerpts: [["G7 声明", "讨论维护关键能源通道安全", "A"], ["海湾国家表态", "支持降低误判并保护商业航运", "B"]],
-        recs: [["护航机制同标签", "7 条"], ["海湾国家声明", "6 条"], ["历史护航案例", "4 条"]]
+        excerpts: [["部门说明", "拟成立联合调查组并公布证据保全清单。", "A"], ["属地表态", "支持保护未成年人隐私并维护现场秩序。", "B"]],
+        recs: [["联合调查同标签", "7 条"], ["教育主管部门声明", "6 条"], ["历史降温案例", "4 条"]]
       },
       {
-        id: "SIG-033", p: "P2", tone: "violet", sourceId: "历史案例",
-        title: "2019 年油轮袭击前兆与当前信号结构相似",
-        sub: "AIS 异常、保险措辞、外交压力三类线索组合相近",
-        source: "历史案例库", time: "历史匹配", area: "霍尔木兹", object: "历史前兆", tag: "相似案例",
+        id: "SIG-033", p: "P2", tone: "violet", sourceId: "校园欺凌案例",
+        title: "近年校园高烈度事件与当前信号结构相似",
+        sub: "现场视频、家属质疑、隐私泄露、回应滞后三类线索组合相近",
+        source: "历史案例库", time: "历史匹配", area: "青澜中学", object: "历史前兆", tag: "相似案例",
         sim: "0.76", trust: "B", status: "参考", action: "查看详情",
         why: ["历史相似并不代表必然复现，但能帮助解释为什么这些信号值得进入推演", "可补强当前主线的前兆模式说明"],
         positions: ["历史前兆", "解释依据"],
-        excerpts: [["历史案例", "通航不确定、保险条款收紧、外交口径变化曾同步出现", "B"], ["匹配说明", "相似度 0.76，核心差异在外部军事介入程度", "B"]],
-        recs: [["相似前兆案例", "2 条"], ["差异变量", "5 条"], ["外部介入案例", "3 条"]]
+        excerpts: [["历史案例", "死亡事实、现场视频、回应滞后曾同步出现并推高线下聚集。", "B"], ["匹配说明", "相似度 0.76，核心差异在证据保全速度和隐私扩散程度。", "B"]],
+        recs: [["相似前兆案例", "2 条"], ["差异变量", "5 条"], ["未成年人保护案例", "3 条"]]
       }
     ];
 
@@ -814,11 +856,11 @@
     let currentPage = 1;
     const selectedFilters = {
       sources: ["全部接口"],
-      timeStart: "2026-04-26T00:00",
-      timeEnd: "2026-04-27T12:00",
+      timeStart: "2026-05-02T09:00",
+      timeEnd: "2026-05-02T14:40",
       region: "全部区域",
       tag: "全部标签",
-      keyword: "War Risk Premium",
+      keyword: "孩子没了",
       risk: "高价值前兆",
       confidenceMin: 68,
       confidenceMax: 100,
@@ -860,8 +902,8 @@
       let rows = [...signals];
       const selectedSources = selectedFilters.sources.includes("全部接口") ? [] : selectedFilters.sources;
       if (selectedSources.length) rows = rows.filter(item => selectedSources.some(source => item.sourceId === source || item.source.includes(source.replace(" / ", " / "))));
-      if (selectedFilters.region !== "全部区域") rows = rows.filter(item => item.area === selectedFilters.region || (selectedFilters.region === "霍尔木兹" && item.area === "全球市场"));
-      if (selectedFilters.tag !== "全部标签") rows = rows.filter(item => item.tag === selectedFilters.tag || (selectedFilters.tag === "通航受限" && item.id === "SIG-033"));
+      if (selectedFilters.region !== "全部区域") rows = rows.filter(item => item.area === selectedFilters.region || item.object.includes(selectedFilters.region));
+      if (selectedFilters.tag !== "全部标签") rows = rows.filter(item => item.tag === selectedFilters.tag || (selectedFilters.tag === "现场视频" && item.id === "SIG-033"));
       rows = rows.filter(item => {
         const trustScore = item.trust === "A" ? 92 : item.trust === "B" ? 78 : 56;
         return trustScore >= selectedFilters.confidenceMin && trustScore <= selectedFilters.confidenceMax;
@@ -872,14 +914,14 @@
       if (activeMetric === "draft") rows = rows.filter(item => /已入草稿|SIG-001|SIG-012|SIG-017/.test(item.status + item.id));
       if (activeTag === "高价值前兆") rows = rows.filter(item => item.p === "P0" || Number(item.sim) >= .86);
       if (activeTag === "待人工核验") rows = rows.filter(item => /核验|补证/.test(item.status + item.action));
-      if (activeTag === "同区域") rows = rows.filter(item => item.area === selected().area || item.area === "霍尔木兹");
+      if (activeTag === "同区域") rows = rows.filter(item => item.area === selected().area || item.object.includes(selected().area));
       if (activeTag === "同标签") rows = rows.filter(item => item.tag === selected().tag);
       return rows;
     }
 
     function renderMetrics() {
       const data = [
-        { id: "results", label: "当前检索结果数", value: "42 条", sub: "命中霍尔木兹与通航语义", tone: "blue" },
+        { id: "results", label: "当前检索结果数", value: "42 条", sub: "命中青澜中学与线下秩序语义", tone: "blue" },
         { id: "draft", label: "已加入主线草稿", value: `${draftCount} 条`, sub: "可追溯材料集合", tone: "green" },
         { id: "recommend", label: "相关数据推荐", value: "68 条", sub: "同渠道 / 同标签 / 同区域", tone: "violet" },
         { id: "review", label: "待核验数据", value: "12 条", sub: "来源或原文仍需确认", tone: "amber" },
@@ -905,11 +947,18 @@
         <section class="filter-group">
           <b>数据源</b>
           <div class="check-list">
-            ${sourceOptions.map(option => `
-              <label class="check-item">
-                <span>${option}</span>
-                <input type="checkbox" data-source="${option}" ${selectedFilters.sources.includes(option) ? "checked" : ""}>
-              </label>
+            ${sourceGroups.map((group, index) => `
+              <details class="source-major" ${index < 3 ? "open" : ""}>
+                <summary><span>${group.name}</span><small>${group.desc}</small></summary>
+                <div class="source-sublist">
+                  ${group.items.map(option => `
+                    <label class="check-item">
+                      <span>${option}</span>
+                      <input type="checkbox" data-source="${option}" ${selectedFilters.sources.includes(option) ? "checked" : ""}>
+                    </label>
+                  `).join("")}
+                </div>
+              </details>
             `).join("")}
           </div>
         </section>
@@ -1203,7 +1252,7 @@
 
     function renderDraft() {
       $("#draftCount").textContent = draftCount;
-      $("#draftChips").innerHTML = ["SIG-001", "SIG-012", "SIG-017", "AIS 片段", "G7 声明", "保险报价", "IAEA 摘要"].map(item => `<span>${item}</span>`).join("");
+      $("#draftChips").innerHTML = ["SIG-001", "SIG-012", "SIG-017", "现场视频片段", "联合调查说明", "沟通记录", "证据保全摘要"].map(item => `<span>${item}</span>`).join("");
       renderMetrics();
     }
 

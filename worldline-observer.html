@@ -933,6 +933,7 @@
       font-weight: 800;
     }
     .tabs button.active { background: var(--ink); color: var(--panel-solid); border-color: var(--ink); }
+    .detail-tabs-panel { display: none; }
 
     .detail {
       overflow: hidden;
@@ -1179,7 +1180,7 @@
           <div class="agent-grid" id="councilAgents"></div>
           <div class="council-input">
             <label>输入研判假设 <span class="agent-note">支持自然语言</span></label>
-            <textarea id="sideCouncilQuestion" maxlength="200" placeholder="例如：如果街道只发布“正在核实”的回应，会如何影响后续发展？"></textarea>
+            <textarea id="sideCouncilQuestion" maxlength="200" placeholder="例如：如果校方只发布“正在调查”的回应，会如何影响后续发展？"></textarea>
           </div>
           <div class="council-actions">
             <button class="primary-btn" id="openCouncil">启动 Agent Council</button>
@@ -1204,7 +1205,7 @@
               </section>
               <section class="modal-section wide">
                 <b><em>2</em>本次研判目标（可编辑）</b>
-                <textarea class="council-question" id="councilQuestion" placeholder="例如：如果街道只发布“正在核实”的模糊回应，居民、媒体和网格侧会如何反应？"></textarea>
+                <textarea class="council-question" id="councilQuestion" placeholder="例如：如果校方只发布“正在调查”的模糊说明，家属、学生、媒体和属地会如何反应？"></textarea>
               </section>
               <section class="modal-section">
                 <b><em>4</em>输入证据（来自当前节点）</b>
@@ -1221,7 +1222,7 @@
             </footer>
           </section>
         </div>
-        <div class="panel pad">
+        <div class="panel pad detail-tabs-panel" aria-hidden="true">
           <div class="tabs">
             <button class="active" data-tab="overview">当前</button>
             <button data-tab="evidence">证据</button>
@@ -1239,36 +1240,36 @@
   <script>
     const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", violet: "#8f63e8", red: "#ef4b5f" };
     const steps = [
-      ["起点", "04-15 09:00"],
-      ["舆情初发", "04-15 18:00"],
-      ["舆情扩散", "04-16 09:00"],
-      ["当前时刻", "04-17 10:00"],
-      ["后续发展", "04-17 13:00"],
-      ["未来走向", "04-17 16:00"]
+      ["低可见信号", "05-02 09:18"],
+      ["家属到校", "05-02 10:00"],
+      ["视频扩散", "05-02 10:22"],
+      ["当前研判时刻", "05-02 12:05"],
+      ["后续24h", "05-03 09:00"],
+      ["未来72h", "05-05 09:00"]
     ];
 
     const distributions = [
-      { id: "A", name: "积极回应，逐步稳定", value: 28, trend: "+6%", tone: "green", risk: "38/100" },
-      { id: "B", name: "部分让步，持续拉锯", value: 26, trend: "-2%", tone: "amber", risk: "56/100" },
-      { id: "C", name: "持续发酵，风险聚集", value: 32, trend: "0%", tone: "violet", risk: "78/100", hot: true },
-      { id: "D", name: "外部事件叠加升级", value: 14, trend: "-4%", tone: "red", risk: "88/100" }
+      { id: "A", name: "证据保全公开，进入观望", value: 24, trend: "+3%", tone: "green", risk: "48/100" },
+      { id: "B", name: "低烈度拉锯，持续追问", value: 27, trend: "+1%", tone: "amber", risk: "62/100" },
+      { id: "C", name: "责任叙事固化，线下聚集", value: 37, trend: "+8%", tone: "violet", risk: "84/100", hot: true },
+      { id: "D", name: "隐私泄露与冲突叠加", value: 12, trend: "-2%", tone: "red", risk: "91/100" }
     ];
 
     const nodes = [
-      { id: "s", step: 0, x: 9, y: 55, label: "S", title: "地铁事件", sub: "起点", prob: "起", tone: "blue", parent: null, summary: "世界线的根节点。系统把当前案例聚合成一个可推演的世界状态，而不是简单资讯条目。", trigger: "多源信号首次聚合成风险事件。", evidence: [["E-001","热线/公开反馈出现异常增量","0.74"],["E-002","历史相似案例命中","0.61"]], impact: "综合风险 52/100，仍处于观察区间。", next: ["媒体报道增加","票价上涨争议发酵","网友情绪升温","学生群体讨论升温"] },
-      { id: "m", step: 1, x: 24, y: 22, label: "M", title: "媒体报道增加", sub: "舆论放大", prob: "32", tone: "green", parent: "地铁事件", summary: "风险信号被外部信息渠道放大，叙事开始影响更多相关方。", trigger: "同类报道频率上升。", evidence: [["E-011","媒体转述数量增加","0.71"],["E-012","话题曝光斜率上升","0.66"]], impact: "传播强度 +18%，但线下风险尚未同步增加。", next: ["官方回应开始"] },
-      { id: "p", step: 1, x: 25, y: 42, label: "P", title: "票价上涨争议发酵", sub: "利益敏感", prob: "68", tone: "amber", parent: "地铁事件", summary: "利益敏感议题成为讨论中心，开始牵引更多节点。", trigger: "价格或补偿相关关键词升温。", evidence: [["E-021","票价关键词热度增加","0.82"],["E-022","历史争议再次被引用","0.69"]], impact: "利益敏感度上升，综合风险 +12。", next: ["官方回应开始","相关话题冲上热搜"] },
-      { id: "n", step: 1, x: 25, y: 63, label: "N", title: "网友情绪升温", sub: "情绪支线", prob: "89", tone: "violet", parent: "地铁事件", summary: "线上情绪升温，但尚未等同于线下行动。", trigger: "负面情绪占比上升。", evidence: [["E-029","居民投诉问题引发大量关注","0.78"],["E-025","网友发起线下讨论活动","0.72"]], impact: "情绪倾向 -0.62，传播强度 0.68。", next: ["相关话题冲上热搜"] },
-      { id: "u", step: 1, x: 25, y: 82, label: "U", title: "学生群体讨论升温", sub: "群体支线", prob: "45", tone: "green", parent: "地铁事件", summary: "特定群体开始形成自己的解释框架。", trigger: "群体内部渠道出现集中讨论。", evidence: [["E-031","社群讨论上升","0.58"]], impact: "组织化风险仍低，但需观察。", next: ["交通拥堵反馈增加"] },
-      { id: "g", step: 2, x: 47, y: 49, label: "G", title: "官方回应开始", sub: "回应节点", prob: "36", tone: "blue", parent: "媒体/票价分支", summary: "处置方开始回应。后续世界线取决于回应是否解释核心矛盾。", trigger: "官方声明或处置动作出现。", evidence: [["E-041","公告发布","0.84"],["E-042","回应覆盖核心诉求不足","0.57"]], impact: "若回应充分可降险，若含糊会推动 C/D 分支。", next: ["群体不满升级，线下聚集风险"] },
-      { id: "t", step: 2, x: 50, y: 65, label: "T", title: "相关话题冲上热搜", sub: "传播加速", prob: "78", tone: "amber", parent: "票价/情绪分支", summary: "传播速度提高，外部观察者开始影响原始议题。", trigger: "话题进入跨圈层传播。", evidence: [["E-051","热榜进入前列","0.79"],["E-052","二次解读内容增加","0.65"]], impact: "扩散速度 +21%，误读风险升高。", next: ["群体不满升级，线下聚集风险","官方说明发布"] },
-      { id: "c", step: 2, x: 49, y: 84, label: "C", title: "交通拥堵反馈增加", sub: "现实反馈", prob: "41", tone: "green", parent: "学生群体分支", summary: "线上叙事开始对应现实反馈，风险从话题进入服务体验层。", trigger: "现场反馈或运营数据异常。", evidence: [["E-061","现场反馈增加","0.63"]], impact: "现实反馈使事件更难完全通过声明消解。", next: ["官方说明发布"] },
-      { id: "x", step: 3, x: 68, y: 48, label: "C", title: "群体不满升级，线下聚集风险", sub: "当前选中", prob: "32", tone: "violet", parent: "官方回应/热搜", summary: "回应未完全覆盖核心矛盾，部分群体从线上表达转向线下聚集讨论。", trigger: "回应被认为不充分，线下讨论出现组织化迹象。", evidence: [["E-032","某地工厂排放超标环保部门约谈","0.85"],["E-029","居民投诉问题引发大量关注","0.78"],["E-025","网友发起线下讨论活动","0.72"]], impact: "舆情热度 0.72 ↑，情绪倾向 -0.62 ↓，传播强度 0.68 ↑，综合风险 78/100 ↑。", next: ["舆情逐步降温恢复稳定","小规模抗议局部聚集","抗议扩大化持续发酵","外部事件叠加风险升级"] },
-      { id: "o", step: 3, x: 68, y: 70, label: "O", title: "官方说明发布", sub: "解释分支", prob: "52", tone: "amber", parent: "热搜/现实反馈", summary: "官方说明降低部分不确定性，但如果缺少具体承诺，仍会保留拉锯风险。", trigger: "说明发布但细节不足。", evidence: [["E-071","公告文本发布","0.81"],["E-072","反馈渠道不明确","0.55"]], impact: "风险短期回落，但存在二次质疑。", next: ["小规模抗议局部聚集","舆情逐步降温恢复稳定"] },
-      { id: "a", step: 4, x: 87, y: 23, label: "A", title: "舆情逐步降温恢复稳定", sub: "未来 A", prob: "A", tone: "green", parent: "当前风险节点", summary: "解释充分且反馈渠道有效，风险进入可管理状态。", trigger: "核心诉求被回应，反馈渠道有时限。", evidence: [["E-081","投诉量下降","0.74"],["E-082","正向反馈增加","0.62"]], impact: "综合风险下降到 38/100。", next: ["复盘入库"] },
-      { id: "b", step: 4, x: 87, y: 48, label: "B", title: "小规模抗议局部聚集", sub: "未来 B", prob: "B", tone: "amber", parent: "当前风险节点", summary: "部分人群仍不接受现有解释，形成局部聚集但未扩散。", trigger: "回应覆盖不足或线下沟通延迟。", evidence: [["E-091","局部聚集讨论","0.67"]], impact: "风险维持 56/100。", next: ["局部处置或继续拉锯"] },
-      { id: "d", step: 4, x: 87, y: 72, label: "C", title: "抗议扩大化持续发酵", sub: "未来 C", prob: "C", tone: "violet", parent: "当前风险节点", summary: "话题跨群体传播，原始矛盾和外部议题叠加。", trigger: "外部叙事介入，旧矛盾被重新激活。", evidence: [["E-101","跨社区讨论增加","0.73"]], impact: "综合风险维持 78/100。", next: ["跨部门协调"] },
-      { id: "r", step: 4, x: 86, y: 90, label: "D", title: "外部事件叠加风险升级", sub: "未来 D", prob: "D", tone: "red", parent: "当前风险节点", summary: "外部突发事件把原本可控的争议推入更高风险区间。", trigger: "新事件与当前议题形成情绪共振。", evidence: [["E-111","外部事件触发","0.70"],["E-112","风险叙事快速合流","0.76"]], impact: "综合风险上升到 88/100。", next: ["应急复核"] }
+      { id: "s", step: 0, x: 9, y: 55, label: "S", title: "青澜中学学生坠亡", sub: "事实起点", prob: "起", tone: "blue", parent: null, summary: "系统把学生坠亡、家属知情、到校沟通、现场围观和网络扩散合并为同一个可推演世界状态。", trigger: "校内突发死亡事件确认，家属已获知并开始要求解释。", evidence: [["E-001","报警与急救时间线待核验","0.74"],["E-002","校内封控与家长群异常讨论","0.61"]], impact: "综合风险 52/100，已超过普通校园事件观察阈值。", next: ["家属到校问责","现场视频出现","学生群欺凌说法升温","隐私信息外泄"] },
+      { id: "m", step: 1, x: 24, y: 23, label: "M", title: "家属到校问责", sub: "线下聚集", prob: "78", tone: "red", parent: "青澜中学学生坠亡", summary: "多名家属与亲友到校门口要求见校方负责人，现场情绪集中在“为什么会发生、谁负责、证据在哪里”。", trigger: "家属已知情且对初始沟通不接受。", evidence: [["E-011","校门口视频显示家属聚集","0.83"],["E-012","属地处置记录显示现场劝离压力上升","0.68"]], impact: "线下秩序压力上升，现场围观与短视频采集风险同步抬升。", next: ["证据保全动作待确认"] },
+      { id: "p", step: 1, x: 25, y: 42, label: "P", title: "现场视频引爆同城传播", sub: "爆燃信号", prob: "86", tone: "amber", parent: "青澜中学学生坠亡", summary: "校门口哭喊、拉扯、围观片段在同城流量中快速扩散，评论焦点从事实询问转向“是否隐瞒”。", trigger: "现场视频被多账号二次剪辑并加上强情绪标题。", evidence: [["E-021","同城短视频 22 分钟内扩散到多平台","0.91"],["E-022","疑似同源视频出现 14 个转发链","0.76"]], impact: "传播速度 +34%，不确定性解释空间扩大。", next: ["学校压事质疑上升","相关话题冲上热搜"] },
+      { id: "n", step: 1, x: 25, y: 63, label: "N", title: "学生群欺凌说法升温", sub: "责任归因", prob: "73", tone: "violet", parent: "青澜中学学生坠亡", summary: "学生群截图与口头转述开始出现“此前被欺凌”“老师是否知情”等说法，但源头、时间和主体仍待核验。", trigger: "同学、家长群和匿名账号陆续转述。", evidence: [["E-031","学生群截图待原链核验","0.57"],["E-032","家长群转述与现场问责议题重叠","0.64"]], impact: "责任归因压力显著上升，若不澄清会成为核心叙事。", next: ["学校压事质疑上升"] },
+      { id: "u", step: 1, x: 25, y: 82, label: "U", title: "未成年人隐私外泄", sub: "二次伤害", prob: "81", tone: "red", parent: "青澜中学学生坠亡", summary: "学生姓名、班级、疑似聊天记录和家庭信息被拼贴传播，形成隐私保护与事实核验之间的冲突。", trigger: "围观账号追逐细节，部分内容未经脱敏。", evidence: [["E-041","疑似个人信息截图出现扩散","0.69"],["E-042","平台风险标签命中未成年人隐私","0.82"]], impact: "处置空间收窄，官方回应必须同时保护隐私和解释事实。", next: ["隐私泄露与冲突叠加"] },
+      { id: "g", step: 2, x: 47, y: 49, label: "G", title: "证据保全动作待确认", sub: "证据缺口", prob: "58", tone: "blue", parent: "家属/视频分支", summary: "公众最关心监控、报警、急救、校方沟通记录是否已保全，当前缺少可核验清单。", trigger: "评论高频追问“监控在哪里”“什么时候通知家属”。", evidence: [["E-051","证据清单尚未公开","0.71"],["E-052","家属提出参与核验诉求","0.66"]], impact: "若清单公开，信任可回升；若继续空白，会推动 C 线。", next: ["回应不足导致责任叙事固化","联合调查说明发布"] },
+      { id: "t", step: 2, x: 50, y: 65, label: "T", title: "学校压事质疑上升", sub: "叙事固化", prob: "78", tone: "amber", parent: "视频/欺凌分支", summary: "“学校是否拖延、隐瞒、压制家属表达”的叙事成为连接线上情绪和线下聚集的核心桥。", trigger: "初始说明缺少关键时间线和证据保全口径。", evidence: [["E-061","评论中隐瞒/压事词频快速上升","0.79"],["E-062","媒体账号开始征集线索","0.65"]], impact: "扩散速度 +21%，误读和对立风险升高。", next: ["回应不足导致责任叙事固化","联合调查说明发布"] },
+      { id: "c", step: 2, x: 49, y: 84, label: "C", title: "校门口围观增加", sub: "现实反馈", prob: "64", tone: "green", parent: "家属/隐私分支", summary: "校门口围观、拍摄和劝离动作增加，线下秩序信号开始反过来喂给线上传播。", trigger: "现场处置过程被持续拍摄。", evidence: [["E-071","属地现场反馈显示围观增加","0.63"],["E-072","短视频评论出现到场号召","0.55"]], impact: "现实反馈使事件无法只通过线上声明消解。", next: ["联合调查说明发布"] },
+      { id: "x", step: 3, x: 68, y: 48, label: "C", title: "回应不足导致责任叙事固化", sub: "当前选中", prob: "37", tone: "violet", parent: "证据/传播分支", summary: "如果当前回应只强调“正在调查”而不说明证据保全、家属沟通和时间表，责任叙事会从猜测变成群体共识。", trigger: "模糊回应无法覆盖死亡事实、欺凌传闻和证据保全三类核心问题。", evidence: [["E-081","校方说明缺少完整时间线","0.81"],["E-082","证据保全清单未公开","0.73"],["E-083","家属对沟通结果不认可","0.69"]], impact: "舆情热度 0.86 ↑，线下聚集风险 0.72 ↑，信任缺口 0.63 ↑，综合风险 84/100 ↑。", next: ["证据保全公开进入观望","家属继续等待局部拉锯","责任叙事扩大为公共议题","隐私泄露与现场冲突叠加"] },
+      { id: "o", step: 3, x: 68, y: 70, label: "O", title: "联合调查说明发布", sub: "缓和支点", prob: "52", tone: "amber", parent: "证据/现场反馈", summary: "教育、公安、属地联合发布调查机制可降低部分不确定性，但若没有家属参与机制仍会保留拉锯风险。", trigger: "说明发布但细节不足。", evidence: [["E-091","联合调查机制文本发布","0.81"],["E-092","反馈渠道和家属参与方式不明确","0.55"]], impact: "风险短期回落，但存在二次追问。", next: ["家属继续等待局部拉锯","证据保全公开进入观望"] },
+      { id: "a", step: 4, x: 87, y: 23, label: "A", title: "证据保全公开进入观望", sub: "未来 A", prob: "A", tone: "green", parent: "当前风险节点", summary: "证据清单、沟通时间表和家属参与核验机制同步公开，事件从情绪爆发转向等待调查。", trigger: "核心诉求被回应，反馈渠道有时限。", evidence: [["E-101","证据清单发布并编号","0.74"],["E-102","家属代表确认参与核验","0.62"]], impact: "综合风险下降到 48/100。", next: ["复盘入库"] },
+      { id: "b", step: 4, x: 87, y: 48, label: "B", title: "家属继续等待局部拉锯", sub: "未来 B", prob: "B", tone: "amber", parent: "当前风险节点", summary: "部分问题得到回应，但家属对责任归因和欺凌线索仍不接受，形成低烈度持续追问。", trigger: "回应覆盖不足或线下沟通延迟。", evidence: [["E-111","家属继续提出书面诉求","0.67"],["E-112","小范围围观仍有反复","0.58"]], impact: "风险维持 62/100。", next: ["局部沟通或继续拉锯"] },
+      { id: "d", step: 4, x: 87, y: 72, label: "C", title: "责任叙事扩大为公共议题", sub: "未来 C", prob: "C", tone: "violet", parent: "当前风险节点", summary: "欺凌、校园安全、未成年人保护和学校问责被跨圈层讨论，原始事实与公共议题叠加。", trigger: "外部叙事介入，旧案例被重新激活。", evidence: [["E-121","类似校园事件被集中对比","0.73"],["E-122","媒体专题化讨论升温","0.68"]], impact: "综合风险维持 84/100。", next: ["跨部门会商"] },
+      { id: "r", step: 4, x: 86, y: 90, label: "D", title: "隐私泄露与现场冲突叠加", sub: "未来 D", prob: "D", tone: "red", parent: "当前风险节点", summary: "未成年人隐私泄露、现场拉扯或反向指责叠加，会把原本可沟通的争议推入高风险区间。", trigger: "未经核验的信息和现场冲突形成情绪共振。", evidence: [["E-131","隐私内容二次传播","0.70"],["E-132","现场冲突片段被剪辑传播","0.76"]], impact: "综合风险上升到 91/100。", next: ["应急复核"] }
     ];
     const edges = [
       ["s","m","green"],["s","p","amber"],["s","n","violet"],["s","u","green"],
@@ -1302,28 +1303,28 @@
     function getDistributionData(modifier = distributionModifier) {
       const data = distributions.map(d => ({ ...d }));
       if (modifier === "step0") {
-        data[0].value = 22; data[1].value = 24; data[2].value = 20; data[3].value = 8;
-        data[0].trend = "+2%"; data[1].trend = "+1%"; data[2].trend = "+3%"; data[3].trend = "0%";
+        data[0].value = 18; data[1].value = 21; data[2].value = 16; data[3].value = 6;
+        data[0].trend = "+1%"; data[1].trend = "+2%"; data[2].trend = "+4%"; data[3].trend = "0%";
         data.forEach(d => d.hot = d.id === "B");
       }
       if (modifier === "step1") {
-        data[0].value = 24; data[1].value = 28; data[2].value = 27; data[3].value = 10;
-        data[0].trend = "+3%"; data[1].trend = "+6%"; data[2].trend = "+7%"; data[3].trend = "+2%";
+        data[0].value = 19; data[1].value = 25; data[2].value = 28; data[3].value = 10;
+        data[0].trend = "+2%"; data[1].trend = "+5%"; data[2].trend = "+10%"; data[3].trend = "+3%";
         data.forEach(d => d.hot = d.id === "B" || d.id === "C");
       }
       if (modifier === "step2") {
-        data[0].value = 24; data[1].value = 27; data[2].value = 34; data[3].value = 13;
-        data[0].trend = "-1%"; data[1].trend = "+2%"; data[2].trend = "+9%"; data[3].trend = "+4%";
+        data[0].value = 21; data[1].value = 26; data[2].value = 34; data[3].value = 13;
+        data[0].trend = "+1%"; data[1].trend = "+2%"; data[2].trend = "+9%"; data[3].trend = "+4%";
         data.forEach(d => d.hot = d.id === "C");
       }
       if (modifier === "step3") {
-        data[0].value = 28; data[1].value = 26; data[2].value = 32; data[3].value = 14;
-        data[0].trend = "+6%"; data[1].trend = "-2%"; data[2].trend = "0%"; data[3].trend = "-4%";
+        data[0].value = 24; data[1].value = 27; data[2].value = 37; data[3].value = 12;
+        data[0].trend = "+3%"; data[1].trend = "+1%"; data[2].trend = "+8%"; data[3].trend = "-2%";
         data.forEach(d => d.hot = d.id === "C");
       }
       if (modifier === "step4") {
-        data[0].value = 30; data[1].value = 28; data[2].value = 29; data[3].value = 16;
-        data[0].trend = "+2%"; data[1].trend = "+2%"; data[2].trend = "-3%"; data[3].trend = "+2%";
+        data[0].value = 32; data[1].value = 30; data[2].value = 26; data[3].value = 12;
+        data[0].trend = "+8%"; data[1].trend = "+3%"; data[2].trend = "-11%"; data[3].trend = "0%";
         data.forEach(d => d.hot = d.id === "A" || d.id === "B");
       }
       if (modifier === "relief") {
@@ -1371,7 +1372,7 @@
       if (mode === "root") {
         renderTopCards([
           { label: "事件基线", value: "52", unit: "/100", trend: "→ 0%", tone: "blue", tag: "baseline", desc: "多源信号首次聚合，进入观察池", hot: true },
-          { label: "信息完整度", value: "61", unit: "%", trend: "↑ 6%", tone: "green", tag: "baseline", desc: "已有热线反馈、历史相似案与公开讨论", hot: true },
+          { label: "信息完整度", value: "61", unit: "%", trend: "↑ 6%", tone: "green", tag: "baseline", desc: "已有家属沟通、历史相似案与公开讨论", hot: true },
           { label: "传播初速", value: "0.38", trend: "↑ 3%", tone: "amber", tag: "baseline", desc: "尚未形成明确分支，需继续观察", hot: true },
           { label: "不确定性", value: "0.47", trend: "↓ 2%", tone: "violet", tag: "baseline", desc: "原因链仍不完整，不生成未来判断", hot: true }
         ]);
@@ -1579,17 +1580,17 @@
 
     function getCouncilAgents(node) {
       if (!node) return [];
-      if (node.tone === "green") return ["居民群体", "网格员", "主管部门", "媒体/自媒体"];
-      if (node.tone === "amber") return ["居民群体", "街道/社区", "主管部门", "网格员", "媒体/自媒体"];
-      if (node.tone === "red") return ["居民群体", "街道/社区", "主管部门", "媒体/自媒体", "应急协调"];
-      return ["居民群体", "街道/社区", "主管部门", "媒体/自媒体", "网格员"];
+      if (node.tone === "green") return ["家属代表", "校方/属地", "教育主管部门", "媒体/自媒体"];
+      if (node.tone === "amber") return ["家属代表", "校方/属地", "教育主管部门", "网信/基层", "媒体/自媒体"];
+      if (node.tone === "red") return ["家属代表", "校方/属地", "教育主管部门", "媒体/自媒体", "应急协调"];
+      return ["家属代表", "校方/属地", "教育主管部门", "媒体/自媒体", "网信/基层"];
     }
 
     function getCouncilGaps(node) {
       if (!node) return [];
-      const base = ["缺少权威回应的一致口径", "缺少线下反馈的现场复核", "缺少关键群体态度变化记录"];
-      if (node.tone === "green") return ["仍需确认缓和迹象是否持续", "缺少后续投诉量变化"];
-      if (node.tone === "red") return base.concat(["缺少外部事件触发源复核"]);
+      const base = ["缺少证据保全清单与公开口径", "缺少家属沟通状态的现场复核", "缺少学生群截图的原链核验"];
+      if (node.tone === "green") return ["仍需确认家属是否接受核验机制", "缺少后续围观规模变化"];
+      if (node.tone === "red") return base.concat(["缺少隐私泄露源头与平台处置记录"]);
       return base;
     }
 
@@ -1610,7 +1611,7 @@
         $("#councilResult").innerHTML = `
           <div class="panel-title">上次研判结果 <span>${councilResult.time}</span><a href="agent-council.html">查看完整会议 ></a></div>
           <div class="result-grid">
-            <div class="result-metric"><span>居民信任</span><b>${councilResult.trust}</b></div>
+            <div class="result-metric"><span>家属信任</span><b>${councilResult.trust}</b></div>
             <div class="result-metric"><span>线下聚集</span><b>${councilResult.gathering}</b></div>
             <div class="result-metric"><span>C线概率</span><b>${councilResult.branch}</b></div>
           </div>
@@ -1633,7 +1634,7 @@
       if (!node) return;
       $("#modalNodeInfo").textContent = `${node.title}；所属阶段 ${steps[node.step]?.[0] || "当前"}；当前概率/标记 ${node.prob}；摘要：${node.summary}`;
       $("#modalAgents").innerHTML = getCouncilAgents(node).map(a => `<span class="agent-card">${a}<span>Agent</span></span>`).join("");
-      $("#councilQuestion").value = $("#sideCouncilQuestion").value.trim() || `如果“${node.title}”节点出现回应模糊或证据补充不足，各方主体会如何反应？`;
+      $("#councilQuestion").value = $("#sideCouncilQuestion").value.trim() || `如果“${node.title}”节点出现回应模糊或证据补充不足，家属、校方、主管部门和媒体会如何反应？`;
       $("#modalEvidence").innerHTML = node.evidence.map(e => `<li>${e[0]}：${e[1]}，可信度 ${e[2]}</li>`).join("");
       $("#modalGaps").innerHTML = getCouncilGaps(node).map(g => `<li>${g}</li>`).join("");
       $(".right-panel").classList.add("council-open");
@@ -1649,25 +1650,31 @@
       const node = nodes.find(n => n.id === selectedId);
       if (!node) return;
       const question = $("#councilQuestion").value.trim();
-      const highRisk = /模糊|延迟|外部|扩散|聚集|缺/.test(question) || node.tone === "violet" || node.tone === "red";
+      const highRisk = /模糊|延迟|外部|扩散|聚集|缺|证据|家属/.test(question) || node.tone === "violet" || node.tone === "red";
       councilResult = {
         nodeId: node.id,
         step: node.step,
-        time: "04-17 10:20",
+        time: "05-02 12:20",
         trust: highRisk ? "-0.08 ↓" : "+0.06 ↑",
         gathering: highRisk ? "+0.11 ↑" : "-0.07 ↓",
-        branch: highRisk ? "32% → 41%" : "32% → 24%",
+        branch: highRisk ? "37% → 44%" : "37% → 28%",
         summary: highRisk
-          ? "多方主体认为模糊回应会降低等待意愿，核心质疑者继续追问，媒体二次解读概率上升。"
-          : "多方主体认为具体承诺和反馈渠道能收敛不确定性，A/B 分支权重上升。"
+          ? "多方主体认为模糊回应会降低家属等待意愿，证据保全和欺凌线索会继续成为追问中心，媒体二次解读概率上升。"
+          : "多方主体认为证据清单、沟通时间表和家属参与核验机制能收敛不确定性，A/B 分支权重上升。"
       };
       councilReviewed.add(node.id);
-      closeCouncilModal();
-      renderGraph();
-      renderSteps();
-      setStep(currentStep);
-      selectNode(node.id);
-      toast("Agent Council 已完成，结果已写入右侧模块和时间轴。");
+      try {
+        window.localStorage.setItem("worldlineCouncilDraft", JSON.stringify({
+          nodeId: node.id,
+          question,
+          result: councilResult,
+          updatedAt: new Date().toISOString()
+        }));
+      } catch (error) {}
+      const params = new URLSearchParams(window.location.search);
+      const caseId = params.get("caseId") || "campus-death-high-intensity";
+      const mainlineId = params.get("mainlineId") || "ML-001";
+      window.location.href = `agent-council.html?caseId=${encodeURIComponent(caseId)}&mainlineId=${encodeURIComponent(mainlineId)}&nodeId=${encodeURIComponent(node.id)}&councilId=COUNCIL-001`;
     }
 
     function injectCouncilResult() {
@@ -1722,10 +1729,10 @@
             <div class="kv"><span>风险概率</span><span>${$("#riskScore").textContent}</span></div>
             <div class="kv"><span>倾向分支</span><span>${$("#riskBranch").textContent}</span></div>
           </div>
-          <div class="detail-section"><b>最大矛盾</b><p>回应覆盖度与核心诉求之间仍存在缺口，约 32% 概率把事件推入持续发酵分支。</p></div>
-          <div class="detail-section"><b>可能引发的风险</b><p>线下聚集、跨群体传播、外部事件叠加三类风险可能同时抬升，合计置信区间约 0.68 - 0.82。</p></div>
-          <div class="detail-section"><b>态度变化点</b><p>当反馈渠道、补偿方案或权威解释出现变化时，公众、媒体与组织者的态度概率会重新分配。</p></div>
-          <div class="detail-section recommendation"><b>处置建议</b><p>优先补足“解释 + 承诺 + 反馈时限”三件事。原因是当前最大不确定性来自回应覆盖不足，而不是单纯信息曝光；若 2 小时内给出可验证动作，A/B 分支可能上调约 8% - 15%。</p></div>`,
+          <div class="detail-section"><b>最大矛盾</b><p>证据保全、家属沟通与责任归因之间仍存在缺口，约 37% 概率把事件推入持续发酵分支。</p></div>
+          <div class="detail-section"><b>可能引发的风险</b><p>线下聚集、跨群体传播、隐私泄露和外部议题叠加可能同时抬升，合计置信区间约 0.68 - 0.84。</p></div>
+          <div class="detail-section"><b>态度变化点</b><p>当证据清单、家属参与核验机制或权威调查时间表出现变化时，各方态度概率会重新分配。</p></div>
+          <div class="detail-section recommendation"><b>处置建议</b><p>优先补足“证据清单 + 家属沟通 + 公开时限”三件事。原因是当前最大不确定性来自证据保全不透明，而不是单纯信息曝光；若 2 小时内给出可验证动作，A/B 分支可能上调约 8% - 15%。</p></div>`,
         evidence: `
           <div class="detail-section"><b>证据链</b>
             <div class="evidence">${node.evidence.map(e => `<div class="evidence-row"><b>${e[0]}</b><span>${e[1]}</span><em>${e[2]}</em></div>`).join("")}</div>
@@ -1758,10 +1765,10 @@
     function renderRootDetail(node) {
       const sections = {
         overview: `
-          <div class="detail-section"><b>当前事情</b><p>这是一个由服务体验、价格敏感和线上反馈共同触发的公共事件起点。系统此时只建立事实基线，不提前生成 A/B/C/D 未来路径。</p></div>
-          <div class="detail-section"><b>前因</b><p>前期存在热线/公开反馈异常增量，并命中历史相似案例；部分群体已开始把个体体验解释成可讨论的公共议题。</p></div>
-          <div class="detail-section"><b>后果</b><p>如果信息继续累积，事件可能分化为媒体报道、票价争议、网友情绪和特定群体讨论四类支点；这些支点会决定后续是否进入风险推演。</p></div>
-          <div class="detail-section recommendation"><b>处置建议</b><p>先补事实底账：确认事件范围、受影响主体、历史反馈和可公开解释口径。原因是起点阶段最大风险不是某条未来路径，而是事实不完整导致后续分支被误判。</p></div>`,
+          <div class="detail-section"><b>当前事情</b><p>这是一个由学生坠亡事实、家属到校问责、现场视频传播和疑似欺凌说法共同触发的高烈度公共事件起点。系统此时只建立事实基线，不提前生成 A/B/C/D 未来路径。</p></div>
+          <div class="detail-section"><b>前因</b><p>家属已知情并到校沟通，校内外群聊出现异常增量，并命中校园安全类历史相似案例；部分人群已开始把单一事件解释成未成年人保护责任议题。</p></div>
+          <div class="detail-section"><b>后果</b><p>如果信息继续累积，事件可能分化为家属问责、现场视频、欺凌传闻和隐私外泄四类支点；这些支点会决定后续是否进入风险推演。</p></div>
+          <div class="detail-section recommendation"><b>处置建议</b><p>先补事实底账：确认事发时间线、证据保全清单、家属沟通记录和可公开解释边界。原因是起点阶段最大风险不是某条未来路径，而是事实不完整导致后续分支被误判。</p></div>`,
         evidence: `<div class="detail-section"><b>初始证据</b><div class="evidence">${node.evidence.map(e => `<div class="evidence-row"><b>${e[0]}</b><span>${e[1]}</span><em>${e[2]}</em></div>`).join("")}</div></div><div class="detail-section"><b>证据缺口</b><p>仍缺少明确时间线、受影响主体规模、官方初始回应和可核验证据源。</p></div>`,
         impact: `<div class="detail-section"><b>当前影响</b><p>${node.impact}</p></div><div class="detail-section"><b>变化观察</b><p>现阶段只观察传播初速、信息完整度和不确定性，不给出未来路径概率。</p></div>`,
         next: `<div class="detail-section"><b>下一步观察</b><ul>${node.next.map(n => `<li>${n}</li>`).join("")}</ul></div><div class="detail-section"><b>进入推演条件</b><p>当任一支点出现明确增量、跨圈层传播或组织化迹象时，系统才开始生成后续世界线概率。</p></div>`
@@ -1780,7 +1787,7 @@
           <div class="detail-section"><b>为什么变成当前状态</b><p>${node.trigger}</p></div>
           <div class="detail-section"><b>态度变化概率</b><p>如果回应更具体，态度缓和概率约提升 8% - 15%；如果继续模糊，转向更强表达的概率约提升 6% - 12%。</p></div>`,
         next: `
-          <div class="detail-section"><b>下一步能改变什么</b><p>提供明确时间表、补偿解释或线下沟通入口，可能降低该支点继续外溢的概率。</p></div>
+          <div class="detail-section"><b>下一步能改变什么</b><p>提供明确调查时间表、证据保全清单或家属沟通入口，可能降低该支点继续外溢的概率。</p></div>
           <div class="detail-section"><b>如果不做</b><p>该组织或群体可能继续转发、聚集讨论，或与其他分支形成共振。</p></div>
           <div class="detail-section recommendation"><b>处置建议</b><p>对该支点不要先做泛化宣传，先回应它的具体诉求。原因是支点节点更容易因“被忽视感”转向下一跳，具体回应比统一口径更能改变其态度概率。</p></div>`
       };
@@ -1892,7 +1899,7 @@
         return;
       }
       const text = input.toLowerCase();
-      const hasRelief = /回应|解释|补偿|沟通|公开|反馈|承诺|澄清/.test(text);
+      const hasRelief = /回应|解释|证据|沟通|公开|反馈|承诺|澄清|核验/.test(text);
       const hasShock = /外部|突发|冲突|事故|媒体曝光|热搜|升级|谣言/.test(text);
       const hasDelay = /延迟|沉默|拖延|不回应|模糊|缺席/.test(text);
 
