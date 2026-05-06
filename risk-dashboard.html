@@ -1,0 +1,1275 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 风险驾驶舱</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css" />
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html {
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 76% 8%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+    }
+    body {
+      margin: 0;
+      height: 100dvh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 76% 8%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans CN", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+    button, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app { height: 100vh; min-height: 900px; display: grid; grid-template-rows: 56px 1fr; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 430px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216, 205, 188, .92);
+      background: rgba(255, 253, 247, .76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+    .tagline { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs button, .mode-tabs a {
+      min-width: 64px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 15px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24, 168, 115, .14); }
+
+    .workspace {
+      display: grid;
+      grid-template-rows: 90px 100px 1fr 190px;
+      gap: 10px;
+      height: calc(100vh - 56px);
+      min-height: 0;
+      padding: 10px 14px 14px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216, 205, 188, .92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(16px);
+    }
+    .pad { padding: 14px; }
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 11px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .panel-title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .panel-title .more {
+      min-height: 24px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .metrics { display: grid; grid-template-columns: 1.6fr repeat(7, 1fr); gap: 8px; }
+    .metric {
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 253, 247, .76);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease);
+    }
+    .metric:hover, .metric.active { border-color: var(--ink); background: var(--panel-solid); transform: translateY(-1px); }
+    .metric.hot { border-color: color-mix(in srgb, var(--tone) 62%, var(--line)); background: color-mix(in srgb, var(--tone) 11%, var(--panel-solid)); }
+    .metric label { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .metric strong { display: block; margin-top: 8px; font-size: 25px; line-height: .95; }
+    .metric .large { font-size: 26px; color: var(--tone); }
+    .metric small { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .metric small b { color: var(--tone); }
+    .spark {
+      position: absolute;
+      right: 10px;
+      bottom: 7px;
+      width: 76px;
+      height: 28px;
+    }
+    .spark path { fill: none; stroke: var(--tone); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+    .summary-row { display: grid; grid-template-columns: 41% 59%; gap: 10px; }
+    .brief p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .source-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .source {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 9px;
+      align-items: center;
+      min-height: 48px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 253, 247, .64);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease);
+    }
+    .source:hover, .source.active { border-color: var(--ink); background: var(--panel-solid); transform: translateY(-1px); }
+    .source i {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--tone) 16%, var(--panel-solid));
+      color: var(--tone);
+      font-style: normal;
+      font-weight: 900;
+    }
+    .source b { display: block; font-size: 11px; }
+    .source span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 800; line-height: 1.25; }
+
+    .main-grid { display: grid; grid-template-columns: 41% 59%; gap: 10px; min-height: 0; }
+    .city-map {
+      position: relative;
+      overflow: hidden;
+      border-color: rgba(47, 109, 246, .34);
+      background: #07111c;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), var(--soft);
+    }
+    .city-map::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(30deg, transparent 0 47%, rgba(73,130,190,.16) 48% 49%, transparent 50%),
+        linear-gradient(110deg, transparent 0 44%, rgba(73,130,190,.10) 45% 46%, transparent 47%),
+        radial-gradient(circle at 1px 1px, rgba(164,205,255,.22) 1px, transparent 1.6px);
+      background-size: 160px 120px, 180px 130px, 22px 22px;
+      opacity: .46;
+      pointer-events: none;
+      display: none;
+    }
+    .risk-map {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: #091522;
+    }
+    .map-fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: none;
+      place-items: center;
+      padding: 28px;
+      color: #f6efe2;
+      background:
+        radial-gradient(circle at 46% 42%, rgba(47, 109, 246, .13), transparent 30%),
+        linear-gradient(135deg, #07111c 0%, #101a26 100%);
+      text-align: center;
+    }
+    .map-fallback.show { display: grid; }
+    .map-fallback b { display: block; font-size: 15px; }
+    .map-fallback span { display: block; margin-top: 8px; color: rgba(246,239,226,.66); font-size: 12px; line-height: 1.5; }
+    .maplibregl-ctrl-bottom-right { right: 10px; bottom: 8px; }
+    .maplibregl-ctrl-attrib { max-width: 260px; border-radius: 8px 0 0 0; background: rgba(255,253,247,.82); color: #111820; font-size: 10px; }
+    .map-popup-card { width: 240px; color: #111820; font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+    .map-popup-card b { display: block; font-size: 13px; line-height: 1.28; }
+    .map-popup-card p { margin: 7px 0 0; color: #4f5966; font-size: 11px; line-height: 1.45; }
+    .map-popup-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+    .map-popup-meta span { padding: 4px 6px; border: 1px solid #d8cdbc; border-radius: 8px; background: #fffdf7; color: #4f5966; font-size: 10px; font-weight: 900; }
+    .map-popup-card a { display: grid; place-items: center; min-height: 28px; margin-top: 10px; border-radius: 9px; background: #111820; color: #fffdf7; font-size: 11px; font-weight: 900; text-decoration: none; }
+    .map-viewport {
+      position: absolute;
+      inset: 0;
+      display: none;
+      transform-origin: center;
+      transition: transform .28s var(--ease);
+    }
+    .city-map.zoom-1 .map-viewport { transform: scale(1); }
+    .city-map.zoom-2 .map-viewport { transform: scale(1.12); }
+    .city-map.zoom-3 .map-viewport { transform: scale(1.24); }
+    .map-top { position: absolute; left: 15px; top: 13px; right: 15px; z-index: 8; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; pointer-events: none; }
+    .map-title b { display: block; color: #f6efe2; font-size: 17px; }
+    .map-title span { display: block; margin-top: 4px; color: rgba(246,239,226,.62); font-size: 11px; font-weight: 800; }
+    .map-side {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 9;
+      width: 132px;
+      display: grid;
+      gap: 8px;
+      color: rgba(246,239,226,.76);
+      font-size: 11px;
+      font-weight: 900;
+      pointer-events: auto;
+    }
+    .map-side-title { color: rgba(246,239,226,.92); font-size: 11px; font-weight: 900; }
+    .map-tools { display: grid; gap: 6px; min-width: 0; }
+    .check { display: flex; align-items: center; gap: 6px; min-height: 22px; padding: 0 7px; border: 1px solid rgba(119,164,235,.36); border-radius: 8px; background: rgba(5,16,29,.74); color: rgba(246,239,226,.74); }
+    .check i { width: 13px; height: 13px; border-radius: 4px; background: var(--blue); box-shadow: inset 0 0 0 2px rgba(255,255,255,.55); }
+    .check.off { opacity: .46; }
+    .check.off i { background: #b8aea0; }
+    .district {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--zone) 70%, rgba(255,255,255,.12));
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--zone) 15%, transparent);
+      color: rgba(246,239,226,.78);
+      font-size: 14px;
+      font-weight: 900;
+      transition: opacity .24s var(--ease), transform .24s var(--ease), border-color .24s var(--ease), background .24s var(--ease);
+    }
+    .district.active { border-color: color-mix(in srgb, var(--zone) 92%, white); background: color-mix(in srgb, var(--zone) 24%, transparent); color: #fffdf7; transform: translateY(-1px); }
+    .district.dim, .heat.dim, .air-path.dim { opacity: .16; pointer-events: none; }
+    .district.hidden, .heat.hidden, .air-path.hidden, .district.suppressed, .heat.suppressed { opacity: 0; pointer-events: none; }
+    .heat {
+      position: absolute;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--tone);
+      color: white;
+      border: 3px solid rgba(255,255,255,.8);
+      box-shadow: 0 0 0 12px color-mix(in srgb, var(--tone) 20%, transparent), 0 0 30px color-mix(in srgb, var(--tone) 58%, transparent);
+      font-size: 13px;
+      font-weight: 900;
+      transition: transform .25s var(--ease), opacity .25s var(--ease);
+    }
+    .heat::after {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: inherit;
+      border: 1px solid color-mix(in srgb, var(--tone) 76%, rgba(255,255,255,.35));
+      opacity: .55;
+      animation: heatPulse 2.2s var(--ease) infinite;
+      pointer-events: none;
+    }
+    @keyframes heatPulse {
+      0% { transform: scale(.72); opacity: .58; }
+      70% { transform: scale(1.9); opacity: 0; }
+      100% { transform: scale(1.9); opacity: 0; }
+    }
+    .heat.active { transform: scale(1.16); }
+    .heat.dim { opacity: .16; pointer-events: none; }
+    .event-point {
+      position: absolute;
+      z-index: 6;
+      display: grid;
+      place-items: center;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.82);
+      background: var(--tone);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--tone) 18%, transparent);
+      opacity: 0;
+      transform: scale(.72);
+      pointer-events: none;
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+    }
+    .event-point span {
+      position: absolute;
+      left: 14px;
+      top: -7px;
+      width: max-content;
+      max-width: 92px;
+      padding: 3px 6px;
+      border: 1px solid rgba(119,164,235,.22);
+      border-radius: 8px;
+      background: rgba(5,16,29,.78);
+      color: rgba(246,239,226,.82);
+      font-size: 10px;
+      font-weight: 900;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+    }
+    .city-map.zoom-2 .event-point,
+    .city-map.zoom-3 .event-point { opacity: .9; transform: scale(1); }
+    .city-map.zoom-3 .event-point span { opacity: 1; transform: translateX(0); }
+    .event-point.hidden,
+    .event-point.suppressed { opacity: 0 !important; pointer-events: none; }
+    .air-path {
+      position: absolute;
+      width: 60%;
+      height: 44px;
+      left: 22%;
+      top: 30%;
+      border: 1px dashed rgba(121, 168, 245, .78);
+      border-radius: 999px;
+      transform: rotate(-18deg);
+      background: rgba(47, 109, 246, .10);
+      pointer-events: none;
+    }
+    .map-footer {
+      position: absolute;
+      left: 14px;
+      right: 180px;
+      bottom: 12px;
+      z-index: 9;
+      display: flex;
+      justify-content: space-between;
+      color: rgba(246,239,226,.70);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .legend { display: grid; gap: 5px; padding: 8px; border-radius: 10px; background: rgba(5,16,29,.72); border: 1px solid rgba(119,164,235,.20); }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--tone); }
+    .hotspot-popover {
+      position: absolute;
+      z-index: 12;
+      width: 230px;
+      padding: 11px 12px;
+      border: 1px solid rgba(119,164,235,.32);
+      border-radius: 12px;
+      background: rgba(5,16,29,.92);
+      color: #f6efe2;
+      box-shadow: 0 18px 46px rgba(0,0,0,.28);
+      transform: translate(16px, -12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+    }
+    .hotspot-popover.open { opacity: 1; pointer-events: auto; transform: translate(20px, -16px); }
+    .hotspot-popover b { display: block; font-size: 13px; line-height: 1.25; }
+    .hotspot-popover p { margin: 7px 0 0; color: rgba(246,239,226,.68); font-size: 11px; line-height: 1.45; }
+    .hotspot-popover .hot-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 9px; }
+    .hotspot-popover .hot-meta span { padding: 6px 7px; border-radius: 9px; background: rgba(255,255,255,.06); color: rgba(246,239,226,.78); font-size: 10px; font-weight: 900; }
+    .hotspot-popover a { display: grid; place-items: center; min-height: 28px; margin-top: 10px; border-radius: 9px; background: #f6efe2; color: #111820; font-size: 11px; font-weight: 900; }
+    .zoom-controls {
+      position: absolute;
+      right: 14px;
+      bottom: 46px;
+      z-index: 9;
+      display: grid;
+      gap: 6px;
+    }
+    .zoom-controls button {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(119,164,235,.35);
+      border-radius: 9px;
+      background: rgba(5,16,29,.82);
+      color: #f6efe2;
+      font-weight: 900;
+      box-shadow: var(--soft);
+    }
+
+    .mainline-wrap { overflow: hidden; display: grid; grid-template-rows: auto auto 1fr auto; }
+    .mainline-header {
+      display: grid;
+      grid-template-columns: 44px 1.5fr .78fr .55fr .55fr .62fr .74fr .92fr 86px;
+      gap: 8px;
+      padding: 0 12px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      border-bottom: 1px solid var(--line);
+    }
+    .mainline-list {
+      display: grid;
+      grid-auto-rows: 58px;
+      align-content: start;
+      max-height: 290px;
+      min-height: 290px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .mainline-list::-webkit-scrollbar { width: 0; height: 0; }
+    .mainline {
+      display: grid;
+      grid-template-columns: 44px 1.5fr .78fr .55fr .55fr .62fr .74fr .92fr 86px;
+      gap: 8px;
+      align-items: center;
+      min-height: 58px;
+      height: 58px;
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(216, 205, 188, .82);
+      text-align: left;
+      transition: background .22s var(--ease);
+    }
+    .mainline:hover, .mainline.active { background: color-mix(in srgb, var(--tone) 8%, var(--panel-solid)); }
+    .mainline.filtered { background: color-mix(in srgb, var(--blue) 5%, var(--panel-solid)); }
+    .priority {
+      width: 31px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--tone);
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .line-title b { display: block; font-size: 12px; line-height: 1.25; }
+    .line-title span { display: inline-flex; margin-top: 3px; padding: 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 12%, var(--panel-solid)); color: var(--tone); font-size: 10px; font-weight: 900; }
+    .mainline p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .mainline strong { font-size: 14px; }
+    .trend-cell {
+      display: grid;
+      gap: 2px;
+      justify-items: start;
+      color: var(--tone);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .trendline { width: 72px; height: 22px; }
+    .trendline path { fill: none; stroke: var(--tone); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .judgement { font-size: 11px; line-height: 1.35; color: var(--muted); }
+    .actions { display: grid; gap: 5px; }
+    .actions a, .actions button {
+      min-height: 23px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 247, .72);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .actions a.primary-mini { background: var(--ink); border-color: var(--ink); color: white; }
+    .mainline-note { display: none; }
+    .mainline-note b { color: var(--red); }
+
+    .bottom-grid { display: grid; grid-template-columns: 41% 59%; gap: 10px; min-height: 0; }
+    .weak-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .weak-card {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 253, 247, .66);
+      min-height: 64px;
+      overflow: hidden;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease);
+    }
+    .weak-card:hover, .weak-card.active { border-color: var(--ink); background: var(--panel-solid); transform: translateY(-1px); }
+    .weak-card b { display: block; font-size: 12px; }
+    .weak-card span { display: inline-flex; margin-top: 4px; padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid)); color: var(--tone); font-size: 10px; font-weight: 900; }
+    .weak-card p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .weak-card .score-line { margin-top: 6px; color: var(--ink); font-size: 11px; font-weight: 900; }
+    .review-table { display: grid; gap: 0; }
+    .review-row {
+      display: grid;
+      grid-template-columns: 100px 130px 1fr 86px;
+      gap: 10px;
+      align-items: center;
+      min-height: 27px;
+      border-top: 1px solid rgba(216,205,188,.82);
+      font-size: 11px;
+    }
+    .review-row:first-child { border-top: 0; color: var(--muted); font-weight: 900; }
+    .badge { display: inline-flex; align-items: center; width: fit-content; min-height: 20px; padding: 0 7px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid)); color: var(--tone); font-size: 10px; font-weight: 900; }
+    .review-row > :last-child { justify-self: center; }
+    .review-row a { min-width: 58px; min-height: 22px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--ink); color: var(--ink); background: var(--panel-solid); font-weight: 900; }
+
+    .world-state {
+      position: static;
+      transform: none;
+      width: min(740px, 100%);
+      justify-self: center;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid rgba(216,205,188,.95);
+      border-radius: 14px;
+      background: rgba(255,253,247,.96);
+      box-shadow: var(--soft);
+      z-index: 1;
+    }
+    .chips { display: flex; align-items: center; gap: 7px; overflow: hidden; white-space: nowrap; }
+    .chips b { font-size: 12px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .world-state a {
+      min-height: 28px;
+      display: grid;
+      place-items: center;
+      padding: 0 14px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      place-items: center;
+      background: rgba(20,24,29,.22);
+      backdrop-filter: blur(10px);
+    }
+    .modal-backdrop.open { display: grid; }
+    .modal {
+      width: min(980px, calc(100vw - 44px));
+      max-height: min(720px, calc(100dvh - 64px));
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel-solid);
+      box-shadow: 0 24px 70px rgba(42,34,22,.18);
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal-head b { font-size: 16px; }
+    .modal-head button {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255,253,247,.9);
+      font-weight: 900;
+    }
+    .modal-body { overflow: auto; padding: 14px 16px 16px; }
+    .modal-list { display: grid; gap: 8px; }
+    .modal-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 120px 110px;
+      gap: 12px;
+      align-items: center;
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.7);
+      font-size: 12px;
+    }
+    .modal-row span { color: var(--muted); }
+
+    @media (max-width: 1180px) {
+      body { overflow: auto; height: auto; }
+      .app { height: auto; min-height: 100dvh; }
+      .workspace { grid-template-rows: auto; }
+      .metrics, .summary-row, .main-grid, .bottom-grid { grid-template-columns: 1fr; }
+      .source-grid, .weak-grid { grid-template-columns: repeat(2, 1fr); }
+      .city-map { min-height: 520px; }
+      .topbar { grid-template-columns: 1fr; height: auto; padding: 12px; }
+      .mode-tabs, .status { justify-self: start; }
+      .world-state { position: static; transform: none; width: auto; margin: 0 14px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs" aria-label="Demo navigation">
+        <button class="active">驾驶舱</button>
+        <a href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="agent-council.html">会议</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status"><span>数据更新时间：2026-04-25 12:00:00</span><span>数据覆盖：<strong>28/28 正常</strong></span><span class="live-dot"></span></div>
+    </header>
+
+    <main class="workspace">
+      <section class="metrics" id="metrics"></section>
+
+      <section class="summary-row">
+        <div class="panel pad brief">
+          <div class="panel-title">当前城市态势摘要</div>
+          <p>城市更新 / 老旧小区改造相关诉求在多个社区出现聚集讨论，诉求集中在补偿标准、施工扰民、信息公开等方面；工业园区劳资相关咨询信号有所上升，主要集中在薪资发放和岗位调整；校园安全与家长群讨论升温，部分学校周边出现咨询增多。</p>
+        </div>
+        <div class="panel pad">
+          <div class="panel-title">数据接入与校验</div>
+          <div class="source-grid">
+            <button class="source" data-source="public" style="--tone:var(--blue)"><i>采</i><div><b>公开舆情</b><span>126 条 / 可信 0.82</span></div></button>
+            <button class="source" data-source="grid" style="--tone:var(--green)"><i>巡</i><div><b>网格巡查</b><span>68 条 / 可信 0.91</span></div></button>
+            <button class="source" data-source="hotline" style="--tone:var(--violet)"><i>诉</i><div><b>12345 工单</b><span>52 条 / 已去重</span></div></button>
+            <button class="source" data-source="video" style="--tone:var(--amber)"><i>空</i><div><b>视频低空</b><span>32 条 / 已定位</span></div></button>
+            <button class="source" data-source="history" style="--tone:var(--red)"><i>史</i><div><b>历史相似</b><span>40 条 / 匹配 0.72</span></div></button>
+            <button class="source" data-source="review" style="--tone:var(--green)"><i>核</i><div><b>人工复核</b><span>12 条 / 待确认</span></div></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="main-grid">
+        <section class="panel city-map zoom-1" id="cityMap">
+          <div class="map-top">
+            <div class="map-title"><b>城市空间态势图</b><span>当前信号与事件分布，叠加重点场所和低空覆盖</span></div>
+          </div>
+          <div class="map-side">
+            <div class="map-side-title">图层筛选</div>
+            <div class="map-tools">
+              <button class="check" data-layer="districts"><i></i>行政区划</button>
+              <button class="check" data-layer="heats"><i></i>重点场所</button>
+              <button class="check" data-layer="air"><i></i>低空覆盖</button>
+            </div>
+            <div class="map-side-title">风险热度</div>
+            <div class="legend">
+              <span><i style="--tone:var(--red)"></i>高</span>
+              <span><i style="--tone:var(--amber)"></i>较高</span>
+              <span><i style="--tone:var(--blue)"></i>较低</span>
+              <span><i style="--tone:var(--green)"></i>低</span>
+            </div>
+          </div>
+          <div class="risk-map" id="riskMap"></div>
+          <div class="map-fallback" id="mapFallback"><div><b>地图服务暂不可用</b><span>无法加载 MapLibre 或 OSM 瓦片时，列表、主线和详情功能仍可继续使用。</span></div></div>
+          <div class="map-viewport">
+            <button class="district" data-area="north" style="--zone:#5c9cff;left:8%;top:19%;width:31%;height:29%">城北区</button>
+            <button class="district" data-area="east" style="--zone:#9b63e8;left:39%;top:18%;width:29%;height:27%">城东区</button>
+            <button class="district" data-area="dev" style="--zone:#df4b54;left:68%;top:22%;width:24%;height:34%">开发区</button>
+            <button class="district" data-area="west" style="--zone:#5c9cff;left:10%;top:52%;width:31%;height:31%">城西区</button>
+            <button class="district" data-area="center" style="--zone:#d78925;left:42%;top:49%;width:25%;height:34%">城中区</button>
+            <button class="district" data-area="south" style="--zone:#18a873;left:66%;top:61%;width:25%;height:25%">城南区</button>
+            <div class="air-path"></div>
+            <button class="heat active" data-id="urban-renewal" style="--tone:var(--red);left:32%;top:37%">8</button>
+            <button class="heat" data-id="industrial-labor" style="--tone:var(--amber);left:76%;top:42%">9</button>
+            <button class="heat" data-id="campus-safety" style="--tone:var(--amber);left:52%;top:55%">5</button>
+            <button class="heat" data-id="medical-service" style="--tone:var(--green);left:67%;top:73%">9</button>
+            <button class="heat" data-id="transport" style="--tone:var(--blue);left:21%;top:66%">6</button>
+            <button class="heat" data-id="market-supply" style="--tone:var(--blue);left:18%;top:41%">4</button>
+            <button class="heat" data-id="weather-drainage" style="--tone:var(--green);left:83%;top:67%">3</button>
+            <i class="event-point" data-parent="urban-renewal" style="--tone:var(--red);left:35%;top:35%"><span>A街道补偿咨询</span></i>
+            <i class="event-point" data-parent="urban-renewal" style="--tone:var(--red);left:30%;top:42%"><span>施工围挡投诉</span></i>
+            <i class="event-point" data-parent="industrial-labor" style="--tone:var(--amber);left:79%;top:39%"><span>B园区薪资问询</span></i>
+            <i class="event-point" data-parent="campus-safety" style="--tone:var(--amber);left:55%;top:51%"><span>学校周边反馈</span></i>
+            <i class="event-point" data-parent="medical-service" style="--tone:var(--green);left:70%;top:76%"><span>医院排队体验</span></i>
+            <i class="event-point" data-parent="transport" style="--tone:var(--blue);left:24%;top:64%"><span>枢纽晚高峰滞留</span></i>
+            <i class="event-point" data-parent="market-supply" style="--tone:var(--blue);left:16%;top:45%"><span>市场价格讨论</span></i>
+            <i class="event-point" data-parent="weather-drainage" style="--tone:var(--green);left:86%;top:70%"><span>低洼点积水</span></i>
+          </div>
+          <div class="zoom-controls" aria-label="Map zoom">
+            <button id="zoomIn">+</button>
+            <button id="zoomOut">-</button>
+          </div>
+          <div class="hotspot-popover" id="hotspotPopover"></div>
+          <div class="map-footer">
+            <span>地空关系：重点区即使未成形事件，也进入强关注</span>
+          </div>
+        </section>
+
+        <section class="panel pad mainline-wrap">
+          <div class="panel-title">候选风险主线队列</div>
+          <div class="mainline-header">
+            <span>优先级</span><span>候选主线</span><span>涉及区域</span><span>关联系号</span><span>关联事件</span><span>信号升温</span><span>影响范围</span><span>系统判断</span><span>操作</span>
+          </div>
+          <div class="mainline-list" id="mainlines"></div>
+          <div class="mainline-note"><b>优先级说明：</b> P0 立即推演，P1 近期重点推演，P2 可延后观察。</div>
+        </section>
+      </section>
+
+      <section class="bottom-grid">
+        <section class="panel pad">
+          <div class="panel-title">高价值弱信号摘要 <a class="more" href="data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001">查看更多</a></div>
+          <div class="weak-grid" id="weakSignals"></div>
+        </section>
+
+        <section class="panel pad">
+          <div class="panel-title">待人工复核事项 <button class="more" data-more="review">查看更多</button></div>
+          <div class="review-table">
+            <div class="review-row"><span>类型</span><span>关联对象</span><span>内容摘要</span><span>处理</span></div>
+            <div class="review-row"><span class="badge" style="--tone:var(--amber)">候选主线归属</span><span>城市更新 / 旧改</span><span>A街道旧改相关信号应归入“城市更新/旧改”还是单独作为补偿纠纷主线</span><a href="event-detail-evidence.html">去复核</a></div>
+            <div class="review-row"><span class="badge" style="--tone:var(--violet)">事件真实性</span><span>工业园区劳资压力</span><span>B园区薪资延误传闻是否属实，企业未官方回应</span><a href="event-detail-evidence.html?signalId=SIG-017&mainlineId=ML-001">去复核</a></div>
+            <div class="review-row"><span class="badge" style="--tone:var(--blue)">数据源可信度</span><span>校园安全与家长舆情</span><span>某自媒体发布的学校安全事故信息需确认来源</span><a href="event-detail-evidence.html?signalId=SIG-012&mainlineId=ML-001">去复核</a></div>
+          </div>
+        </section>
+      </section>
+    </main>
+    <div class="modal-backdrop" id="modal">
+      <section class="modal">
+        <div class="modal-head"><b id="modalTitle">查看更多</b><button id="modalClose">×</button></div>
+        <div class="modal-body" id="modalBody"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
+  <script src="mock/mock-api.js"></script>
+  <script src="map-service.js"></script>
+  <script>
+    const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
+    const metrics = [
+      { id: "overall", label: "城市总体风险等级", value: "黄色关注", sub: "较昨日上升 1 级", tone: "amber", hot: true },
+      { id: "risk-index", label: "城市风险指数", value: "62/100", sub: "较昨日 +6", tone: "amber" },
+      { id: "events", label: "活跃事件数", value: "38 个", sub: "较昨日 +6", tone: "blue" },
+      { id: "new-signals", label: "新增信号数", value: "318 条", sub: "较昨日 +42", tone: "violet" },
+      { id: "candidates", label: "候选风险主线", value: "7 条", sub: "较昨日 +2", tone: "blue" },
+      { id: "review", label: "待人工复核", value: "12 条", sub: "较昨日 +3", tone: "violet" },
+      { id: "timeout", label: "超时事项", value: "3 项", sub: "较昨日 +1", tone: "red" },
+      { id: "warming", label: "72h升温倾向", value: "28%", sub: "初筛风险倾向，中等偏低", tone: "red", spark: true }
+    ];
+    const mainlines = [
+      { id: "urban-renewal", p: "P0", title: "城市更新 / 老旧小区改造", tag: "公共项目", area: "城东区、城中区 12个街道", areas: ["east", "center"], signals: 86, events: 7, heat: "高", scope: "较大 约8.2万人", judge: "跨社区重复升温，建议优先推演", tone: "red", href: "event-detail-evidence.html" },
+      { id: "industrial-labor", p: "P1", title: "工业园区劳资压力", tag: "劳资纠纷", area: "开发区B园区等 3个园区", areas: ["dev"], signals: 42, events: 3, heat: "中", scope: "中等 约2.1万人", judge: "信号集中但证据不足，建议复核", tone: "amber", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "campus-safety", p: "P1", title: "校园安全与家长舆情", tag: "教育舆情", area: "6所学校 多个社区", areas: ["north", "center"], signals: 35, events: 5, heat: "中", scope: "中等 约1.7万人", judge: "讨论升温，需确认事件真实性", tone: "amber", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "medical-service", p: "P2", title: "医疗服务与就诊体验", tag: "民生服务", area: "全市多家医院", areas: ["south", "center", "east"], signals: 28, events: 4, heat: "低", scope: "较小 约0.6万人", judge: "信号较分散，短期风险可控", tone: "green", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "transport", p: "P2", title: "交通出行与拥堵", tag: "城市运行", area: "主城区主要路段", areas: ["west", "center"], signals: 21, events: 2, heat: "低", scope: "较小 约0.9万人", judge: "常规拥堵，未见异常升温", tone: "blue", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "market-supply", p: "P2", title: "农贸市场供应与价格波动", tag: "民生价格", area: "城西区、城北区 4个市场", areas: ["west", "north"], signals: 18, events: 2, heat: "较低", scope: "较小 约0.8万人", judge: "价格讨论升温，需跟踪线下供给", tone: "blue", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "weather-drainage", p: "P3", title: "强降雨排水与低洼点积水", tag: "城市韧性", area: "城南区、开发区 6个点位", areas: ["south", "dev"], signals: 14, events: 1, heat: "低", scope: "局部 约0.4万人", judge: "天气触发型，暂列观察主线", tone: "green", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "noise-complaint", p: "P3", title: "夜间施工噪声投诉", tag: "环境扰民", area: "城北区 2个社区", areas: ["north"], signals: 12, events: 1, heat: "降温", scope: "局部 约0.3万人", judge: "连续两日下降，保留低频监测", tone: "green", trend: "down", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "parking-dispute", p: "P3", title: "老旧小区停车纠纷", tag: "社区治理", area: "城西区 3个小区", areas: ["west"], signals: 16, events: 1, heat: "持平", scope: "局部 约0.5万人", judge: "讨论稳定，无跨区扩散", tone: "blue", trend: "flat", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" },
+      { id: "water-maintenance", p: "P3", title: "计划停水维护咨询", tag: "公共服务", area: "城南区 4个街道", areas: ["south"], signals: 9, events: 1, heat: "降温", scope: "较小 约0.2万人", judge: "公告后咨询量回落，暂不推演", tone: "green", trend: "down", href: "data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001" }
+    ];
+    const geoMetrics = [
+      { id: "overall", label: "地缘总体风险等级", value: "高风险观察", sub: "较上批次 +1 级", tone: "red", hot: true },
+      { id: "risk-index", label: "区域风险指数", value: "84/100", sub: "较上批次 +8", tone: "red" },
+      { id: "events", label: "活跃事件数", value: "47 个", sub: "近72h +11", tone: "blue" },
+      { id: "new-signals", label: "新增信号数", value: "326 条", sub: "近72h +64", tone: "violet" },
+      { id: "candidates", label: "候选风险主线", value: "10 条", sub: "系统建议中", tone: "blue" },
+      { id: "review", label: "待人工复核", value: "18 条", sub: "证据缺口 +5", tone: "violet" },
+      { id: "timeout", label: "超时事项", value: "5 项", sub: "外交窗口收窄", tone: "amber" },
+      { id: "warming", label: "72h升温倾向", value: "69%", sub: "霍尔木兹与代理人风险主导", tone: "red", spark: true }
+    ];
+    const geoMainlines = [
+      { id: "hormuz-blockade", p: "P0", title: "霍尔木兹封锁与能源通道风险", tag: "能源航运", area: "霍尔木兹海峡 / 波斯湾", areas: ["hormuz", "gulf-bases"], signals: 86, events: 8, heat: "高", scope: "全球能源与海运保险", judge: "封锁声明与船只拒行同时出现，建议立即推演", tone: "red", href: "data-hub.html?mainlineId=ML-001&regionId=hormuz&signalId=SIG-001" },
+      { id: "red-sea-shipping", p: "P1", title: "红海商船袭击与绕航压力", tag: "航运保险", area: "红海 / 亚丁湾 / 好望角绕行", areas: ["red-sea", "cape-reroute"], signals: 61, events: 6, heat: "较高", scope: "集装箱航运与保险费率", judge: "胡塞活动与航司绕航同步升温，需重点跟踪", tone: "amber", href: "data-hub.html?mainlineId=red-sea-shipping&regionId=red-sea" },
+      { id: "hezbollah-front", p: "P1", title: "黎巴嫩南部与以色列北方战线", tag: "代理人战线", area: "黎巴嫩南部 / 以色列北部", areas: ["south-lebanon", "north-israel"], signals: 52, events: 7, heat: "高", scope: "多线作战与边境疏散", judge: "真主党与以军地面行动叠加，分支分歧较大", tone: "red", href: "data-hub.html?mainlineId=hezbollah-front&regionId=north-israel" },
+      { id: "iaea-nuclear-access", p: "P1", title: "核设施受损与 IAEA 核查可达性", tag: "核查争议", area: "Fordow / Yazd / Arak", areas: ["iran-nuclear"], signals: 44, events: 5, heat: "中高", scope: "核扩散与战争合法性", judge: "核查缺口影响外部判断，建议进入主线建模", tone: "violet", href: "data-hub.html?mainlineId=iaea-nuclear-access&regionId=iran-nuclear" },
+      { id: "gulf-base-pressure", p: "P2", title: "海湾基地与能源设施防空压力", tag: "军事安全", area: "卡塔尔 / 巴林 / 科威特 / 阿联酋", areas: ["gulf-bases"], signals: 38, events: 5, heat: "中", scope: "基地安全与海湾国家选边", judge: "威胁信号上升，但仍需确认实际打击能力", tone: "amber", href: "data-hub.html?mainlineId=gulf-base-pressure&regionId=gulf-bases" },
+      { id: "diplomatic-mediation", p: "P2", title: "中国 / 巴基斯坦停火斡旋窗口", tag: "外交斡旋", area: "北京 / 伊斯兰堡 / 德黑兰", areas: ["iran-core"], signals: 31, events: 4, heat: "缓和", scope: "停火条件与谈判窗口", judge: "斡旋出现但条件缺口大，短期只能降低尾部风险", tone: "green", trend: "flat", href: "data-hub.html?mainlineId=diplomatic-mediation&regionId=iran-core" },
+      { id: "energy-price-shock", p: "P2", title: "Brent 油价与储备油释放预期", tag: "能源市场", area: "全球能源市场 / 波斯湾", areas: ["hormuz"], signals: 29, events: 3, heat: "较高", scope: "通胀、航空燃油、化工链", judge: "价格冲击已显性化，需联动航运通道判断", tone: "amber", href: "data-hub.html?mainlineId=energy-price-shock&regionId=hormuz" },
+      { id: "shipping-protection", p: "P3", title: "G7 航运保护与战后通道安排", tag: "多边协调", area: "G7 / 霍尔木兹 / 红海", areas: ["hormuz", "red-sea"], signals: 18, events: 2, heat: "持平", scope: "通道恢复预期", judge: "偏中长期安排，短期不能替代通航事实", tone: "blue", trend: "flat", href: "data-hub.html?mainlineId=shipping-protection&regionId=hormuz" },
+      { id: "humanitarian-strain", p: "P3", title: "民用设施打击与人道风险外溢", tag: "人道风险", area: "伊朗城市与关键民用设施", areas: ["iran-core", "iran-nuclear"], signals: 22, events: 3, heat: "较高", scope: "药品、水资源、舆论战", judge: "证据口径分歧较大，需人工复核后入推演", tone: "amber", href: "data-hub.html?mainlineId=humanitarian-strain&regionId=iran-core" },
+      { id: "proxy-coordination", p: "P3", title: "代理人网络协同行动迹象", tag: "代理人网络", area: "胡塞 / 真主党 / 伊拉克民兵", areas: ["red-sea", "south-lebanon"], signals: 26, events: 4, heat: "较高", scope: "多线牵制与误判升级", judge: "多点信号同步但指挥链证据不足，建议补证", tone: "amber", href: "data-hub.html?mainlineId=proxy-coordination&regionId=red-sea" }
+    ];
+    metrics.splice(0, metrics.length, ...geoMetrics);
+    mainlines.splice(0, mainlines.length, ...geoMainlines);
+    const hotspotMeta = {
+      "urban-renewal": { name: "城东-城中旧改诉求热区", location: "城东区 / 城中区", lead: "城市更新 / 老旧小区改造" },
+      "industrial-labor": { name: "开发区园区劳资热区", location: "开发区B园区", lead: "工业园区劳资压力" },
+      "campus-safety": { name: "校园周边讨论热区", location: "城北区 / 城中区", lead: "校园安全与家长舆情" },
+      "medical-service": { name: "医院服务体验热区", location: "城南区 / 城中区", lead: "医疗服务与就诊体验" },
+      "transport": { name: "主干路通勤滞留热区", location: "城西区 / 城中区", lead: "交通出行与拥堵" },
+      "market-supply": { name: "市场价格讨论热区", location: "城西区 / 城北区", lead: "农贸市场供应与价格波动" },
+      "weather-drainage": { name: "低洼积水观察热区", location: "城南区 / 开发区", lead: "强降雨排水与低洼点积水" }
+    };
+    const weakSignals = [
+      { id: "SIG-001", target: "urban-renewal", title: "补偿标准不一致在两个社区群重复出现", tag: "高价值前兆", tone: "red", link: "城市更新 / 老旧小区改造", score: "0.86" },
+      { id: "SIG-002", target: "industrial-labor", title: "园区员工集中询问工资发放日期", tag: "高价值前兆", tone: "amber", link: "工业园区劳资压力", score: "0.82" },
+      { id: "SIG-003", target: "campus-safety", title: "某中学家长群出现校园周边安全隐患讨论", tag: "中价值信号", tone: "amber", link: "校园安全与家长舆情", score: "0.71" }
+    ];
+    weakSignals.splice(0, weakSignals.length,
+      { id: "SIG-001", target: "hormuz-blockade", title: "IRGC 海军拒绝三艘集装箱船通过霍尔木兹，保险讨论升温", tag: "高价值前兆", tone: "red", link: "霍尔木兹封锁与能源通道风险", score: "0.91" },
+      { id: "SIG-002", target: "red-sea-shipping", title: "多家航运论坛出现战险附加费上调讨论，绕航好望角询价增加", tag: "高价值前兆", tone: "amber", link: "红海商船袭击与绕航压力", score: "0.86" },
+      { id: "SIG-003", target: "iaea-nuclear-access", title: "IAEA 访问范围被多方表述为不完整，核查可信度受质疑", tag: "关键缺口", tone: "violet", link: "核设施受损与 IAEA 核查可达性", score: "0.78" }
+    );
+    const reviewItems = [
+      ["候选主线归属", "A街道旧改相关信号应归入“城市更新/旧改”还是单独作为补偿纠纷主线", "城市更新 / 旧改", "待复核"],
+      ["事件真实性", "B园区薪资延误传闻是否属实，企业未官方回应", "工业园区劳资压力", "待复核"],
+      ["数据源可信度", "某自媒体发布的学校安全事故信息需确认来源", "校园安全与家长舆情", "待复核"],
+      ["地空证据一致性", "交通枢纽视频异常与热线咨询是否指向同一地点", "交通出行与拥堵", "待确认"],
+      ["历史相似性", "旧改争议与去年城西区同类事件相似度较高", "城市更新 / 旧改", "待标注"]
+    ];
+    const sources = [
+      ["公开舆情", "126 条", "短视频评论、公开讨论、社区群转述，可信均值 0.82"],
+      ["网格巡查", "68 条", "街道网格员、现场走访、社区反馈，可信均值 0.91"],
+      ["12345 工单", "52 条", "热线投诉、咨询、重复来电，已完成跨源去重"],
+      ["视频低空", "32 条", "重点场所画面、低空巡查、客流异常，已完成空间定位"],
+      ["历史相似", "40 条", "同类事件前兆、处置记录、相似模式，最高匹配 0.72"],
+      ["人工复核", "12 条", "候选主线归属、事件真实性、来源可信度待确认"]
+    ];
+    const allWeakSignals = [
+      ...weakSignals,
+      { id: "SIG-004", title: "施工围挡附近短视频评论出现集中质疑", tag: "中价值信号", tone: "amber", link: "城市更新 / 老旧小区改造", score: "0.69" },
+      { id: "SIG-005", title: "枢纽区晚高峰滞留被多个账号转发", tag: "地空交叉", tone: "blue", link: "交通出行与拥堵", score: "0.63" },
+      { id: "SIG-006", title: "医院排队体验出现跨院区相似表达", tag: "民生弱信号", tone: "green", link: "医疗服务与就诊体验", score: "0.57" }
+    ];
+    let selectedId = "hormuz-blockade";
+    let selectedArea = null;
+    let mapFocus = false;
+    let zoomLevel = 1;
+    let mapController = null;
+    let activeLens = { type: "all", value: "all", label: "全城态势" };
+    const layers = { risk: true, events: true, routes: true, impact: true };
+    const metricLens = {
+      overall: { label: "全城总体风险", ids: mainlines.map(m => m.id) },
+      "risk-index": { label: "风险指数贡献主线", ids: ["urban-renewal", "industrial-labor", "campus-safety"] },
+      events: { label: "事件数较高主线", ids: ["urban-renewal", "campus-safety", "medical-service"] },
+      "new-signals": { label: "近24h新增信号", ids: ["urban-renewal", "industrial-labor", "transport", "market-supply"] },
+      candidates: { label: "全部候选主线", ids: mainlines.map(m => m.id) },
+      review: { label: "待人工复核主线", ids: ["industrial-labor", "campus-safety", "weather-drainage"] },
+      timeout: { label: "超时处置事项", ids: ["urban-renewal", "industrial-labor", "transport"] },
+      warming: { label: "72h升温倾向主线", ids: ["urban-renewal", "industrial-labor", "campus-safety", "market-supply"] }
+    };
+    const sourceLens = {
+      public: { label: "公开舆情支撑", ids: ["urban-renewal", "campus-safety", "market-supply"] },
+      grid: { label: "网格巡查支撑", ids: ["urban-renewal", "medical-service", "weather-drainage"] },
+      hotline: { label: "12345工单支撑", ids: ["urban-renewal", "industrial-labor", "transport"] },
+      video: { label: "视频低空支撑", ids: ["transport", "medical-service", "weather-drainage"] },
+      history: { label: "历史相似命中", ids: ["urban-renewal", "campus-safety"] },
+      review: { label: "人工复核队列", ids: ["industrial-labor", "campus-safety", "weather-drainage"] }
+    };
+    Object.assign(metricLens, {
+      overall: { label: "中东主战区总体风险", ids: mainlines.map(m => m.id) },
+      "risk-index": { label: "高风险贡献主线", ids: ["hormuz-blockade", "hezbollah-front", "iaea-nuclear-access"] },
+      events: { label: "活跃事件较高主线", ids: ["hormuz-blockade", "hezbollah-front", "red-sea-shipping"] },
+      "new-signals": { label: "近72h新增信号", ids: ["hormuz-blockade", "red-sea-shipping", "energy-price-shock", "proxy-coordination"] },
+      candidates: { label: "全部候选主线", ids: mainlines.map(m => m.id) },
+      review: { label: "待人工复核主线", ids: ["iaea-nuclear-access", "humanitarian-strain", "proxy-coordination"] },
+      timeout: { label: "外交窗口收窄事项", ids: ["hormuz-blockade", "diplomatic-mediation", "gulf-base-pressure"] },
+      warming: { label: "72h升温倾向主线", ids: ["hormuz-blockade", "red-sea-shipping", "hezbollah-front", "energy-price-shock"] }
+    });
+    Object.assign(sourceLens, {
+      public: { label: "公开报道与事件日志", ids: ["hormuz-blockade", "red-sea-shipping", "iaea-nuclear-access"] },
+      grid: { label: "结构化知识图谱", ids: ["proxy-coordination", "hezbollah-front", "gulf-base-pressure"] },
+      hotline: { label: "市场与航运信号", ids: ["hormuz-blockade", "red-sea-shipping", "energy-price-shock"] },
+      video: { label: "卫星 / AIS / 现场源", ids: ["hormuz-blockade", "gulf-base-pressure", "red-sea-shipping"] },
+      history: { label: "历史相似前兆", ids: ["hormuz-blockade", "iaea-nuclear-access", "shipping-protection"] },
+      review: { label: "人工复核队列", ids: ["iaea-nuclear-access", "humanitarian-strain", "proxy-coordination"] }
+    });
+    const initialHotspot = new URLSearchParams(location.search).get("hotspot");
+    const initialZoom = Number(new URLSearchParams(location.search).get("zoom"));
+    if ([1, 2, 3].includes(initialZoom)) zoomLevel = initialZoom;
+    if (initialHotspot && mainlines.some(m => m.id === initialHotspot)) {
+      selectedId = initialHotspot;
+      mapFocus = true;
+    }
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+    const selected = () => mainlines.find(m => m.id === selectedId) || mainlines[0];
+    const visibleMainlines = () => {
+      if (selectedArea) return mainlines.filter(m => m.areas.includes(selectedArea));
+      if (activeLens.type === "metric" || activeLens.type === "source") return mainlines.filter(m => activeLens.ids.includes(m.id));
+      return mainlines;
+    };
+    const hotspot = id => hotspotMeta[id] || { name: "风险热区", location: "重点区域", lead: selected().title };
+
+    function renderMetrics() {
+      $("#metrics").innerHTML = metrics.map(m => `
+        <div class="metric ${m.hot ? "hot" : ""} ${activeLens.type === "metric" && activeLens.value === m.id ? "active" : ""}" data-metric="${m.id}" style="--tone:${colors[m.tone]}">
+          <label><span>${m.label}</span></label>
+          <strong class="${m.hot ? "large" : ""}">${m.value}</strong>
+          <small>${m.sub.replace("+", "<b>+</b>")}</small>
+          ${m.spark ? `<svg class="spark" viewBox="0 0 80 30"><path d="M2 22 L13 18 L24 20 L35 14 L45 16 L56 10 L67 13 L78 5"/></svg>` : ""}
+        </div>
+      `).join("");
+      $$(".metric").forEach(card => card.addEventListener("click", () => {
+        const lens = metricLens[card.dataset.metric];
+        applyLens("metric", card.dataset.metric, lens.label, lens.ids);
+      }));
+    }
+
+    function applyLens(type, value, label, ids) {
+      activeLens = { type, value, label, ids };
+      selectedArea = null;
+      const first = mainlines.find(m => ids.includes(m.id));
+      if (first) selectedId = first.id;
+      mapFocus = true;
+      renderMetrics();
+      renderMainlines();
+      renderWeakSignals();
+      renderState();
+    }
+
+    function renderMainlines() {
+      const rows = visibleMainlines();
+      $("#mainlines").innerHTML = rows.map(m => `
+        <button class="mainline ${m.id === selectedId ? "active" : ""} ${selectedArea ? "filtered" : ""}" data-id="${m.id}" style="--tone:${colors[m.tone]}">
+          <span class="priority">${m.p}</span>
+          <span class="line-title"><b>${m.title}</b><span>${m.tag}</span></span>
+          <p>${m.area}</p>
+          <strong>${m.signals}</strong>
+          <strong>${m.events}</strong>
+          <span class="trend-cell">
+            <svg class="trendline" viewBox="0 0 80 30"><path d="${m.trend === "down" ? "M2 7 L15 9 L28 8 L42 14 L57 18 L77 23" : m.trend === "flat" ? "M2 16 L15 15 L28 16 L42 15 L57 16 L77 15" : "M2 23 L14 18 L25 21 L37 13 L49 17 L62 9 L77 5"}"/></svg>
+            <span>${m.trend === "down" ? "降温" : m.trend === "flat" ? "持平" : "升温"}</span>
+          </span>
+          <p>${m.scope}</p>
+          <span class="judgement">${m.judge}</span>
+          <span class="actions"><a class="primary-mini" href="${m.href}">进入数据</a><a href="${m.href}">详情</a></span>
+        </button>
+      `).join("");
+      $$(".mainline").forEach(row => row.addEventListener("click", event => {
+        if (event.target.closest("a")) return;
+        selectedId = row.dataset.id;
+        selectedArea = null;
+        const m = selected();
+        activeLens = { type: "mainline", value: selectedId, label: "当前主线", ids: [selectedId] };
+        mapFocus = true;
+        renderMetrics();
+        renderWeakSignals();
+        renderMainlines();
+        renderState();
+      }));
+    }
+
+    function renderHotspotPopover() {
+      const pop = $("#hotspotPopover");
+      const heat = $(`.heat[data-id="${selectedId}"]`);
+      const m = selected();
+      if (!pop || !heat || !mapFocus || selectedArea) {
+        pop?.classList.remove("open");
+        return;
+      }
+      const meta = hotspot(selectedId);
+      pop.style.left = heat.style.left;
+      pop.style.top = heat.style.top;
+      pop.innerHTML = `
+        <b>${meta.name}</b>
+        <p>${meta.location}。该点位聚合 ${m.signals} 条信号、${m.events} 个事件，主要指向“${meta.lead}”。</p>
+        <div class="hot-meta">
+          <span>热度 ${m.heat}</span>
+          <span>${m.p}</span>
+          <span>${m.scope}</span>
+          <span>${m.tag}</span>
+        </div>
+        <a href="data-hub.html?regionId=hormuz&mainlineId=ML-001&signalId=SIG-001">查看详情</a>
+      `;
+      pop.classList.add("open");
+    }
+
+    function renderWeakSignals() {
+      $("#weakSignals").innerHTML = weakSignals.map(w => `
+        <button class="weak-card ${activeLens.type === "weak" && activeLens.value === w.id ? "active" : ""}" data-weak="${w.id}" data-target="${w.target}" style="--tone:${colors[w.tone]}">
+          <b>${w.id}</b>
+          <span>${w.tag}</span>
+          <p>${w.title}</p>
+          <p>关联主线：${w.link}</p>
+          <div class="score-line">弱信号评分：${w.score}</div>
+        </button>
+      `).join("");
+      $$(".weak-card").forEach(card => card.addEventListener("click", () => {
+        const signal = weakSignals.find(w => w.id === card.dataset.weak);
+        applyLens("weak", signal.id, `弱信号 ${signal.id}`, [signal.target]);
+      }));
+    }
+
+    function renderState() {
+      const m = selected();
+      const relevantIds = new Set(visibleMainlines().map(row => row.id));
+      const collectionLens = activeLens.type === "metric" || activeLens.type === "source" || activeLens.type === "area";
+      const relevantAreas = new Set(visibleMainlines().flatMap(row => row.areas));
+      $$(".heat").forEach(h => {
+        const relevant = selectedArea ? relevantIds.has(h.dataset.id) : collectionLens ? relevantIds.has(h.dataset.id) : mapFocus ? h.dataset.id === selectedId : true;
+        h.classList.toggle("active", h.dataset.id === selectedId);
+        h.classList.toggle("suppressed", !relevant);
+      });
+      $$(".mainline").forEach(row => row.classList.toggle("active", row.dataset.id === selectedId));
+      $$(".district").forEach(d => {
+        const activeByLine = mapFocus && !selectedArea && m.areas.includes(d.dataset.area);
+        const activeByArea = selectedArea === d.dataset.area;
+        const activeByCollection = collectionLens && relevantAreas.has(d.dataset.area);
+        d.classList.toggle("active", activeByLine || activeByArea || activeByCollection);
+        d.classList.toggle("suppressed", selectedArea ? selectedArea !== d.dataset.area : collectionLens ? !relevantAreas.has(d.dataset.area) : mapFocus ? !m.areas.includes(d.dataset.area) : false);
+      });
+      $$(".source").forEach(card => card.classList.toggle("active", activeLens.type === "source" && activeLens.value === card.dataset.source));
+      $$(".metric").forEach(card => card.classList.toggle("active", activeLens.type === "metric" && activeLens.value === card.dataset.metric));
+      const stateEl = $("#worldState");
+      if (stateEl) {
+        stateEl.innerHTML = `
+          <b>当前聚焦</b>
+          <span class="chip">${activeLens.label}</span>
+          <span class="chip">${m.p} ${m.title}</span>
+          <span class="chip">关联系号 ${m.signals}</span>
+          <span class="chip">关联事件 ${m.events}</span>
+          <span class="chip">${m.scope}</span>
+        `;
+      }
+      renderHotspotPopover();
+      renderLayers();
+    }
+
+    function renderLayers() {
+      const visibleIds = new Set(visibleMainlines().map(row => row.id));
+      const collectionLens = activeLens.type === "metric" || activeLens.type === "source" || activeLens.type === "area";
+      $$(".check").forEach(btn => {
+        btn.classList.toggle("off", !layers[btn.dataset.layer]);
+      });
+      if (mapController) {
+        Object.entries(layers).forEach(([group, visible]) => mapController.setLayerVisibility(group, visible));
+      }
+      $$(".district").forEach(d => d.classList.toggle("hidden", !layers.districts));
+      $$(".heat").forEach(h => h.classList.toggle("hidden", !layers.heats));
+      $$(".event-point").forEach(point => {
+        const relevant = selectedArea ? visibleIds.has(point.dataset.parent) : collectionLens ? visibleIds.has(point.dataset.parent) : mapFocus ? point.dataset.parent === selectedId : true;
+        point.classList.toggle("hidden", !layers.heats);
+        point.classList.toggle("suppressed", !relevant);
+      });
+      $$(".air-path").forEach(a => a.classList.toggle("hidden", !layers.air));
+      $("#cityMap").classList.remove("zoom-1", "zoom-2", "zoom-3");
+      $("#cityMap").classList.add(`zoom-${zoomLevel}`);
+    }
+
+    function openModal(kind) {
+      const titles = {
+        sources: "数据主要来源",
+        mainlines: "候选风险主线全量列表",
+        weak: "高价值弱信号全量摘要",
+        review: "待人工复核事项"
+      };
+      $("#modalTitle").textContent = titles[kind] || "查看更多";
+      let rows = "";
+      if (kind === "mainlines") {
+        rows = mainlines.map(m => `<div class="modal-row"><b>${m.p} ${m.title}</b><span>${m.area}</span><span>信号 ${m.signals} / 事件 ${m.events}</span><span>${m.judge}</span></div>`).join("");
+      } else if (kind === "weak") {
+        rows = allWeakSignals.map(w => `<div class="modal-row"><b>${w.id}</b><span>${w.title}</span><span>${w.link}</span><span>${w.score}</span></div>`).join("");
+      } else if (kind === "review") {
+        rows = reviewItems.map(r => `<div class="modal-row"><b>${r[0]}</b><span>${r[1]}</span><span>${r[2]}</span><span>${r[3]}</span></div>`).join("");
+      } else {
+        rows = sources.map(s => `<div class="modal-row"><b>${s[0]}</b><span>${s[2]}</span><span>${s[1]}</span><span>在线</span></div>`).join("");
+      }
+      $("#modalBody").innerHTML = `<div class="modal-list">${rows}</div>`;
+      $("#modal").classList.add("open");
+    }
+
+    function normalizeMapChrome() {
+      const title = $(".map-title");
+      if (title) title.innerHTML = `<b>中东主战区真实地图</b><span>OSM 底图叠加风险区域、事件点、航运路径与影响范围</span>`;
+      const footer = $(".map-footer span");
+      if (footer) footer.textContent = "真实地图态势层：空间热点即使尚未形成完整主线，也进入强关注。";
+      const sideTitles = $$(".map-side-title");
+      if (sideTitles[0]) sideTitles[0].textContent = "图层筛选";
+      if (sideTitles[1]) sideTitles[1].textContent = "风险热度";
+      const tools = $(".map-tools");
+      if (tools) {
+        tools.innerHTML = `
+          <button class="check" data-layer="risk"><i></i>风险区域</button>
+          <button class="check" data-layer="events"><i></i>事件点</button>
+          <button class="check" data-layer="routes"><i></i>航运路径</button>
+          <button class="check" data-layer="impact"><i></i>影响范围</button>
+        `;
+      }
+      const legend = $(".legend");
+      if (legend) {
+        legend.innerHTML = `
+          <span><i style="--tone:var(--red)"></i>高</span>
+          <span><i style="--tone:var(--amber)"></i>较高</span>
+          <span><i style="--tone:var(--blue)"></i>较低</span>
+          <span><i style="--tone:var(--green)"></i>缓和</span>
+        `;
+      }
+      const briefTitle = $(".brief .panel-title");
+      const briefText = $(".brief p");
+      if (briefTitle) briefTitle.textContent = "当前地缘风险态势摘要";
+      if (briefText) briefText.textContent = "当前案例为伊朗战争升级与霍尔木兹封锁风险。系统从事件日志、触发节点、关系矩阵、知识图谱和航运市场信号中识别出能源通道、红海航运、代理人战线、核查争议和外交斡旋五类关键关注方向。";
+      const sourceCopy = {
+        public: ["开", "公开事件日志", "126 条 / 可信 0.82"],
+        grid: ["图", "知识图谱", "68 条 / 关系强度"],
+        hotline: ["市", "市场航运信号", "52 条 / 已去重"],
+        video: ["星", "卫星与 AIS", "32 条 / 已定位"],
+        history: ["史", "历史相似前兆", "40 条 / 匹配 0.72"],
+        review: ["核", "人工复核队列", "18 条 / 待确认"]
+      };
+      $$(".source").forEach(card => {
+        const copy = sourceCopy[card.dataset.source];
+        if (!copy) return;
+        card.querySelector("i").textContent = copy[0];
+        card.querySelector("b").textContent = copy[1];
+        card.querySelector("span").textContent = copy[2];
+      });
+    }
+
+    function handleMapFeature(properties) {
+      const ids = mainlines
+        .filter(m => m.areas.includes(properties.regionId) || m.id === properties.mainlineId)
+        .map(m => m.id);
+      if (properties.mainlineId && mainlines.some(m => m.id === properties.mainlineId)) {
+        selectedId = properties.mainlineId;
+      } else if (ids[0]) {
+        selectedId = ids[0];
+      }
+      selectedArea = properties.regionId || null;
+      activeLens = {
+        type: "area",
+        value: selectedArea || properties.featureId,
+        label: properties.title || "地图空间要素",
+        ids: ids.length ? ids : [selectedId]
+      };
+      mapFocus = true;
+      renderMetrics();
+      renderWeakSignals();
+      renderMainlines();
+      renderState();
+    }
+
+    async function initRiskMap() {
+      const fallback = $("#mapFallback");
+      try {
+        const mapLayers = await MockAPI.getMapLayers("iran-war-escalation");
+        if (!mapLayers.riskAreas?.features?.length) {
+          fallback?.classList.add("show");
+          return;
+        }
+        mapController = WorldlineMap.initRiskMap({
+          container: "riskMap",
+          layers: mapLayers,
+          onFeatureClick: ({ properties }) => handleMapFeature(properties),
+          onReady: () => {
+            fallback?.classList.remove("show");
+            renderLayers();
+          },
+          onError: error => {
+            window.__riskMapLastError = error?.message || "map warning";
+          }
+        });
+        window.__riskMap = mapController;
+      } catch (error) {
+        console.warn(error);
+        fallback?.classList.add("show");
+      }
+    }
+
+    function init() {
+      normalizeMapChrome();
+      renderMetrics();
+      renderMainlines();
+      renderWeakSignals();
+      $$(".heat").forEach(h => h.addEventListener("click", () => {
+        selectedId = h.dataset.id;
+        selectedArea = null;
+        activeLens = { type: "hotspot", value: selectedId, label: "地图热区", ids: [selectedId] };
+        mapFocus = true;
+        renderMetrics();
+        renderWeakSignals();
+        renderMainlines();
+        renderState();
+      }));
+      $$(".district").forEach(d => d.addEventListener("click", () => {
+        selectedArea = selectedArea === d.dataset.area ? null : d.dataset.area;
+        mapFocus = Boolean(selectedArea);
+        activeLens = { type: "area", value: selectedArea || "all", label: selectedArea ? "地图区域筛选" : "全城态势", ids: selectedArea ? mainlines.filter(m => m.areas.includes(selectedArea)).map(m => m.id) : mainlines.map(m => m.id) };
+        const rows = visibleMainlines();
+        selectedId = rows[0]?.id || selectedId;
+        renderMetrics();
+        renderWeakSignals();
+        renderMainlines();
+        renderState();
+      }));
+      $$(".source").forEach(card => card.addEventListener("click", () => {
+        const lens = sourceLens[card.dataset.source];
+        applyLens("source", card.dataset.source, lens.label, lens.ids);
+      }));
+      $$(".check").forEach(btn => btn.addEventListener("click", () => {
+        layers[btn.dataset.layer] = !layers[btn.dataset.layer];
+        renderLayers();
+      }));
+      $("#zoomIn").addEventListener("click", () => {
+        if (mapController) {
+          mapController.zoomIn();
+          return;
+        }
+        zoomLevel = Math.min(3, zoomLevel + 1);
+        renderLayers();
+      });
+      $("#zoomOut").addEventListener("click", () => {
+        if (mapController) {
+          mapController.zoomOut();
+          return;
+        }
+        zoomLevel = Math.max(1, zoomLevel - 1);
+        renderLayers();
+      });
+      $$("[data-more]").forEach(btn => btn.addEventListener("click", () => openModal(btn.dataset.more)));
+      $("#modalClose").addEventListener("click", () => $("#modal").classList.remove("open"));
+      $("#modal").addEventListener("click", event => {
+        if (event.target.id === "modal") $("#modal").classList.remove("open");
+      });
+      renderState();
+      initRiskMap();
+    }
+    init();
+  </script>
+  <script src="iran-narrative-overrides.js?v=20260428-goldenpath1"></script>
+  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+</body>
+</html>
