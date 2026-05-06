@@ -1185,7 +1185,7 @@
     async function initRiskMap() {
       const fallback = $("#mapFallback");
       try {
-        const mapLayers = await MockAPI.getMapLayers("iran-war-escalation");
+        const mapLayers = await MockAPI.getMapLayers("campus-death-high-intensity");
         if (!mapLayers.riskAreas?.features?.length) {
           fallback?.classList.add("show");
           return;
@@ -1269,7 +1269,7 @@
     }
     init();
   </script>
-  <script src="iran-narrative-overrides.js?v=20260428-goldenpath1"></script>
-  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+  <script src="iran-narrative-overrides.js?v=20260506-campus"></script>
+  <script src="golden-path.js?v=20260506-campus"></script>
 </body>
 </html>

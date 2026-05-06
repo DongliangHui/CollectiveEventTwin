@@ -1,15 +1,13 @@
 {
-  "caseId": "iran-war-escalation",
+  "caseId": "campus-death-high-intensity",
   "points": [
-    { "id": "tehran", "name": "德黑兰", "type": "capital", "coordinates": [51.389, 35.6892], "regionId": "iran-core" },
-    { "id": "hormuz", "name": "霍尔木兹海峡", "type": "chokepoint", "coordinates": [56.25, 26.55], "regionId": "hormuz" },
-    { "id": "red-sea", "name": "红海航线", "type": "shipping-route", "coordinates": [39.9, 20.2], "regionId": "red-sea" },
-    { "id": "north-israel", "name": "以色列北部", "type": "frontline", "coordinates": [35.35, 33.1], "regionId": "north-israel" },
-    { "id": "south-lebanon", "name": "黎巴嫩南部", "type": "frontline", "coordinates": [35.55, 33.3], "regionId": "south-lebanon" },
-    { "id": "yemen", "name": "也门胡塞控制区", "type": "proxy-area", "coordinates": [44.2, 15.4], "regionId": "yemen-houthi" },
-    { "id": "qatar-base", "name": "Al Udeid 空军基地", "type": "gulf-base", "coordinates": [51.314, 25.117], "regionId": "gulf-bases" },
-    { "id": "bahrain-fifth-fleet", "name": "巴林第五舰队", "type": "gulf-base", "coordinates": [50.601, 26.208], "regionId": "gulf-bases" },
-    { "id": "fordow", "name": "Fordow 核设施", "type": "nuclear-site", "coordinates": [50.995, 34.884], "regionId": "iran-nuclear" },
-    { "id": "yazd", "name": "Yazd 铀加工设施", "type": "nuclear-site", "coordinates": [54.367, 31.897], "regionId": "iran-nuclear" }
+    { "id": "qinglan-school", "name": "青澜中学", "type": "campus", "coordinates": [104.063, 30.662], "regionId": "campus-core" },
+    { "id": "school-gate", "name": "校门口聚集点", "type": "offline-gathering", "coordinates": [104.058, 30.660], "regionId": "family-gathering" },
+    { "id": "teaching-building", "name": "教学楼证据点", "type": "evidence-point", "coordinates": [104.066, 30.657], "regionId": "campus-core" },
+    { "id": "family-room", "name": "家属沟通室", "type": "communication-room", "coordinates": [104.061, 30.659], "regionId": "family-gathering" },
+    { "id": "education-bureau", "name": "教育主管部门", "type": "authority", "coordinates": [104.084, 30.654], "regionId": "authority-response" },
+    { "id": "local-media", "name": "本地媒体传播节点", "type": "media-node", "coordinates": [104.088, 30.671], "regionId": "online-spread" },
+    { "id": "platform-node", "name": "同城短视频传播节点", "type": "platform-node", "coordinates": [104.075, 30.668], "regionId": "online-spread" },
+    { "id": "privacy-risk", "name": "未成年人隐私风险节点", "type": "privacy-risk", "coordinates": [104.071, 30.651], "regionId": "privacy-risk" }
   ]
 }

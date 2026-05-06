@@ -48,7 +48,7 @@
   }
 
   function normalizeMainlineId(id) {
-    return id === "hormuz-blockade" || !id ? "ML-001" : id;
+    return ["hormuz-blockade", "campus-safety", "campus-trust-mainline", "ML-CAMPUS-001", "", null, undefined].includes(id) ? "ML-001" : id;
   }
 
   function paginate(list, page = 1, pageSize = 8) {
@@ -65,12 +65,12 @@
     state: { read: readState, write: writeState, key: stateKey },
     normalizeMainlineId,
 
-    async getCase(caseId = "CASE-IRAN-001") {
+    async getCase(caseId = "CASE-CAMPUS-001") {
       const demo = await readDemo();
       return delay(clone({ ...demo.case, requestedId: caseId }));
     },
 
-    async getDashboard(caseId = "CASE-IRAN-001") {
+    async getDashboard(caseId = "CASE-CAMPUS-001") {
       const demo = await readDemo();
       return delay(clone({ caseId, ...demo.dashboard, case: demo.case }));
     },
@@ -104,7 +104,7 @@
         buckets: [
           { label: "同区域同时间", count: related.length, items: related.map(item => item.id) },
           { label: "可能属于同一主线", count: demo.signals.filter(item => normalizeMainlineId(item.mainlineId) === "ML-001").length, items: ["SIG-001", "SIG-012", "SIG-017"] },
-          { label: "历史相似前兆", count: 2, items: ["2019-hormuz-tanker", "2024-red-sea-routing"] }
+          { label: "历史相似前兆", count: 3, items: ["campus-bullying-gathering", "minor-privacy-leak", "vague-response-escalation"] }
         ]
       }));
     },
@@ -154,7 +154,7 @@
         councilId: result.id,
         councilStatus: "injected",
         selectedNodeId: result.nodeId,
-        branchC: 41,
+        branchC: result.branchChanges?.[0]?.to || 58,
         reportId: demo.case.reportId
       });
       return delay(clone({ result, state }));
@@ -172,12 +172,12 @@
       return delay(clone(writeState({ tasks })));
     },
 
-    async getMapConfig(caseId = "iran-war-escalation") {
+    async getMapConfig(caseId = "campus-death-high-intensity") {
       const layers = await readJson("map-layers.json");
       return { caseId, ...layers.config };
     },
 
-    async getMapLayers(caseId = "iran-war-escalation") {
+    async getMapLayers(caseId = "campus-death-high-intensity") {
       const layers = await readJson("map-layers.json");
       return { caseId, ...layers };
     },

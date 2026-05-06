@@ -1,887 +1,372 @@
 (function () {
-  const page = location.pathname.split("/").pop() || "risk-dashboard.html";
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const palette = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
-
-  const commonTerms = [
-    ["XX市风险主控台", "WORLDLINE OBSERVER"],
-    ["城市总体现状", "区域风险总览"],
-    ["城市总体风险等级", "地缘总体风险等级"],
-    ["城市风险指数", "区域风险指数"],
-    ["城市空间态势图", "中东空间态势图"],
-    ["城市态势摘要", "区域态势摘要"],
-    ["城市更新补偿争议主线", "霍尔木兹通航受限与能源外溢主线"],
-    ["城市更新 / 老旧小区改造", "美伊冲突 / 霍尔木兹通航风险"],
-    ["美伊冲突 / 霍尔木兹通航风险补偿争议", "美伊冲突 / 霍尔木兹封锁风险"],
-    ["霍尔木兹通航风险补偿争议", "霍尔木兹封锁风险"],
-    ["补偿争议", "封锁风险"],
-    ["补偿支点", "通航稳定性支点"],
-    ["补偿方案", "通航方案"],
-    ["补偿、护航与知情权讨论", "临检、护航与通航权讨论"],
-    ["约 4200 户潜在相关", "约 42 艘油轮/商船潜在相关"],
-    ["3 个港口，约 4200 户", "3 条关键航线，约 42 艘船舶"],
-    ["航运社群公共项目争议", "海峡通航与安全管控争议"],
-    ["城市更新", "霍尔木兹通航"],
-    ["老旧小区改造", "海峡通航限制"],
-    ["补偿标准不一致", "临检标准不明确"],
-    ["补偿测算", "临检与护航规则"],
-    ["补偿口径", "临检口径"],
-    ["补偿公平", "通航公平"],
-    ["补偿", "通航"],
-    ["居民代表", "船东代表"],
-    ["居民群体", "能源进口方"],
-    ["居民", "船东"],
-    ["街道/社区", "伊朗决策层"],
-    ["街道", "伊朗决策层"],
-    ["社区", "航运社群"],
-    ["主管部门", "美国安全决策"],
-    ["施工方/企业", "海湾国家"],
-    ["施工方", "海湾国家"],
-    ["施工扰民", "通航受限"],
-    ["施工", "护航"],
-    ["工期成本", "供应与成本"],
-    ["停工", "停航"],
-    ["政府", "多方协调方"],
-    ["各部门口径", "各方口径"],
-    ["小范围说明会", "船东与保险方沟通"],
-    ["小范围说明", "船东沟通"],
-    ["发布解释型 FAQ", "发布护航与临检规则说明"],
-    ["申诉入口", "通报入口"],
-    ["航运航运信号", "航运信号"],
-    ["航运航运媒体", "航运媒体"],
-    ["航运社群群", "船东论坛"],
-    ["护航护航边界", "护航边界"],
-    ["旧改", "霍尔木兹"],
-    ["历史投诉", "历史相似前兆"],
-    ["园区员工集中询问工资发放日期", "红海船东集中讨论绕航成本"],
-    ["企业侧正式回应缺失", "航运公司公开口径不足"],
-    ["劳资压力", "绕航压力"],
-    ["薪资发放", "绕航成本"],
-    ["企业回应", "船东回应"],
-    ["某中学家长群出现核查周边安全隐患讨论", "IAEA 核查窗口推迟引发核查可达性讨论"],
-    ["短时升温，现实反馈不足", "机构表态升温，现场核查证据不足"],
-    ["核查安全", "核查争议"],
-    ["家长市场预期", "机构可信度"],
-    ["周边安全", "核查窗口"],
-    ["枢纽区晚高峰滞留被多个账号转发", "红海绕航等待被多个船东账号转发"],
-    ["视频异常与航运信号咨询需要对齐", "AIS 异常与船东报价需要对齐"],
-    ["交通出行", "航运通道"],
-    ["客流异常", "船舶等待"],
-    ["港口排队体验出现跨院区相似表达", "海湾港口排队体验出现跨航线相似表达"],
-    ["影响区域级民生服务感知", "影响区域级航运服务感知"],
-    ["医疗服务", "港口服务"],
-    ["就诊体验", "排队体验"],
-    ["多个市场摊主讨论进货价短时波动", "多个交易员讨论 Brent 风险溢价短时波动"],
-    ["价格话题集中但线下库存稳定", "价格话题集中但现货供应尚未异常"],
-    ["民生价格", "能源价格"],
-    ["供给预期", "供应预期"],
-    ["价格波动", "风险溢价"],
-    ["低洼点排水井附近出现短时积水反馈", "海湾基地周边出现短时防空戒备反馈"],
-    ["天气触发型信号，尚未形成连片影响", "军事戒备型信号，尚未形成连片外溢"],
-    ["区域韧性", "基地安全"],
-    ["低洼点", "海湾基地"],
-    ["排水能力", "防空压力"],
-    ["FAQ 与说明会", "规则说明与沟通窗口"],
-    ["FAQ", "规则说明"],
-    ["说明会", "沟通窗口"],
-    ["公开测算规则与依据", "公开临检与护航依据"],
-    ["建立反馈渠道与时间表", "建立通报渠道与时间表"],
-    ["一线解释", "执行口径"],
-    ["线下询问", "船东询问"],
-    ["主体上涌讨论发酵", "船东论坛讨论发酵"],
-    ["通航方法", "通航规则"],
-    ["正在核实", "正在协调护航"],
-    ["网格/基层", "航运保险"],
-    ["网格员", "航运保险"],
-    ["网格", "航运保险"],
-    ["人群", "主体"],
-    ["围挡", "护航边界"],
-    ["线下反馈", "AIS 实测反馈"],
-    ["现场反馈", "AIS 实测反馈"],
-    ["公告版本", "声明版本"],
-    ["官方回应、线下反馈、视频点位", "护航边界、通航率、核查窗口"],
-    ["媒体/自媒体", "能源市场"],
-    ["自媒体", "能源市场"],
-    ["市场观察者", "市场观察"],
-    ["12345热线", "公开航运与市场信号"],
-    ["12345 航运信号咨询", "AIS 航运信号咨询"],
-    ["12345", "AIS"],
-    ["AIS 工单", "AIS 片段"],
-    ["官方回应、AIS 实测反馈、视频点位", "护航边界、通航率、核查窗口"],
-    ["网络上报", "公开视频/论坛上报"],
-    ["项目公告/文件", "机构声明/文件"],
-    ["尚未完成最终测算", "尚未明确最终护航边界"],
-    ["工期和成本", "供应和成本"],
-    ["12345 工单", "AIS / 航运报价"],
-    ["热线", "航运信号"],
-    ["短视频", "公开视频/卫星"],
-    ["社区群", "船东论坛"],
-    ["学校", "核查机构"],
-    ["校园", "核查"],
-    ["医院", "港口"],
-    ["工业园", "海湾基地"],
-    ["城东区", "霍尔木兹"],
-    ["城北区", "红海"],
-    ["城中区", "波斯湾"],
-    ["城西区", "黎以边境"],
-    ["城南区", "也门沿岸"],
-    ["开发区", "海湾基地"],
-    ["地铁事件", "霍尔木兹事件"],
-    ["票价上涨争议发酵", "保险费率上调争议发酵"],
-    ["票价上涨", "保险费率上调"],
-    ["票价争议", "保险费率争议"],
-    ["网友情绪升温", "航运市场预期升温"],
-    ["学生群体讨论升温", "能源进口方讨论升温"],
-    ["交通拥堵反馈增加", "绕航成本反馈增加"],
-    ["媒体报道增加", "航运媒体报道增加"],
-    ["官方回应开始", "G7 护航讨论出现"],
-    ["官方说明发布", "护航机制说明发布"],
-    ["相关话题冲上热搜", "能源价格风险溢价"],
-    ["群体不满升级，线下聚集风险", "临检扩大，通航限制升级风险"],
-    ["线下聚集", "通航受限"],
-    ["小规模抗议局部聚集", "局部航道拥堵"],
-    ["抗议扩大化持续发酵", "封锁预期持续发酵"],
-    ["舆情逐步降温恢复稳定", "通航预期逐步恢复"],
-    ["舆情扩散", "风险外溢"],
-    ["舆情", "市场预期"],
-    ["信息透明度", "通航透明度"],
-    ["信息公开", "规则公开"],
-    ["公平预期", "通航稳定预期"],
-    ["小区", "港口"],
-    ["群体", "主体"],
-    ["全城", "中东主战区"],
-    ["城市", "区域"]
+  const replacements = [
+    ["数据更新时间：2026-04-25 12:00:00", "数据更新时间：2026-05-02 14:40:00"],
+    ["地缘总体风险等级", "事件总体风险等级"],
+    ["当前地缘风险态势摘要", "当前校园高烈度事件态势摘要"],
+    ["地缘风险", "校园事件"],
+    ["区域风险指数", "爆燃指数"],
+    ["84/100", "86/100"],
+    ["活跃事件数", "现场事件数"],
+    ["47 个", "12 个"],
+    ["新增信号数", "新增信号"],
+    ["326 条", "486 条"],
+    ["候选风险主线", "候选事件主线"],
+    ["72h升温倾向", "72h 升温倾向"],
+    ["69%", "58%"],
+    ["当前案例为校方战争升级与校园高烈度事件风险", "当前案例为校园坠亡与疑似欺凌引发线下聚集风险"],
+    ["当前案例为校方事件升级与校园高烈度事件风险", "当前案例为校园坠亡与疑似欺凌引发线下聚集风险"],
+    ["传播市场信号", "传播平台信号"],
+    ["青澜中学海峡", "青澜中学"],
+    ["全球公众情绪与海运保险", "公众情绪与隐私保护"],
+    ["海运保险", "隐私保护"],
+    ["海运", "现场传播"],
+    ["校方战争升级", "校园坠亡事件"],
+    ["战争升级", "事件升级"],
+    ["市场现场信号", "平台现场信号"],
+    ["军事动态", "现场动态"],
+    ["官方声明", "校方/部门回应"],
+    ["保险市场", "隐私保护"],
+    ["地缘站位", "主体立场"],
+    ["海上安全", "校园安全"],
+    ["无法验证保费波动原因是地缘还是传播路径调整", "无法验证情绪波动原因是事实缺口还是平台传播"],
+    ["地缘还是传播路径调整", "事实缺口还是平台传播"],
+    ["等待线索的持续时间与范围", "聚集人数的持续时间与范围"],
+    ["家属家属沟通会", "家属沟通会"],
+    ["美伊冲突与霍尔木兹通航受限风险", "校园坠亡与疑似欺凌引发线下聚集风险"],
+    ["美伊冲突与霍尔木兹封锁风险", "校园坠亡与疑似欺凌引发线下聚集风险"],
+    ["美伊冲突 / 霍尔木兹通航风险", "校园坠亡 / 疑似欺凌与聚集风险"],
+    ["美伊冲突 / 霍尔木兹封锁风险", "校园坠亡 / 疑似欺凌与聚集风险"],
+    ["霍尔木兹通航受限与能源外溢主线", "校园死亡事件事实责任与线下风险主线"],
+    ["霍尔木兹封锁与能源通道风险", "校园死亡事件事实责任与线下风险主线"],
+    ["霍尔木兹通航受限 World State", "校园死亡高烈度事件 World State"],
+    ["霍尔木兹通航受限", "校园高烈度事件"],
+    ["霍尔木兹封锁风险", "校园高烈度事件风险"],
+    ["霍尔木兹封锁", "校园压事质疑"],
+    ["霍尔木兹", "青澜中学"],
+    ["IRGC 临检扩大与青澜中学通航风险升温", "校门口现场视频与家属聚集快速扩散"],
+    ["IRGC 临检扩大与霍尔木兹通航风险升温", "校门口现场视频与家属聚集快速扩散"],
+    ["IRGC 海军拒绝三艘集装箱船通过青澜中学，保险讨论升温", "校门口现场视频传播，家属聚集与问责快速升温"],
+    ["IRGC 海军拒绝三艘集装箱船通过霍尔木兹，保险讨论升温", "校门口现场视频传播，家属聚集与问责快速升温"],
+    ["IRGC 舰船活动增大", "校内死亡事实形成"],
+    ["IRGC 临检范围扩大", "校方证据保全边界不清"],
+    ["IRGC", "校方/现场"],
+    ["AIS 等待船舶增加，船东论坛讨论保险拒保条款", "现场视频、学生群截图与家属陈述同步出现"],
+    ["AIS 等待船舶增加", "现场视频与家属人数增加"],
+    ["AIS 等待船舶与保险报价样本", "现场视频、家校沟通记录与证据样本"],
+    ["AIS 等待船舶", "现场视频样本"],
+    ["AIS 船舶状态", "现场视频状态"],
+    ["AIS", "现场视频"],
+    ["War Risk Premium", "隐私扩散风险"],
+    ["Brent 风险溢价", "回应可信度"],
+    ["Brent 油价与储备油释放预期", "回应可信度与信任真空"],
+    ["Brent", "回应可信度"],
+    ["G7 航运保护与战后通道安排", "联合调查与后续通报安排"],
+    ["G7 护航机制讨论压低极端封锁预期", "联合调查机制可降低叙事失控预期"],
+    ["G7 护航机制讨论出现，封锁预期短线降温", "联合调查机制出现，压事质疑短线降温"],
+    ["G7 / 海湾国家护航行动监测表", "教育主管部门 / 属地联合调查行动监测表"],
+    ["G7 / 海湾国家", "教育主管部门 / 属地"],
+    ["G7 声明", "联合调查组说明"],
+    ["G7", "联合调查组"],
+    ["IAEA 核查窗口推迟，制裁合法性争议升温", "关键证据保全滞后，责任归因争议升温"],
+    ["IAEA 核查受阻与制裁争议主线", "证据保全受阻与责任争议主线"],
+    ["IAEA 核查争议主线", "证据保全争议主线"],
+    ["IAEA 核查窗口", "证据保全窗口"],
+    ["IAEA 核查", "证据保全"],
+    ["IAEA", "证据保全"],
+    ["Yazd 核查窗口推迟", "教学楼证据保全窗口推迟"],
+    ["Yazd", "教学楼"],
+    ["Fordow / Yazd / Arak", "监控室 / 教学楼 / 校门口"],
+    ["Fordow", "监控室"],
+    ["Arak", "校门口"],
+    ["核设施受损与 证据保全 核查可达性", "证据保全与监控可达性"],
+    ["核设施受损与 IAEA 核查可达性", "证据保全与监控可达性"],
+    ["核设施与 证据保全 核查争议", "证据保全与监控调取争议"],
+    ["核设施与 IAEA 核查争议", "证据保全与监控调取争议"],
+    ["核设施", "校园证据点"],
+    ["核查窗口", "证据保全窗口"],
+    ["核查争议", "证据保全争议"],
+    ["核查可达性", "监控可达性"],
+    ["核查", "证据核验"],
+    ["制裁合法性", "责任归因"],
+    ["制裁节奏", "问责节奏"],
+    ["制裁", "问责"],
+    ["红海商船袭击与绕航压力", "同城短视频扩散与围观压力"],
+    ["红海绕航讨论升温，船东重新评估好望角路径", "同城扩散讨论升温，家长/学生重新评估到校风险"],
+    ["红海绕航成本主线", "同城扩散成本主线"],
+    ["红海袭击与绕航成本主线", "同城扩散与围观压力主线"],
+    ["红海船东集中讨论绕航成本", "家长群集中讨论到校与调查进展"],
+    ["红海", "同城平台"],
+    ["黎巴嫩南部与以色列北方战线", "学生爆料与责任归因分裂"],
+    ["黎以边境火箭弹频率上升，北部战线外溢", "学生群爆料频率上升，责任归因外溢"],
+    ["黎以边境", "学生群"],
+    ["北部战线", "责任归因线"],
+    ["真主党", "学生爆料账号"],
+    ["胡塞", "动员账号"],
+    ["代理人网络协同行动迹象", "账号联动与动员话术迹象"],
+    ["代理人组织", "外部账号"],
+    ["代理人", "外部账号"],
+    ["海湾基地与能源设施防空压力", "校门现场与未成年人保护压力"],
+    ["海湾基地", "现场处置点"],
+    ["海湾国家", "教育主管部门"],
+    ["海湾", "属地"],
+    ["波斯湾", "属地平台"],
+    ["中国 / 巴基斯坦停火斡旋窗口", "教育主管部门联合调查窗口"],
+    ["阿曼、卡塔尔与联合国通道", "属地、教育主管部门与平台通道"],
+    ["卡塔尔、巴林、阿联酋基地", "校门口、教学楼与家属沟通点"],
+    ["阿曼", "属地部门"],
+    ["卡塔尔", "教育主管部门"],
+    ["巴林", "属地部门"],
+    ["阿联酋", "平台协同方"],
+    ["德黑兰", "校方办公室"],
+    ["伊朗决策层", "校方"],
+    ["伊朗核心", "校方现场"],
+    ["伊朗城市与关键民用设施", "校园与关键证据点"],
+    ["伊朗", "校方"],
+    ["美国安全决策", "属地部门"],
+    ["美国", "属地部门"],
+    ["以色列", "校方"],
+    ["黎巴嫩", "学生群"],
+    ["也门", "外部账号区"],
+    ["中东风险信号", "校园高烈度事件信号"],
+    ["中东空间态势图", "校园事件空间态势图"],
+    ["中东贴水", "信任折损"],
+    ["中东", "校园"],
+    ["能源风险溢价", "回应可信度"],
+    ["能源外溢", "信任外溢"],
+    ["能源价格风险溢价", "公众问责压力"],
+    ["能源价格", "公众情绪"],
+    ["能源市场", "公众情绪场"],
+    ["能源设施", "未成年人保护"],
+    ["能源", "公众情绪"],
+    ["战争险附加费", "隐私扩散风险"],
+    ["战争险风险", "隐私扩散风险"],
+    ["战争险", "隐私泄露"],
+    ["保险费率报价原文", "家校沟通记录原文"],
+    ["保险报价原文", "家校沟通记录原文"],
+    ["保险报价", "沟通记录"],
+    ["航运保险", "隐私保护"],
+    ["航运公司", "校方"],
+    ["航运媒体", "本地媒体"],
+    ["航运社群", "学生/家长社群"],
+    ["航运通道", "现场秩序"],
+    ["航运信号", "现场信号"],
+    ["航运成本", "传播压力"],
+    ["航运", "传播"],
+    ["船东论坛", "学生群/家长群"],
+    ["船东报价", "家校沟通记录"],
+    ["船东代表", "家属代表"],
+    ["船东", "家长/学生"],
+    ["商船袭击", "现场冲突"],
+    ["商船", "现场线索"],
+    ["油轮股", "平台热榜"],
+    ["油轮", "现场视频"],
+    ["集装箱船", "现场视频"],
+    ["船舶等待", "家属等待"],
+    ["船舶", "线索"],
+    ["通航稳定性", "现场秩序稳定性"],
+    ["通航事实", "现场事实"],
+    ["通航规则", "现场沟通规则"],
+    ["通航率", "现场秩序稳定度"],
+    ["通航", "线下秩序"],
+    ["护航机制边界", "联合调查机制边界"],
+    ["护航边界", "联合调查边界"],
+    ["护航范围", "调查范围"],
+    ["护航机制", "联合调查机制"],
+    ["护航", "联合调查"],
+    ["临检标准", "证据保全标准"],
+    ["临检范围", "证据保全范围"],
+    ["临检边界", "证据保全边界"],
+    ["临检规则", "证据保全规则"],
+    ["临检", "证据保全"],
+    ["封锁声明与船只拒行", "现场视频与家属聚集"],
+    ["封锁预期", "压事质疑"],
+    ["封锁", "压事质疑"],
+    ["绕航成本", "扩散压力"],
+    ["绕航报价", "平台热度"],
+    ["绕航等待", "线下等待"],
+    ["绕航", "跨平台扩散"],
+    ["好望角路径", "跨平台路径"],
+    ["好望角", "跨平台"],
+    ["航线", "传播路径"],
+    ["停火条件", "调查条件"],
+    ["停火", "降温"],
+    ["外交缓和", "处置降温"],
+    ["外交降温窗口", "回应降温窗口"],
+    ["外交", "协调处置"],
+    ["军事打击后果", "死亡事实后果"],
+    ["军事安全", "现场安全"],
+    ["防空压力", "现场压力"],
+    ["空袭后果", "坠亡后果"],
+    ["美以空袭", "校内坠亡"],
+    ["边境事件", "学生爆料"],
+    ["火箭弹", "爆料"],
+    ["多线战区压力", "多方立场压力"],
+    ["多线作战", "多方处置"],
+    ["基地安全", "现场安全"],
+    ["区域级航运服务感知", "区域级校园安全感知"],
+    ["港口排队", "校门口等待"],
+    ["港口服务", "现场沟通"],
+    ["市场数据", "平台数据"],
+    ["市场评论", "平台评论"],
+    ["市场与传播信号", "平台与现场信号"],
+    ["市场与航运信号", "平台与现场信号"],
+    ["市场摊主", "家长"],
+    ["市场预期", "公众预期"],
+    ["价格冲击", "情绪冲击"],
+    ["价格波动", "情绪波动"],
+    ["城市更新补偿争议主线", "校园死亡事件事实责任与线下风险主线"],
+    ["城市更新 / 老旧小区改造", "校园安全 / 未成年人保护"],
+    ["城市更新", "校园事件"],
+    ["老旧小区改造", "校园安全"],
+    ["城市总体风险等级", "事件总体风险等级"],
+    ["城市风险指数", "事件风险指数"],
+    ["城市总体现状", "事件总体现状"],
+    ["城市空间态势图", "校园事件空间态势图"],
+    ["城市态势摘要", "事件态势摘要"],
+    ["XX市风险主控台", "校园高烈度事件主控台"],
+    ["补偿标准不一致", "责任说明不一致"],
+    ["补偿测算", "证据保全"],
+    ["补偿口径", "处置口径"],
+    ["补偿公平", "责任公平"],
+    ["补偿方案", "证据保全方案"],
+    ["补偿争议", "责任争议"],
+    ["补偿", "证据保全"],
+    ["居民代表", "家属代表"],
+    ["居民群体", "家属群体"],
+    ["居民信任", "家属信任"],
+    ["居民", "家属"],
+    ["街道/社区", "校方/属地"],
+    ["街道办", "校方/属地"],
+    ["街道", "校方"],
+    ["社区居委会", "属地联络组"],
+    ["社区", "校园"],
+    ["施工方/企业", "被指涉学生家庭"],
+    ["施工方", "校方"],
+    ["施工扰民", "现场处置争议"],
+    ["施工", "现场处置"],
+    ["工期成本", "处置成本"],
+    ["停工", "暂停涉事人员职责"],
+    ["发布解释型 FAQ", "发布证据保全与联合调查说明"],
+    ["解释型 FAQ", "证据保全说明"],
+    ["FAQ", "说明"],
+    ["说明会", "家属沟通会"],
+    ["公开测算规则与依据", "公开证据保全动作与依据"],
+    ["建立反馈渠道与时间表", "建立家属沟通渠道与通报时间表"],
+    ["申诉入口", "沟通入口"],
+    ["劳资纠纷", "校园安全"],
+    ["工业园区劳资压力", "学生群爆料与家长焦虑"],
+    ["工资发放日期", "调查进展时间"],
+    ["企业侧正式回应缺失", "校方正式回应缺失"],
+    ["企业回应", "校方回应"],
+    ["医疗服务与就诊体验", "学生心理支持与家校沟通"],
+    ["交通出行与拥堵", "校门口秩序与围观聚集"],
+    ["农贸市场供应与价格波动", "家长群讨论与情绪波动"],
+    ["强降雨排水与低洼点积水", "未成年人隐私与二次伤害"],
+    ["夜间施工噪声投诉", "现场秩序投诉"],
+    ["老旧小区停车纠纷", "校门口围观纠纷"],
+    ["计划停水维护咨询", "停课与安抚安排咨询"],
+    ["家长市场预期", "家长期待"],
+    ["周边安全", "校园安全"],
+    ["核查安全", "证据安全"],
+    ["卫星 / 现场视频 / 现场源", "短视频 / 现场 / 群聊"],
+    ["视频/卫星/现场视频", "短视频/现场/群聊"],
+    ["视频 / 卫星 / AIS", "短视频 / 现场 / 群聊"],
+    ["卫星", "同城平台"],
+    ["短视频", "短视频"],
+    ["公开报道与事件日志", "公开报道与现场日志"],
+    ["历史相似前兆", "相似高烈度案例"],
+    ["董事会简报", "领导会商简报"],
+    ["安全研究组", "事实核验组"],
+    ["政策组", "教育联络组"],
+    ["数据组", "证据保全组"]
   ];
 
-  const cleanupTerms = [
-    ["护航护航边界", "护航边界"],
-    ["航运航运信号", "航运信号"],
-    ["航运航运媒体", "航运媒体"],
-    ["某中学家长群出现校园核查窗口隐患讨论", "IAEA 核查窗口推迟引发可达性讨论"],
-    ["校园核查窗口隐患", "核查窗口可达性"],
-    ["线下问询", "船东问询"],
-    ["输入篮", "输入池"],
-    ["补齐 规则说明", "补齐规则说明"],
-    ["加强执行口径统一口径", "统一海上执行口径"],
-    ["霍尔木兹通航 / 旧改", "霍尔木兹通航 / 海峡管控"],
-    ["霍尔木兹通航/旧改", "霍尔木兹通航/海峡管控"],
-    ["伊朗决策层旧改相关信号", "伊朗决策层海峡管控相关信号"],
-    ["补偿纠纷主线", "封锁风险主线"],
-    ["海湾基地区绕航压力", "海湾基地绕航压力"],
-    ["园区薪资延误传闻是否属实，企业未官方回应", "海湾基地后勤压力传闻是否属实，需确认机构声明"]
-  ];
+  function rewrite(value) {
+    if (!value || typeof value !== "string") return value;
+    return replacements.reduce((text, pair) => text.split(pair[0]).join(pair[1]), value);
+  }
+
+  function shouldSkip(node) {
+    const parent = node.parentElement;
+    if (!parent) return true;
+    return ["SCRIPT", "STYLE", "NOSCRIPT", "CODE"].includes(parent.tagName);
+  }
 
   function replaceText(root = document.body) {
     if (!root) return;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
-        const parent = node.parentElement;
-        if (!parent || ["SCRIPT", "STYLE", "NOSCRIPT"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
+        return shouldSkip(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
       }
     });
-    let node;
-    while ((node = walker.nextNode())) {
-      let value = node.nodeValue;
-      commonTerms.forEach(([from, to]) => {
-        if (value.includes(from) && !value.includes(to)) value = value.split(from).join(to);
-      });
-      cleanupTerms.forEach(([from, to]) => {
-        value = value.split(from).join(to);
-      });
-      node.nodeValue = value;
-    }
-    $$("input, textarea").forEach(el => {
-      ["value", "placeholder", "title", "aria-label"].forEach(attr => {
-        const current = attr === "value" ? el.value : el.getAttribute(attr);
-        if (!current) return;
-        let next = current;
-        commonTerms.forEach(([from, to]) => {
-          if (next.includes(from) && !next.includes(to)) next = next.split(from).join(to);
-        });
-        cleanupTerms.forEach(([from, to]) => {
-          next = next.split(from).join(to);
-        });
-        if (attr === "value") el.value = next;
-        else el.setAttribute(attr, next);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const next = rewrite(node.nodeValue);
+      if (next !== node.nodeValue) node.nodeValue = next;
+    });
+    document.title = rewrite(document.title);
+  }
+
+  function replaceAttributes(root = document) {
+    root.querySelectorAll("[title],[placeholder],[aria-label],input,textarea").forEach(el => {
+      ["title", "placeholder", "aria-label", "value"].forEach(name => {
+        if (!el.hasAttribute(name) && name !== "value") return;
+        const current = name === "value" ? el.value : el.getAttribute(name);
+        const next = rewrite(current);
+        if (next && next !== current) {
+          if (name === "value") el.value = next;
+          else el.setAttribute(name, next);
+        }
       });
     });
-    document.title = document.title.replace("城市更新补偿争议", "霍尔木兹通航受限").replace("XX市", "WORLDLINE OBSERVER");
   }
 
-  function toast(message) {
-    const el = $("#toast");
-    if (!el) return;
-    el.textContent = message;
-    el.classList.add("show");
-    window.clearTimeout(toast.timer);
-    toast.timer = window.setTimeout(() => el.classList.remove("show"), 1800);
-  }
-
-  function setHTML(selector, html) {
-    const el = $(selector);
-    if (el) el.innerHTML = html;
-  }
-
-  function setText(selector, text) {
-    const el = $(selector);
-    if (el) el.textContent = text;
-  }
-
-  function injectLayoutFixes() {
-    if (document.getElementById("iran-narrative-layout-fixes")) return;
-    const style = document.createElement("style");
-    style.id = "iran-narrative-layout-fixes";
-    style.textContent = `
-      /* Data hub: keep the retrieval/table area readable after Iran narrative replacement. */
-      .metrics {
-        gap: 10px !important;
-        padding-top: 9px !important;
-        padding-bottom: 9px !important;
-      }
-      .metric {
-        min-height: 78px !important;
-        padding: 10px 11px !important;
-        overflow: hidden;
-      }
-      .metric label {
-        white-space: normal !important;
-        line-height: 1.2 !important;
-        min-height: 14px;
-      }
-      .metric b {
-        margin-top: 5px !important;
-        font-size: 22px !important;
-        line-height: 1.04 !important;
-      }
-      .metric p {
-        margin-top: 4px !important;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        overflow: hidden;
-        white-space: normal;
-        line-height: 1.22 !important;
-      }
-      .workspace {
-        grid-template-columns: 280px minmax(720px, 1fr) 370px !important;
-      }
-      .source-list {
-        margin-top: 8px !important;
-      }
-      .source-card {
-        min-height: 64px !important;
-        grid-template-columns: minmax(0, 1fr) auto !important;
-        align-items: start !important;
-      }
-      .source-card span {
-        min-width: 0;
-      }
-      .source-card b,
-      .source-card small {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .source-card b {
-        white-space: nowrap;
-      }
-      .source-card small {
-        display: -webkit-box !important;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-      }
-      .search-panel {
-        grid-template-columns: minmax(0, 1.45fr) minmax(250px, .75fr) !important;
-        align-items: stretch;
-        padding: 11px 12px !important;
-      }
-      .search-box .title,
-      .search-panel .title {
-        min-width: 0;
-      }
-      .search-line input {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .strategy {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-      .strategy div {
-        min-width: 0;
-        overflow: hidden;
-      }
-      .table-head,
-      .signal-row {
-        grid-template-columns: 48px minmax(250px, 1.7fr) minmax(84px, .62fr) minmax(68px, .5fr) minmax(76px, .56fr) 52px 66px !important;
-        gap: 8px !important;
-      }
-      .table-head {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-      }
-      .table-body {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-      }
-      .signal-row {
-        min-height: 66px !important;
-        padding: 8px 0 !important;
-      }
-      .signal-row > span {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .signal-row > span:nth-child(2) b,
-      .signal-row > span:nth-child(2) small {
-        display: -webkit-box !important;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        white-space: normal;
-      }
-      .signal-row > span:nth-child(2) b {
-        -webkit-line-clamp: 2;
-        font-size: 12px !important;
-        line-height: 1.32 !important;
-      }
-      .signal-row > span:nth-child(2) small {
-        -webkit-line-clamp: 2;
-        margin-top: 3px !important;
-        line-height: 1.25 !important;
-      }
-      .signal-row > span:nth-child(n+3) {
-        font-size: 10.5px;
-        line-height: 1.35;
-        word-break: keep-all;
-      }
-      .table-body {
-        overflow: auto !important;
-        scrollbar-width: none;
-      }
-      .table-body::-webkit-scrollbar {
-        display: none;
-      }
-      .center {
-        grid-template-rows: 158px minmax(0, 1fr) 174px !important;
-        overflow: hidden !important;
-      }
-      .search-panel {
-        grid-template-columns: minmax(0, 1.12fr) minmax(430px, .88fr) !important;
-        padding: 10px 12px !important;
-        align-items: start !important;
-      }
-      .search-panel .title {
-        margin-bottom: 6px !important;
-        align-items: center !important;
-      }
-      .search-box {
-        gap: 7px !important;
-      }
-      .search-line input {
-        height: 36px !important;
-      }
-      .tag-row {
-        max-height: 58px !important;
-        overflow: hidden !important;
-      }
-      .strategy div {
-        min-height: 40px !important;
-        padding: 6px 8px !important;
-      }
-      .table-panel {
-        grid-template-rows: auto minmax(0, 1fr) 42px !important;
-      }
-      .table-body {
-        display: grid !important;
-        align-content: start !important;
-      }
-      .table-foot {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 12px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 900;
-        background: rgba(255,253,247,.62);
-      }
-      .pager {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-      }
-      .pager button {
-        min-width: 26px;
-        height: 26px;
-        display: grid;
-        place-items: center;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel-solid);
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 900;
-      }
-      .pager button.active {
-        background: var(--ink);
-        border-color: var(--ink);
-        color: #fff;
-      }
-      .bottom-panel {
-        min-height: 0 !important;
-        overflow: hidden !important;
-      }
-      .mini-card {
-        min-height: 0 !important;
-        overflow: hidden !important;
-        padding: 10px 12px !important;
-      }
-
-      /* Mainline builder: prevent long mainline/retrieval text from crushing the grid. */
-      .logic-title {
-        grid-template-columns: minmax(0, 1fr) !important;
-        gap: 4px !important;
-      }
-      .logic-title b {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .logic-title span {
-        white-space: normal !important;
-        line-height: 1.35;
-      }
-      .retrieval {
-        grid-template-columns: minmax(0, 1.25fr) minmax(230px, .85fr) minmax(230px, .85fr) !important;
-        align-items: stretch;
-      }
-      .query-box,
-      .recommend-list,
-      #strategyList {
-        min-width: 0;
-      }
-      #recommendList > button,
-      .recommend-row {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) 42px !important;
-        gap: 8px;
-        align-items: center;
-        min-height: 34px;
-        padding: 6px 8px;
-        border: 1px solid rgba(216,205,188,.76);
-        border-radius: 9px;
-        background: rgba(255,253,247,.7);
-        font-size: 11px;
-        text-align: left;
-      }
-      #recommendList > button span:first-child,
-      .recommend-row span:first-child {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      #recommendList > button b,
-      .recommend-row b {
-        color: var(--ink);
-        font-size: 10px;
-        text-align: right;
-        white-space: nowrap;
-      }
-      #strategyList {
-        display: grid;
-        gap: 7px;
-      }
-      #strategyList span {
-        min-width: 0;
-        line-height: 1.35;
-      }
-      .mainline-card header span:first-child {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      /* Decision brief: restore document/task/watch row styling when generated from override data. */
-      #docs > button,
-      #tasks > button {
-        width: 100%;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 8px;
-        align-items: center;
-        min-height: 40px;
-        padding: 8px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: rgba(255,253,247,.68);
-        color: var(--ink);
-        text-align: left;
-        font: inherit;
-        font-size: 12px;
-      }
-      #docs > button span,
-      #tasks > button span {
-        min-width: 0;
-        display: grid;
-        gap: 3px;
-      }
-      #docs > button span,
-      #tasks > button small {
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 800;
-      }
-      #docs > button b,
-      #tasks > button b {
-        color: var(--ink);
-        font-size: 12px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      #docs > button em,
-      #tasks > button em {
-        min-height: 26px;
-        display: inline-grid;
-        place-items: center;
-        padding: 0 8px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel-solid);
-        color: var(--ink);
-        font-style: normal;
-        font-size: 11px;
-        font-weight: 900;
-        white-space: nowrap;
-      }
-      #watch {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      #watch > span {
-        min-height: 34px;
-        display: grid;
-        align-items: center;
-        padding: 7px 9px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: rgba(255,253,247,.68);
-        color: var(--ink);
-        font-size: 11px;
-        font-weight: 900;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  function overrideDataHub() {
-    const sources = [
-      { id: "all", name: "全部接口信号", desc: "公开源、AIS、市场与机构摘要", count: 12486, health: "98%", coverage: "中东主战区", tone: "blue" },
-      { id: "ais", name: "AIS / 航运报价", desc: "船舶等待、绕航报价、保险条款", count: 3280, health: "96%", coverage: "霍尔木兹 / 红海", tone: "red" },
-      { id: "market", name: "能源与跨资产市场", desc: "Brent、油轮股、CDS、汇率避险", count: 2116, health: "94%", coverage: "全球市场", tone: "amber" },
-      { id: "official", name: "官方与机构声明", desc: "G7、IAEA、海湾国家、军方声明", count: 936, health: "91%", coverage: "多方主体", tone: "green" },
-      { id: "media", name: "新闻 / 论坛 / 社媒", desc: "新闻、船东论坛、能源社群", count: 6154, health: "89%", coverage: "舆论与市场预期", tone: "violet" }
-    ];
-    const signals = [
-      {
-        id: "SIG-001", p: "P0", tone: "red", sourceId: "ais", title: "IRGC 临检扩大与霍尔木兹通航风险升温",
-        sub: "AIS 等待船舶增加，船东论坛讨论保险拒保条款", source: "AIS / 船东论坛", area: "霍尔木兹", tag: "通航受限", sim: "0.91", action: "加入草稿",
-        why: "该信号同时命中通航稳定性、航运保险风险和能源风险溢价三个支点，并且在船舶等待、保险报价、论坛讨论三个渠道重复出现，适合作为主线起点。",
-        excerpts: [["AIS 船舶状态", "霍尔木兹东向油轮等待时间较前一日上升约 22%", "A"], ["船东论坛", "多名运营方提到“War Risk Premium”重新报价", "B"], ["保险摘要", "部分承保方要求重新确认航线风险", "B"]],
-        recs: [["同航线相似信号", "14 条"], ["通航受限同标签", "23 条"], ["保险费率原文片段", "8 条"]]
-      },
-      {
-        id: "SIG-006", p: "P1", tone: "amber", sourceId: "media", title: "红海绕航讨论升温，船东重新评估好望角路径",
-        sub: "论坛与市场评论同时出现绕航成本测算", source: "船东论坛 / 新闻", area: "红海", tag: "航运成本", sim: "0.78", action: "补证后加入",
-        why: "该信号可以解释成本外溢路径，但目前仍缺少实际改航比例和保险条款原文，适合作为辅助支点。",
-        excerpts: [["论坛片段", "讨论焦点从“是否绕航”转为“绕航几天与额外燃油成本”", "B"], ["市场评论", "红海风险被纳入油轮运价预期", "B"]],
-        recs: [["同区域近 24 小时", "8 条"], ["航运保险同标签", "11 条"], ["历史红海袭击前兆", "2 条"]]
-      },
-      {
-        id: "SIG-012", p: "P1", tone: "violet", sourceId: "official", title: "IAEA 核查窗口推迟，制裁合法性争议升温",
-        sub: "核查可达性下降与制裁节奏讨论同时出现", source: "IAEA / 官方声明", area: "伊朗核设施", tag: "核查争议", sim: "0.83", action: "加入草稿",
-        why: "该信号连接军事打击后果、核查可达性和制裁合法性，是从安全风险转向政策风险的重要支点。",
-        excerpts: [["IAEA 摘要", "核查访问窗口被推迟，原因仍需复核", "A"], ["外交评论", "多方讨论制裁节奏是否会提前", "B"]],
-        recs: [["同机构声明", "6 条"], ["核查争议同标签", "13 条"], ["制裁历史前兆", "4 条"]]
-      },
-      {
-        id: "SIG-017", p: "P1", tone: "red", sourceId: "official", title: "黎以边境火箭弹频率上升，北部战线外溢",
-        sub: "边境事件与代理人组织表态出现同向变化", source: "以色列 / 黎巴嫩事件", area: "黎以边境", tag: "代理人外溢", sim: "0.87", action: "加入草稿",
-        why: "该信号说明冲突不只停留在海峡通航，还可能牵引多线战区压力，影响世界线的高风险分支。",
-        excerpts: [["边境事件", "火箭弹与拦截记录较前一周期上升", "B"], ["组织表态", "代理人组织措辞转向更强硬", "B"]],
-        recs: [["同主体事件", "10 条"], ["北部战线支点", "7 条"], ["以军部署相关", "5 条"]]
-      },
-      {
-        id: "SIG-024", p: "P2", tone: "green", sourceId: "official", title: "G7 护航机制讨论出现，封锁预期短线降温",
-        sub: "护航讨论压低极端封锁概率，但短期临检不确定性仍在", source: "G7 / 海湾国家", area: "波斯湾", tag: "外交缓和", sim: "0.72", action: "观察",
-        why: "该信号是降温支点，能够解释部分概率从极端封锁转向持续拉锯，但仍需确认机制边界和执行时间表。",
-        excerpts: [["G7 声明", "讨论海峡护航与能源安全协调", "A"], ["海湾评论", "关注护航边界是否覆盖高风险水域", "B"]],
-        recs: [["同会议声明", "5 条"], ["海湾国家表态", "9 条"], ["护航机制历史案例", "3 条"]]
-      }
-    ];
-    const tags = ["全部", "同渠道", "同标签", "同区域", "关键词", "近24小时", "高价值前兆", "待人工复核"];
-    let activeSource = "all";
-    let activeTag = "全部";
-    let selectedId = "SIG-001";
-    let draftCount = 7;
-
-    function selected() {
-      return signals.find(item => item.id === selectedId) || signals[0];
-    }
-    function visibleSignals() {
-      return signals.filter(item => activeSource === "all" || item.sourceId === activeSource);
-    }
-    function renderMetrics() {
-      const data = [
-        ["接口原始数据", "12,486", "已完成初始清洗", "blue"],
-        ["高价值前兆", "76", "相似度 0.80 以上", "red"],
-        ["待人工复核", "42", "事实边界待确认", "amber"],
-        ["视频/卫星/AIS", "486", "点位校正中", "violet"],
-        ["主线草稿", draftCount, "可进入主线建模", "green"],
-        ["字段完整度", "91%", "地点/时间/主体可用", "blue"]
-      ];
-      setHTML("#metrics", data.map(m => `
-        <button class="metric" style="--tone:${palette[m[3]]}">
-          <label>${m[0]}</label><b>${m[1]}</b><p>${m[2]}</p>
-        </button>`).join(""));
-      $$("#metrics .metric").forEach((btn, index) => btn.addEventListener("click", () => {
-        activeTag = index === 1 ? "高价值前兆" : index === 2 ? "待人工复核" : "全部";
-        renderSearch();
-        renderSignals();
-        toast(`已按「${btn.querySelector("label").textContent}」联动筛选`);
-      }));
-    }
-    function renderSources() {
-      setHTML("#sourceList", sources.map(s => `
-        <button class="source-card ${activeSource === s.id ? "active" : ""}" data-source="${s.id}" style="--tone:${palette[s.tone]}">
-          <span><b>${s.name}</b><small>${s.desc}</small></span>
-          <span><em>${s.count.toLocaleString()}</em><small>${s.health} · ${s.coverage}</small></span>
-        </button>`).join(""));
-      $$(".source-card").forEach(btn => btn.addEventListener("click", () => {
-        activeSource = btn.dataset.source;
-        $("#queryInput") && ($("#queryInput").value = `${sources.find(s => s.id === activeSource).name} ${activeTag} 近24小时`);
-        renderSources();
-        renderSignals();
-        renderStrategy();
-      }));
-    }
-    function renderSearch() {
-      setHTML("#tagRow", tags.map(t => `<button class="${activeTag === t ? "active" : ""}" data-tag="${t}">${t}</button>`).join(""));
-      setHTML("#taxonomy", ["地点", "组织", "事件类型", "风险语义", "情绪", "时间窗口", "航线", "影响资产"].map(t => `<span>${t}</span>`).join(""));
-      setHTML("#draftChips", ["SIG-001", "SIG-012", "SIG-017", "AIS 片段", "G7 声明", "保险报价", "IAEA 摘要"].map(t => `<span>${t}</span>`).join(""));
-      setText("#draftCount", String(draftCount));
-      $$("#tagRow button").forEach(btn => btn.addEventListener("click", () => {
-        activeTag = btn.dataset.tag;
-        $("#queryInput") && ($("#queryInput").value = `${activeTag} 霍尔木兹 通航 风险`);
-        renderSearch();
-        renderStrategy();
-      }));
-      $("#searchBtn") && ($("#searchBtn").onclick = () => {
-        renderSignals();
-        toast("已按当前关键词刷新相似信号列表");
-      });
-    }
-    function renderStrategy() {
-      const src = sources.find(s => s.id === activeSource) || sources[0];
-      setHTML("#strategy", [
-        ["主数据源", src.name],
-        ["抓取方式", activeTag],
-        ["相似阈值", "0.68 以上"],
-        ["去重规则", "同源转发降权"]
-      ].map(row => `<div><b>${row[0]}</b>${row[1]}</div>`).join(""));
-      setHTML("#qualityList", [
-        ["地点字段", "96%"],
-        ["时间字段", "94%"],
-        ["主体识别", "88%"],
-        ["异常率", "2.7%"]
-      ].map(row => `<span><strong>${row[0]}</strong><em>${row[1]}</em></span>`).join(""));
-    }
-    function renderSignals() {
-      const rows = visibleSignals();
-      setHTML("#signalTable", rows.map(s => `
-        <button class="signal-row ${s.id === selectedId ? "active" : ""}" data-id="${s.id}" style="--tone:${palette[s.tone]}">
-          <span class="badge">${s.p}</span>
-          <span><b>${s.title}</b><small>${s.sub}</small></span>
-          <span>${s.source}</span><span>${s.area}</span><span>${s.tag}</span><span class="score">${s.sim}</span><span>${s.action}</span>
-        </button>`).join(""));
-      setText("#resultSummary", `当前显示 1-${rows.length} / 共 42 条候选信号，已按相似度与证据完整度排序`);
-      $$(".signal-row").forEach(row => row.addEventListener("click", () => {
-        selectedId = row.dataset.id;
-        renderSignals();
-        renderDetail();
-      }));
-    }
-    function renderDetail() {
-      const s = selected();
-      setText("#selectedId", s.id);
-      setText("#detailTitle", s.title);
-      setText("#detailSub", `${s.source} · ${s.area} · ${s.tag} · 相似度 ${s.sim}`);
-      setText("#detailWhy", s.why);
-      setHTML("#evidenceRows", s.excerpts.map(e => `<div class="evidence-row"><span>${e[0]}：${e[1]}</span><strong>可信度 ${e[2]}</strong></div>`).join(""));
-      setHTML("#recommendRows", s.recs.map(r => `<button class="recommend-row"><span>${r[0]}</span><strong>${r[1]}</strong></button>`).join(""));
-    }
-    renderMetrics();
-    renderSources();
-    renderSearch();
-    renderStrategy();
-    renderSignals();
-    renderDetail();
-    $("#addDraft") && ($("#addDraft").onclick = () => {
-      draftCount += 1;
-      renderMetrics();
-      renderSearch();
-      toast(`${selected().id} 已加入主线草稿`);
+  function rewriteLinks() {
+    document.querySelectorAll("a[href]").forEach(link => {
+      const href = link.getAttribute("href");
+      if (!href || href.startsWith("http") || href.includes("iran-narrative-overrides")) return;
+      const next = href
+        .replace(/caseId=iran-war-escalation/g, "caseId=campus-death-high-intensity")
+        .replace(/caseId=CASE-IRAN-001/g, "caseId=CASE-CAMPUS-001")
+        .replace(/regionId=hormuz/g, "regionId=campus-core")
+        .replace(/regionId=iran-core/g, "regionId=campus-core")
+        .replace(/regionId=iran-nuclear/g, "regionId=campus-core")
+        .replace(/regionId=red-sea/g, "regionId=online-spread")
+        .replace(/mainlineId=hormuz-blockade/g, "mainlineId=ML-001");
+      if (next !== href) link.setAttribute("href", next);
     });
   }
 
-  function overrideMainlineBuilder() {
-    const mainlines = [
-      ["ML-001", "霍尔木兹通航受限与能源外溢主线", "待确认", "red", "由临检扩大、保险拒保、油轮等待三类支点形成", "0.88"],
-      ["ML-002", "红海袭击与绕航成本主线", "补证中", "amber", "由袭击讨论、绕航报价、船东论坛形成早期聚合", "0.79"],
-      ["ML-003", "IAEA 核查受阻与制裁争议主线", "观察", "violet", "核查窗口推迟与制裁节奏形成政策风险支线", "0.74"],
-      ["ML-004", "黎以北部战线外溢主线", "待确认", "red", "火箭弹频率、边境部署、代理人表态共振", "0.82"]
-    ];
-    const nodeLabels = [
-      ["起点信号", "IRGC 临检范围扩大"],
-      ["同渠道证据", "AIS 等待船舶增加"],
-      ["相邻信号", "保险费率重新报价"],
-      ["关键支点", "通航规则边界不清"],
-      ["关键支点", "能源风险溢价上升"],
-      ["证据缺口", "真实通航率与军方边界"],
-      ["确认主线", "生成 World State 输入"]
-    ];
-    setText("#logicTitle", "霍尔木兹通航受限与能源外溢主线");
-    $$(".logic-title span").forEach(el => { el.textContent = "系统路径：信号聚合 → 支点提取 → 证据缺口 → 人工确认"; });
-    $$(".node").forEach((node, index) => {
-      if (!nodeLabels[index]) return;
-      const [b, p] = nodeLabels[index];
-      const bold = $("b", node);
-      const text = $("p", node) || Array.from(node.querySelectorAll("span")).filter(span => !span.classList.contains("score")).pop();
-      if (bold) bold.textContent = b;
-      if (text) text.textContent = p;
-    });
-    setHTML("#mainlineList", mainlines.map((m, index) => `
-      <button class="mainline-card ${index === 0 ? "active" : ""}" style="--tone:${palette[m[3]]}">
-        <header><span>${m[1]}</span><span class="state" style="--tone:${palette[m[3]]}">${m[2]}</span></header>
-        <p>${m[4]}</p>
-        <footer><span>${m[0]}</span><b>${m[5]}</b></footer>
-      </button>`).join(""));
-    setHTML("#sourceStack", [
-      ["接口信号池", "来自数据检索页加入的 7 条证据", "blue"],
-      ["系统成线建议", "语义相似、时间连续、区域聚集", "red"],
-      ["人工草稿", "分析师手动补入的证据片段", "green"]
-    ].map(s => `<button class="source-card" style="--tone:${palette[s[2]]}"><span><b>${s[0]}</b><small>${s[1]}</small></span><span><em>可用</em></span></button>`).join(""));
-    setHTML("#queryHints", ["同航线", "同主体", "关键词", "同区域", "近24小时"].map((t, i) => `<button class="${i === 0 ? "active" : ""}">${t}</button>`).join(""));
-    setHTML("#recommendList", [
-      ["补充 AIS 等待船舶原始片段", "优先"],
-      ["补充保险费率报价原文", "优先"],
-      ["补充 G7 护航机制边界", "建议"],
-      ["剔除重复转发的论坛摘要", "降权"]
-    ].map(r => `<button><span>${r[0]}</span><b>${r[1]}</b></button>`).join(""));
-    setHTML("#strategyList", [
-      ["聚合逻辑", "同一航线 + 同一时间窗 + 风险语义共现"],
-      ["影响对象", "航运保险、能源市场、海湾安全、制裁节奏"],
-      ["不确定性", "真实临检边界、护航落地时间、IAEA 核查窗口"],
-      ["下一步", "带缺口确认后进入世界线推演"]
-    ].map(r => `<span><b>${r[0]}</b>${r[1]}</span>`).join(""));
-    setHTML("#detail", `
-      <div class="title">主线解释 <span>ML-001</span></div>
-      <h2>为什么这些信号能组成一条主线？</h2>
-      <p>临检扩大是起点，AIS 等待和保险报价是同方向证据，G7 护航讨论说明外部主体已经开始响应；这些线索共同指向“通航稳定性下降 → 能源风险溢价上升 → 市场与政策风险外溢”。</p>
-      <div class="explain-grid">
-        <div><b>数据依据</b><span>AIS、船东论坛、G7 声明、IAEA 摘要</span></div>
-        <div><b>聚合逻辑</b><span>时间连续、区域聚集、支点共现</span></div>
-        <div><b>影响对象</b><span>油轮、保险、能源、制裁、海湾基地</span></div>
-        <div><b>人工确认项</b><span>护航边界和真实通航率仍需复核</span></div>
-      </div>`);
-    setHTML("#evidenceSuggest", ["补真实通航率", "补保险报价原文", "补 G7 护航边界"].map(t => `<button>${t}<span>优先</span></button>`).join(""));
-    setHTML("#relatedSuggest", ["红海绕航成本主线", "IAEA 核查争议主线"].map(t => `<button>${t}<span>可关联</span></button>`).join(""));
-    setHTML("#mergeSuggest", ["论坛重复转发", "同源新闻转载"].map(t => `<button>${t}<span>建议降权</span></button>`).join(""));
-    $("#confirmBtn") && ($("#confirmBtn").onclick = () => {
-      toast("已生成霍尔木兹 World State 输入包");
-      window.setTimeout(() => { location.href = "worldline-observer.html?mainlineId=hormuz-blockade"; }, 500);
-    });
-  }
-
-  function overrideDecisionBrief() {
-    setHTML(".hero-text", `
-      <h1>推演完成：霍尔木兹通航受限与能源外溢</h1>
-      <p>最终研判：当前主线未完全缓和，C 线“通航限制升级”仍是主要风险路径。若护航边界、临检规则和 IAEA 核查窗口不能快速明确，未来 24-72 小时仍存在二次升温可能。</p>`);
-    setHTML("#actionList", [
-      ["1", "发布护航范围与临检规则说明，明确船东可执行口径", "高", "red"],
-      ["2", "补充 AIS 等待船舶与保险报价样本，压缩误判空间", "高", "red"],
-      ["3", "建立 G7 / 海湾国家护航行动监测表，每 6 小时更新", "中-高", "amber"],
-      ["4", "跟踪 IRGC 措辞、红海袭击讨论和 IAEA 核查窗口", "中", "amber"],
-      ["5", "将能源、航运保险、北部战线三类支点加入 72h 监测", "中", "blue"]
-    ].map(a => `<div class="action-row" style="--tone:${palette[a[3]]}"><i>${a[0]}</i><span><b>${a[1]}</b><p>影响支点：通航稳定性、保险风险、能源溢价、政策不确定性</p></span><span class="stars">${a[2]}</span></div>`).join(""));
-    setHTML("#docs", [
-      ["世界线推演结果报告 PDF", "10:30"],
-      ["多方主体研判纪要 PDF", "10:28"],
-      ["霍尔木兹证据链分册 PDF", "10:25"],
-      ["行动建议清单 DOCX", "10:30"],
-      ["董事会简报 PPTX", "10:31"]
-    ].map(d => `<div class="doc-row"><span><b>${d[0]}</b><br>生成于 ${d[1]}</span><button data-export="${d[0]}">单个导出</button></div>`).join(""));
-    setHTML("#tasks", [
-      ["护航规则说明", "安全研究组", "24h 内", "待确认"],
-      ["AIS 与保险样本补证", "数据组", "12h 内", "执行中"],
-      ["红海绕航成本跟踪", "航运组", "48h 内", "已完成"],
-      ["IAEA 核查窗口监测", "政策组", "持续跟踪", "未开始"]
-    ].map(t => `<div class="task-row ${t[3] === "已完成" ? "done" : ""}"><span><b>${t[0]}</b><br>${t[1]} · ${t[2]} · ${t[3]}</span><button data-task="${t[0]}">${t[3] === "已完成" ? "已完成" : "更新"}</button></div>`).join(""));
-    setHTML("#watch", ["霍尔木兹通航率", "War Risk Premium", "Brent 风险溢价", "IAEA 核查窗口", "G7 护航措辞", "红海袭击频率"].map(t => `<div class="watch-row"><span><b>${t}</b><br>后续跟踪指标</span><strong>跟踪中</strong></div>`).join(""));
-    $$("#docs [data-export]").forEach(btn => btn.addEventListener("click", () => toast(`已生成导出任务：${btn.dataset.export}`)));
-    $("#exportAllDocs") && ($("#exportAllDocs").onclick = () => toast("已生成批量导出任务：5 份文档"));
-    $$("#tasks [data-task]").forEach(btn => btn.addEventListener("click", () => {
-      btn.textContent = "已更新";
-      btn.closest(".task-row")?.classList.add("done");
-      toast(`任务状态已更新：${btn.dataset.task}`);
-    }));
-  }
-
-  function overrideWorkflow() {
-    setHTML(".hero-text", `
-      <h1>从中东风险信号到世界线推演，再到研判闭环</h1>
-      <p>主案例：美伊冲突、霍尔木兹通航、红海航运、能源市场、IAEA 核查与多方主体反应。页面保留静态工作台结构，前端以接口返回数据的方式组织展示。</p>`);
-    replaceText();
-  }
-
-  function overrideWorldlineCopy() {
-    replaceText();
-    const q1 = $("#sideCouncilQuestion");
-    if (q1) q1.placeholder = "例如：如果 G7 只发布“正在协调护航”的模糊回应，会如何影响霍尔木兹后续路径？";
-    const q2 = $("#councilQuestion");
-    if (q2) q2.placeholder = "例如：如果护航机制没有说明临检边界，伊朗、美国、海湾国家、船东和能源市场会如何反应？";
-  }
-
-  function overrideSignalFactory() {
-    replaceText();
-    setText("#factoryTitle", "信号工厂 · 中东风险信号分诊");
-    setText("#caseLabel", "当前案例：美伊冲突与霍尔木兹封锁风险");
-  }
-
-  function run() {
-    document.documentElement.dataset.iranPage = page;
-    if (["data-hub.html", "mainline-builder.html"].includes(page)) {
-      injectLayoutFixes();
+  function patchPlaceholders() {
+    const council = document.querySelector("#sideCouncilQuestion, #councilQuestion");
+    if (council) {
+      council.placeholder = "例如：如果只发布“正在调查”的笼统回应，会如何影响未来 24 小时的线下聚集与公众问责？";
     }
-    replaceText();
-    if (page === "data-hub.html") overrideDataHub();
-    if (page === "mainline-builder.html") overrideMainlineBuilder();
-    if (page === "decision-brief.html") overrideDecisionBrief();
-    if (page === "workflow-overview.html") overrideWorkflow();
-    if (page === "worldline-observer.html" || page === "agent-council.html") overrideWorldlineCopy();
-    if (page === "signal-factory.html" || page === "event-detail-evidence.html" || page === "index.html" || page === "risk-dashboard.html") overrideSignalFactory();
-    replaceText();
+    const factoryTitle = document.querySelector("#factoryTitle");
+    if (factoryTitle) factoryTitle.textContent = "信号工厂 · 校园高烈度事件分诊";
+    const caseLabel = document.querySelector("#caseLabel");
+    if (caseLabel) caseLabel.textContent = "当前案例：校园坠亡与疑似欺凌引发线下聚集风险";
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
-  } else {
-    run();
+  function applyCampusNarrative() {
+    replaceText();
+    replaceAttributes();
+    rewriteLinks();
+    patchPlaceholders();
   }
-  document.addEventListener("click", () => window.setTimeout(replaceText, 20), true);
+
+  let pending = 0;
+  function schedule() {
+    window.clearTimeout(pending);
+    pending = window.setTimeout(applyCampusNarrative, 40);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyCampusNarrative);
+  else applyCampusNarrative();
+
+  document.addEventListener("click", schedule, true);
+  document.addEventListener("input", schedule, true);
+  const observer = new MutationObserver(schedule);
+  if (document.body) observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 })();

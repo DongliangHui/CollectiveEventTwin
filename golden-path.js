@@ -2,9 +2,9 @@
   const page = location.pathname.split("/").pop() || "risk-dashboard.html";
   const params = new URLSearchParams(location.search);
   const flow = {
-    caseId: "CASE-IRAN-001",
-    caseSlug: "iran-war-escalation",
-    regionId: params.get("regionId") || "hormuz",
+    caseId: "CASE-CAMPUS-001",
+    caseSlug: "campus-death-high-intensity",
+    regionId: params.get("regionId") || "campus-core",
     signalId: params.get("signalId") || "SIG-001",
     mainlineId: "ML-001",
     worldStateId: "WS-001",
@@ -76,7 +76,7 @@
       link.addEventListener("click", () => mergeState({ regionId: flow.regionId, mainlineId: flow.mainlineId, signalId: flow.signalId }));
     });
     $$(".mainline a").forEach(link => {
-      if (/data-hub\.html/.test(link.getAttribute("href") || "") && /hormuz-blockade/.test(link.href)) link.href = golden.data;
+      if (/data-hub\.html/.test(link.getAttribute("href") || "") && /(hormuz-blockade|campus-safety)/.test(link.href)) link.href = golden.data;
     });
     $$(".weak-card").forEach(card => {
       card.addEventListener("click", () => mergeState({ signalId: card.dataset.weak || flow.signalId, mainlineId: flow.mainlineId }));
@@ -92,7 +92,7 @@
     if (addDraft) {
       addDraft.addEventListener("click", () => {
         mergeState({ selectedSignalIds: ["SIG-001", "SIG-012", "SIG-017"], signalId: flow.signalId, mainlineDraftStatus: "ready" });
-        toast("SIG-001/SIG-012/SIG-017 已进入 ML-001 主线草稿包");
+        toast("SIG-001/SIG-012/SIG-017 已进入校园高烈度事件主线草稿包");
       });
     }
     $$(".signal-row").forEach(row => row.addEventListener("click", () => mergeState({ signalId: row.dataset.id || flow.signalId })));
@@ -135,7 +135,7 @@
     if (inject) {
       inject.addEventListener("click", () => {
         api?.injectCouncilResult?.(flow.councilId);
-        mergeState({ councilStatus: "injected", selectedNodeId: flow.nodeId, branchC: 41 });
+        mergeState({ councilStatus: "injected", selectedNodeId: flow.nodeId, branchC: 58 });
         window.setTimeout(() => { location.href = `${golden.worldline}&councilId=${flow.councilId}&injected=1`; }, 700);
       });
     }
