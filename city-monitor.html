@@ -3,72 +3,96 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WORLDLINE OBSERVER · 城市态势感知</title>
+  <title>WORLDLINE OBSERVER · 城市情报监控</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <style>
     :root {
-      --bg: #f5f2eb;
-      --panel: rgba(255, 253, 247, .94);
-      --panel-strong: #fffdf7;
-      --ink: #15191f;
-      --muted: #64707d;
-      --line: #d9cfbf;
-      --blue: #2f6df6;
-      --green: #1a9b6a;
-      --amber: #d38628;
-      --red: #d84f57;
-      --slate: #465465;
-      --violet: #7761c8;
-      --shadow: 0 12px 26px rgba(45, 38, 28, .08);
-      --r: 12px;
+      --bg: #0b1016;
+      --panel: rgba(18, 24, 32, .92);
+      --panel-2: rgba(13, 18, 25, .96);
+      --panel-3: #151d27;
+      --ink: #e7edf5;
+      --muted: #8f9cab;
+      --faint: #5c6877;
+      --line: rgba(132, 148, 166, .22);
+      --line-strong: rgba(162, 178, 196, .34);
+      --cyan: #3fb7d8;
+      --blue: #4d88ff;
+      --green: #37c58a;
+      --amber: #e6a23d;
+      --red: #ef5f67;
+      --violet: #9d7bff;
+      --magenta: #d66cc9;
+      --r: 8px;
+      --shadow: 0 18px 44px rgba(0, 0, 0, .32);
       --ease: cubic-bezier(.16, 1, .3, 1);
     }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
     body {
       margin: 0;
+      min-height: 100dvh;
       color: var(--ink);
       background:
-        linear-gradient(180deg, rgba(255,255,255,.64), transparent 220px),
-        linear-gradient(90deg, rgba(217,207,191,.28) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(217,207,191,.22) 1px, transparent 1px),
-        var(--bg);
-      background-size: auto, 64px 64px, 64px 64px, auto;
+        linear-gradient(90deg, rgba(102, 127, 153, .06) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(102, 127, 153, .05) 1px, transparent 1px),
+        linear-gradient(180deg, #0e141d 0%, var(--bg) 100%);
+      background-size: 48px 48px, 48px 48px, auto;
       font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
       font-variant-numeric: tabular-nums;
       letter-spacing: 0;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px);
+      background-size: 100% 3px;
+      opacity: .35;
+      z-index: 90;
     }
     button, input, select, a { font: inherit; color: inherit; }
     button { border: 0; background: transparent; cursor: pointer; }
     a { text-decoration: none; }
     button:active, a:active { transform: translateY(1px) scale(.99); }
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
-      outline: 2px solid rgba(47,109,246,.45);
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 2px solid rgba(63, 183, 216, .62);
       outline-offset: 2px;
     }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    .app { min-height: 100dvh; display: grid; grid-template-rows: 56px 1fr; }
+    .app { min-height: 100dvh; display: grid; grid-template-rows: 52px 1fr; }
 
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 40;
       display: grid;
-      grid-template-columns: 278px 1fr 520px;
-      gap: 16px;
+      grid-template-columns: 290px 1fr 650px;
+      gap: 14px;
       align-items: center;
-      padding: 0 16px;
-      border-bottom: 1px solid rgba(217,207,191,.92);
-      background: rgba(255,253,247,.88);
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(11, 16, 22, .9);
       backdrop-filter: blur(16px);
     }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 1000; letter-spacing: .08em; white-space: nowrap; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #f2f7ff;
+      font-size: 14px;
+      font-weight: 1000;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
     .brand-mark {
-      width: 25px;
-      height: 25px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #2f6df6, #8dd7ff);
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
       position: relative;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
     }
     .brand-mark::after {
       content: "";
@@ -76,400 +100,657 @@
       left: 7px;
       top: 3px;
       width: 4px;
-      height: 20px;
+      height: 19px;
       border-radius: 3px;
-      background: #fffdf7;
+      background: #eaf6ff;
       transform: rotate(42deg);
     }
     .mode-tabs {
       justify-self: center;
       display: flex;
-      gap: 4px;
-      padding: 4px;
+      align-items: center;
+      gap: 2px;
+      padding: 3px;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: #e8e1d6;
+      border-radius: 999px;
+      background: rgba(24, 31, 41, .9);
+      min-width: 0;
     }
     .mode-tabs a, .mode-tabs button {
-      min-width: 64px;
-      height: 34px;
+      min-width: 62px;
+      height: 30px;
       display: grid;
       place-items: center;
-      padding: 0 15px;
-      border-radius: 12px;
+      padding: 0 12px;
+      border-radius: 999px;
       color: var(--muted);
+      font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
     }
-    .mode-tabs .active { background: var(--ink); color: #fffdf7; box-shadow: var(--shadow); }
-    .status { display: flex; justify-content: flex-end; align-items: center; gap: 13px; color: var(--muted); font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .mode-tabs .active { background: #eef5ff; color: #101722; }
+    .status {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .status b { color: var(--ink); }
     .status strong { color: var(--green); }
-    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(26,155,106,.14); }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(55,197,138,.14);
+    }
 
     .workspace {
       display: grid;
-      grid-template-columns: 286px minmax(760px, 1fr) 382px;
-      grid-template-rows: minmax(640px, 1fr) auto;
+      grid-template-columns: minmax(780px, 1.58fr) minmax(410px, .72fr);
+      grid-template-rows: minmax(0, 1fr) 156px;
       gap: 10px;
-      padding: 10px 14px 14px;
-      min-height: calc(100dvh - 56px);
+      height: calc(100dvh - 52px);
+      min-height: calc(100dvh - 52px);
+      overflow: hidden;
+      padding: 10px;
     }
     .panel {
       min-width: 0;
       min-height: 0;
-      border: 1px solid rgba(217,207,191,.94);
+      border: 1px solid var(--line);
       border-radius: var(--r);
       background: var(--panel);
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
     }
-    .pad { padding: 14px; }
-    .panel-title {
+    .section-title {
       display: flex;
-      justify-content: space-between;
       align-items: baseline;
+      justify-content: space-between;
       gap: 10px;
-      margin-bottom: 10px;
-      font-size: 14px;
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
       font-weight: 1000;
+      letter-spacing: .05em;
+      text-transform: uppercase;
     }
-    .panel-title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .section-title span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: none;
+    }
     .btn {
-      min-height: 34px;
+      min-height: 28px;
       display: inline-grid;
       place-items: center;
-      padding: 0 12px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--panel-strong);
+      padding: 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      background: rgba(21, 29, 39, .92);
       color: var(--ink);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
     }
-    .btn:hover { border-color: var(--ink); }
-    .btn.primary { border-color: var(--ink); background: var(--ink); color: #fffdf7; }
-    .btn.danger { border-color: rgba(216,79,87,.36); background: rgba(216,79,87,.08); color: var(--red); }
-    .btn-row { display: flex; flex-wrap: wrap; gap: 7px; }
+    .btn:hover { border-color: rgba(231,237,245,.58); background: rgba(35, 46, 61, .96); }
+    .btn.primary { border-color: rgba(63,183,216,.55); background: rgba(63,183,216,.18); color: #dff8ff; }
+    .btn.danger { border-color: rgba(239,95,103,.5); background: rgba(239,95,103,.16); color: #ffdce1; }
     .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 22px;
-      padding: 3px 8px;
+      min-height: 20px;
+      padding: 2px 7px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255,253,247,.74);
+      background: rgba(21,29,39,.72);
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 900;
       white-space: nowrap;
       font-style: normal;
     }
-    .pill.hot { color: var(--red); border-color: rgba(216,79,87,.35); background: rgba(216,79,87,.08); }
-    .pill.warn { color: var(--amber); border-color: rgba(211,134,40,.35); background: rgba(211,134,40,.08); }
-    .pill.good { color: var(--green); border-color: rgba(26,155,106,.35); background: rgba(26,155,106,.08); }
-    .pill.blue { color: var(--blue); border-color: rgba(47,109,246,.35); background: rgba(47,109,246,.08); }
+    .pill.hot { color: #ffdce1; border-color: rgba(239,95,103,.42); background: rgba(239,95,103,.13); }
+    .pill.warn { color: #ffe0ad; border-color: rgba(230,162,61,.42); background: rgba(230,162,61,.13); }
+    .pill.good { color: #cafce6; border-color: rgba(55,197,138,.42); background: rgba(55,197,138,.12); }
+    .pill.blue { color: #d8e5ff; border-color: rgba(77,136,255,.42); background: rgba(77,136,255,.13); }
+    .pill.cyan { color: #dff8ff; border-color: rgba(63,183,216,.42); background: rgba(63,183,216,.12); }
 
-    .left-rail {
+    .map-panel {
+      position: relative;
+      overflow: hidden;
       display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr) auto;
-      gap: 10px;
-      min-height: 0;
+      grid-template-columns: 248px 1fr;
+      grid-template-rows: 54px 1fr;
     }
-    .control-grid { display: grid; gap: 8px; }
-    .field label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 900; }
-    .field input, .field select {
+    .map-header {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(12, 18, 25, .76);
+    }
+    .command-line {
+      display: grid;
+      grid-template-columns: 150px 1fr 110px 96px;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+    .command-line select,
+    .command-line input {
       width: 100%;
-      min-height: 36px;
-      padding: 0 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--panel-strong);
-      font-weight: 900;
-    }
-    .segmented { display: flex; gap: 5px; flex-wrap: wrap; }
-    .segmented button {
-      min-height: 30px;
+      min-height: 32px;
       padding: 0 9px;
       border: 1px solid var(--line);
-      border-radius: 9px;
-      background: var(--panel-strong);
+      border-radius: 7px;
+      background: rgba(15, 21, 29, .96);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .range-tabs {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+    .range-tabs button {
+      min-height: 28px;
+      min-width: 38px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(18,24,32,.9);
       color: var(--muted);
       font-size: 11px;
       font-weight: 1000;
     }
-    .segmented button.active { background: var(--ink); border-color: var(--ink); color: #fffdf7; }
-    .layer-list, .source-list { display: grid; gap: 7px; min-height: 0; overflow: auto; }
-    .filter-btn {
-      width: 100%;
+    .range-tabs button.active { color: #091016; background: #e9f7ff; border-color: transparent; }
+    .map-stats {
       display: grid;
-      grid-template-columns: 28px 1fr auto;
+      grid-template-columns: repeat(4, auto);
       gap: 8px;
-      align-items: center;
-      min-height: 42px;
-      padding: 8px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,253,247,.74);
-      text-align: left;
+      justify-content: end;
     }
-    .filter-btn.active { border-color: color-mix(in srgb, var(--tone) 54%, var(--line)); background: color-mix(in srgb, var(--tone) 9%, var(--panel-strong)); }
-    .filter-dot {
-      width: 24px;
-      height: 24px;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--tone) 15%, #fffdf7);
-      color: var(--tone);
+    .mini-stat {
+      min-width: 78px;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(21,29,39,.72);
+    }
+    .mini-stat span { display: block; color: var(--muted); font-size: 9px; font-weight: 900; }
+    .mini-stat b { display: block; margin-top: 2px; color: var(--ink); font-size: 14px; line-height: 1; }
+
+    .layer-rail {
+      min-height: 0;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: rgba(10, 15, 21, .64);
+    }
+    .layer-group { padding: 9px 9px 2px; }
+    .group-title {
+      margin: 0 0 6px;
+      color: var(--faint);
       font-size: 10px;
       font-weight: 1000;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
-    .filter-btn b { display: block; font-size: 12px; line-height: 1.2; }
-    .filter-btn span span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.25; font-weight: 800; }
-    .filter-btn strong { color: var(--tone); font-size: 12px; }
-    .url-box {
-      padding: 10px;
-      border: 1px dashed var(--line);
-      border-radius: 10px;
-      background: rgba(255,253,247,.68);
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.45;
-      word-break: break-all;
-    }
-
-    .center {
+    .layer-btn {
+      width: 100%;
+      min-height: 35px;
       display: grid;
-      grid-template-rows: auto minmax(470px, 1fr) auto;
-      gap: 10px;
-      min-height: 0;
+      grid-template-columns: 22px 1fr auto;
+      gap: 7px;
+      align-items: center;
+      margin-bottom: 5px;
+      padding: 6px;
+      border: 1px solid rgba(132,148,166,.16);
+      border-radius: 7px;
+      background: rgba(18, 24, 32, .76);
+      text-align: left;
     }
-    .hero {
+    .layer-btn.active {
+      border-color: color-mix(in srgb, var(--tone) 52%, rgba(132,148,166,.16));
+      background: color-mix(in srgb, var(--tone) 12%, rgba(18,24,32,.9));
+    }
+    .layer-dot {
+      width: 19px;
+      height: 19px;
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: start;
-      padding: 14px;
+      place-items: center;
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--tone) 16%, rgba(21,29,39,.9));
+      color: var(--tone);
+      font-size: 9px;
+      font-weight: 1000;
     }
-    .eyebrow { color: var(--blue); font-size: 11px; font-weight: 1000; letter-spacing: .08em; }
-    h1 { margin: 4px 0 7px; font-size: 24px; line-height: 1.15; letter-spacing: 0; }
-    .hero p { margin: 0; max-width: 900px; color: var(--muted); font-size: 12px; line-height: 1.55; }
-    .metric-strip { display: grid; grid-template-columns: repeat(5, minmax(108px, 1fr)); gap: 8px; }
-    .metric {
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,253,247,.8);
-    }
-    .metric span { color: var(--muted); font-size: 10px; font-weight: 900; }
-    .metric b { display: block; margin-top: 5px; font-size: 22px; line-height: 1; }
-    .metric small { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .layer-btn b { display: block; font-size: 11px; line-height: 1.15; }
+    .layer-btn span span { display: block; margin-top: 2px; color: var(--faint); font-size: 9px; font-weight: 800; line-height: 1.2; }
+    .layer-btn strong { color: var(--tone); font-size: 11px; }
 
-    .map-panel { position: relative; overflow: hidden; }
-    .map-stage {
+    .city-map {
       position: relative;
-      height: 100%;
-      min-height: 470px;
+      min-height: 0;
       overflow: hidden;
       background:
-        linear-gradient(90deg, rgba(217,207,191,.56) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(217,207,191,.48) 1px, transparent 1px),
-        radial-gradient(circle at 52% 50%, rgba(47,109,246,.10), transparent 31%),
-        #fffaf0;
-      background-size: 70px 70px, 70px 70px, auto, auto;
+        linear-gradient(90deg, rgba(80, 99, 120, .20) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(80, 99, 120, .17) 1px, transparent 1px),
+        radial-gradient(circle at 47% 48%, rgba(63,183,216,.10), transparent 36%),
+        linear-gradient(135deg, rgba(49, 59, 73, .55), rgba(12, 18, 25, .96));
+      background-size: 74px 74px, 74px 74px, auto, auto;
     }
-    .district {
+    .zone {
       position: absolute;
       display: grid;
       place-items: center;
-      border: 1px solid color-mix(in srgb, var(--tone) 40%, var(--line));
-      border-radius: 24px;
+      border: 1px solid color-mix(in srgb, var(--tone) 34%, rgba(132,148,166,.18));
+      border-radius: 14px;
       background: color-mix(in srgb, var(--tone) 8%, transparent);
-      color: color-mix(in srgb, var(--tone) 72%, var(--ink));
-      font-size: 12px;
+      color: color-mix(in srgb, var(--tone) 70%, var(--ink));
+      font-size: 11px;
       font-weight: 1000;
       pointer-events: none;
     }
-    .flow-line {
+    .road {
+      position: absolute;
+      height: 2px;
+      border-radius: 999px;
+      background: rgba(150, 169, 190, .32);
+      transform-origin: left center;
+    }
+    .metro {
       position: absolute;
       height: 3px;
       border-radius: 999px;
-      opacity: .52;
+      background: var(--tone);
+      opacity: .64;
+      transform-origin: left center;
+    }
+    .heat {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, color-mix(in srgb, var(--tone) 30%, transparent), transparent 68%);
+      filter: blur(4px);
+      opacity: .72;
+      pointer-events: none;
+    }
+    .risk-ring {
+      position: absolute;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px dashed color-mix(in srgb, var(--tone) 64%, transparent);
+      background: color-mix(in srgb, var(--tone) 6%, transparent);
+      pointer-events: none;
+    }
+    .path {
+      position: absolute;
+      height: 3px;
+      border-radius: 999px;
       background: linear-gradient(90deg, transparent, var(--tone), transparent);
+      opacity: .58;
       transform-origin: left center;
     }
     .event-marker {
       position: absolute;
-      z-index: 4;
-      min-width: 36px;
-      height: 36px;
+      z-index: 8;
+      width: 30px;
+      height: 30px;
       display: grid;
       place-items: center;
       border-radius: 50%;
       background: var(--tone);
-      color: #fffdf7;
-      box-shadow: 0 0 0 7px color-mix(in srgb, var(--tone) 16%, transparent);
-      font-size: 11px;
+      color: #081017;
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--tone) 16%, transparent);
+      font-size: 10px;
       font-weight: 1000;
       transform: translate(-50%, -50%);
+      transition: opacity .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
     }
-    .event-marker.dim { opacity: .14; pointer-events: none; }
-    .event-marker.active { outline: 3px solid rgba(21,25,31,.24); }
+    .event-marker.dim { opacity: .12; pointer-events: none; }
+    .event-marker.active {
+      transform: translate(-50%, -50%) scale(1.16);
+      box-shadow: 0 0 0 8px color-mix(in srgb, var(--tone) 24%, transparent), 0 0 0 1px rgba(255,255,255,.56);
+      color: #071017;
+    }
     .event-marker label {
       position: absolute;
-      left: 42px;
-      top: 1px;
-      min-width: 156px;
-      max-width: 220px;
+      left: 37px;
+      top: -2px;
+      width: max-content;
+      max-width: 224px;
       padding: 6px 8px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,253,247,.96);
+      border: 1px solid rgba(177, 194, 215, .25);
+      border-radius: 6px;
+      background: rgba(9, 14, 20, .92);
       color: var(--ink);
-      font-size: 11px;
+      font-size: 10px;
+      font-weight: 900;
       line-height: 1.25;
       text-align: left;
       pointer-events: none;
     }
-    .event-marker label span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 800; }
-    .map-caption {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      z-index: 6;
-      width: min(440px, calc(100% - 28px));
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,253,247,.9);
+    .event-marker label span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
     }
-    .map-caption b { display: block; font-size: 15px; margin-bottom: 5px; }
-    .map-caption span { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
-    .timeline {
+    .map-overlay {
       position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      z-index: 5;
+      left: 10px;
+      top: 10px;
+      z-index: 12;
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 10px;
-      align-items: center;
+      gap: 7px;
+      width: 310px;
+      pointer-events: none;
+    }
+    .ai-summary {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(9, 14, 20, .82);
       padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,253,247,.92);
+      box-shadow: var(--shadow);
     }
-    .timeline-line { position: relative; height: 3px; background: #ded4c5; border-radius: 999px; }
-    .tick { position: absolute; top: -8px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fffdf7; background: var(--blue); box-shadow: 0 0 0 1px var(--line); }
-    .tick.hot { background: var(--red); }
-    .tick.warn { background: var(--amber); }
-    .tick.good { background: var(--green); }
+    .ai-summary h1 { margin: 0 0 6px; font-size: 18px; line-height: 1.15; letter-spacing: 0; }
+    .ai-summary p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.46; }
+    .map-tools {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      pointer-events: auto;
+    }
+    .map-tools .btn { min-height: 26px; }
+    .legend {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      z-index: 12;
+      display: grid;
+      gap: 5px;
+      width: 160px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(9,14,20,.78);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .legend-row { display: grid; grid-template-columns: 10px 1fr auto; gap: 6px; align-items: center; }
+    .legend-row i { width: 8px; height: 8px; border-radius: 50%; background: var(--tone); }
 
-    .bottom-grid {
+    .intel-panel {
       display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 10px;
-    }
-    .media-matrix {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    .media-card {
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      background: rgba(255,253,247,.74);
+      grid-template-rows: auto minmax(0, 1fr);
       overflow: hidden;
     }
-    .media-head {
+    .intel-header {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr auto;
       gap: 8px;
       align-items: center;
       padding: 9px;
       border-bottom: 1px solid var(--line);
+      background: rgba(12, 18, 25, .76);
     }
-    .media-icon {
-      width: 26px;
-      height: 26px;
+    .intel-tabs { display: flex; gap: 5px; flex-wrap: wrap; }
+    .intel-tabs button {
+      min-height: 27px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(18,24,32,.9);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .intel-tabs button.active { background: #e9f7ff; color: #081017; border-color: transparent; }
+    .intel-scroll {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+      gap: 9px;
+      padding: 9px;
+    }
+    .intel-module {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(15, 21, 29, .74);
+      overflow: hidden;
+    }
+    .module-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 9px;
+      border-bottom: 1px solid rgba(132,148,166,.16);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 1000;
+    }
+    .module-body { padding: 8px 9px; display: grid; gap: 7px; }
+    .brief {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.48;
+      margin: 0;
+    }
+    .risk-list, .event-list, .line-list, .forecast-list { display: grid; gap: 6px; }
+    .event-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      gap: 8px;
+      align-items: start;
+      padding: 7px;
+      border: 1px solid rgba(132,148,166,.16);
+      border-radius: 7px;
+      background: rgba(12, 18, 25, .72);
+      text-align: left;
+    }
+    .event-card.active { border-color: rgba(63,183,216,.62); background: rgba(63,183,216,.09); }
+    .event-icon {
+      width: 28px;
+      height: 28px;
       display: grid;
       place-items: center;
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--tone) 14%, #fffdf7);
+      border-radius: 7px;
+      background: color-mix(in srgb, var(--tone) 18%, rgba(21,29,39,.9));
       color: var(--tone);
       font-size: 10px;
       font-weight: 1000;
     }
-    .media-head b { font-size: 12px; line-height: 1.2; }
-    .media-head span { color: var(--muted); font-size: 10px; font-weight: 800; }
-    .media-body { padding: 9px; display: grid; gap: 7px; }
-    .signal-line {
+    .event-card b { display: block; font-size: 11px; line-height: 1.28; }
+    .event-card span { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; line-height: 1.28; font-weight: 800; }
+    .event-card strong { color: var(--tone); font-size: 12px; }
+    .topic-row, .line-row, .forecast-row, .kv-row {
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(132,148,166,.13);
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
+      line-height: 1.36;
       font-weight: 800;
-      line-height: 1.35;
     }
-    .spark { height: 34px; display: flex; align-items: end; gap: 3px; }
-    .spark i { flex: 1; min-width: 3px; border-radius: 999px 999px 0 0; background: var(--tone); opacity: .72; }
+    .topic-row:last-child, .line-row:last-child, .forecast-row:last-child, .kv-row:last-child { border-bottom: 0; }
+    .topic-row b, .line-row b, .forecast-row b, .kv-row b { color: var(--ink); font-size: 11px; }
+    .bar {
+      width: 86px;
+      height: 5px;
+      margin-top: 4px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(132,148,166,.18);
+    }
+    .bar i { display: block; height: 100%; width: var(--w); background: var(--tone); border-radius: inherit; }
 
-    .trend-list, .feed-list, .detail-list { display: grid; gap: 8px; }
-    .trend-row, .feed-row, .detail-row {
-      width: 100%;
+    .detail-drawer {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 14;
+      width: min(520px, calc(100% - 20px));
+      max-height: min(520px, calc(100% - 92px));
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      border: 1px solid rgba(177,194,215,.28);
+      border-radius: 9px;
+      background: rgba(10, 15, 21, .94);
+      box-shadow: 0 24px 60px rgba(0,0,0,.44);
+      overflow: hidden;
+    }
+    .detail-top {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 8px;
-      padding: 9px;
+    }
+    .detail-top h2 { margin: 0 0 4px; font-size: 17px; line-height: 1.2; }
+    .detail-top p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .detail-body { min-height: 0; overflow: auto; padding: 10px; display: grid; gap: 8px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .detail-metric {
+      padding: 7px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,253,247,.78);
-      text-align: left;
-      font-size: 11px;
+      border-radius: 7px;
+      background: rgba(21,29,39,.72);
     }
-    .trend-row b, .feed-row b, .detail-row b { display: block; color: var(--ink); font-size: 12px; line-height: 1.35; }
-    .trend-row span, .feed-row span, .detail-row span { color: var(--muted); font-weight: 800; line-height: 1.35; }
-    .trend-row.active, .feed-row.active { border-color: var(--blue); background: rgba(47,109,246,.06); }
+    .detail-metric span { color: var(--muted); font-size: 9px; font-weight: 900; }
+    .detail-metric b { display: block; margin-top: 3px; color: var(--ink); font-size: 15px; line-height: 1; }
+    .detail-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 9px 10px;
+      border-top: 1px solid var(--line);
+      background: rgba(12,18,25,.9);
+    }
 
-    .right-stack {
+    .timeline-panel {
+      grid-column: 1 / -1;
       display: grid;
-      grid-template-rows: auto minmax(250px, 1fr) auto;
-      gap: 10px;
-      min-height: 0;
+      grid-template-columns: 320px 1fr 330px;
+      gap: 0;
+      overflow: hidden;
     }
-    .selected-title h2 { margin: 0 0 7px; font-size: 20px; line-height: 1.25; }
-    .selected-title p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
-    .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
-    .meta-grid div { padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.75); }
-    .meta-grid span { color: var(--muted); font-size: 10px; font-weight: 900; }
-    .meta-grid b { display: block; margin-top: 5px; font-size: 18px; }
-    .panel-scroll { min-height: 0; overflow: auto; }
-    .feed-row { grid-template-columns: 46px 1fr auto; align-items: center; }
-    .feed-src {
-      width: 38px;
-      height: 28px;
+    .timeline-side {
+      padding: 10px;
+      border-right: 1px solid var(--line);
+      background: rgba(12,18,25,.78);
+    }
+    .timeline-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 1000; }
+    .timeline-title span { color: var(--muted); font-size: 10px; }
+    .density {
+      position: relative;
+      min-height: 100%;
+      padding: 22px 10px 10px;
+      background:
+        linear-gradient(90deg, rgba(132,148,166,.12) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(132,148,166,.10) 1px, transparent 1px);
+      background-size: 86px 100%, 100% 24px;
+    }
+    .density-track {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: 72px;
+      height: 2px;
+      background: rgba(132,148,166,.35);
+    }
+    .density-dot {
+      position: absolute;
+      top: 59px;
+      left: var(--x);
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      background: var(--tone);
+      border: 3px solid rgba(11,16,22,.95);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.22);
+    }
+    .time-label {
+      position: absolute;
+      top: 92px;
+      left: var(--x);
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .mainline-panel {
+      padding: 10px;
+      border-left: 1px solid var(--line);
+      background: rgba(12,18,25,.78);
+      display: grid;
+      align-content: start;
+      gap: 7px;
+    }
+    .mainline-chain {
+      display: grid;
+      gap: 6px;
+    }
+    .chain-node {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 7px;
+      align-items: center;
+      padding: 6px;
+      border: 1px solid rgba(132,148,166,.16);
+      border-radius: 7px;
+      background: rgba(15,21,29,.72);
+      font-size: 10px;
+    }
+    .chain-node i {
+      width: 18px;
+      height: 18px;
       display: grid;
       place-items: center;
-      border-radius: 9px;
-      background: color-mix(in srgb, var(--tone) 13%, #fffdf7);
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--tone) 18%, rgba(21,29,39,.9));
       color: var(--tone);
-      font-size: 11px;
+      font-size: 9px;
+      font-style: normal;
       font-weight: 1000;
     }
-    .action-block { display: grid; gap: 8px; }
+    .chain-node b { font-size: 10px; line-height: 1.24; }
+    .chain-node span { color: var(--muted); font-size: 9px; }
+
     .toast {
       position: fixed;
       left: 50%;
       bottom: 18px;
-      z-index: 80;
+      z-index: 120;
       transform: translateX(-50%) translateY(18px);
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: var(--ink);
-      color: #fffdf7;
+      padding: 9px 13px;
+      border: 1px solid rgba(177,194,215,.28);
+      border-radius: 8px;
+      background: rgba(11, 16, 22, .95);
+      color: var(--ink);
       opacity: 0;
       pointer-events: none;
       transition: opacity .2s var(--ease), transform .2s var(--ease);
@@ -478,35 +759,37 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    @media (max-width: 1260px) {
-      .topbar { grid-template-columns: 1fr; height: auto; padding: 12px; }
+    @media (max-width: 1280px) {
+      .topbar { grid-template-columns: 1fr; height: auto; padding: 10px; }
       .mode-tabs, .status { justify-self: start; }
-      .workspace { grid-template-columns: 280px minmax(0, 1fr); }
-      .right-stack { grid-column: 1 / -1; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto; }
-      .bottom-grid { grid-template-columns: 1fr; }
-      .media-matrix { grid-template-columns: repeat(2, 1fr); }
+      .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto; height: auto; overflow: visible; }
+      .map-panel { min-height: 760px; }
+      .timeline-panel { grid-template-columns: 1fr; }
+      .timeline-side, .mainline-panel { border: 0; border-bottom: 1px solid var(--line); }
+      .intel-panel { min-height: 680px; }
     }
     @media (max-width: 760px) {
-      .workspace { display: block; padding: 10px; }
-      .panel { margin-bottom: 10px; }
-      .hero, .metric-strip, .media-matrix, .meta-grid { grid-template-columns: 1fr; }
-      .right-stack { display: block; }
-      .left-rail { display: block; }
-      .layer-list, .source-list { max-height: none; overflow: visible; }
-      .map-stage { min-height: 520px; }
-      .event-marker label { display: none; }
-      .timeline { grid-template-columns: 1fr; }
-      .topbar { position: static; }
+      .workspace { padding: 8px; display: block; }
+      .panel { margin-bottom: 8px; }
+      .map-panel { display: block; min-height: auto; }
+      .map-header, .command-line, .map-stats { grid-template-columns: 1fr; }
+      .layer-rail { max-height: 330px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .city-map { min-height: 600px; }
+      .event-marker label, .legend { display: none; }
+      .detail-drawer { position: relative; inset: auto; width: auto; max-height: none; margin: 8px; }
+      .detail-grid { grid-template-columns: repeat(2, 1fr); }
       .mode-tabs { max-width: 100%; overflow-x: auto; }
-      .mode-tabs a, .mode-tabs button { min-width: 60px; padding: 0 10px; }
       .status { flex-wrap: wrap; }
+      .map-overlay { position: static; width: auto; padding: 8px; }
+      .timeline-panel { display: block; }
+      .density { min-height: 150px; }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <a class="brand" href="city-monitor.html" aria-label="城市态势感知">
+      <a class="brand" href="city-monitor.html" aria-label="城市情报监控">
         <span class="brand-mark" aria-hidden="true"></span>
         <span>WORLDLINE OBSERVER</span>
       </a>
@@ -520,304 +803,424 @@
         <a href="decision-brief.html">汇报</a>
       </nav>
       <div class="status">
-        <span>城市 <strong id="cityBadge">青润市</strong></span>
-        <span>时窗 <strong id="timeBadge">24h</strong></span>
-        <span>信号健康 <strong id="healthBadge">96.4%</strong></span>
+        <span>监控城市 <b id="cityName">上海</b></span>
+        <span>活跃事件 <strong id="activeCount">0</strong></span>
+        <span>最高风险 <strong id="topRisk">0</strong></span>
+        <span>数据时延 <strong>18s</strong></span>
+        <span>数据健康 <strong>96.4%</strong></span>
         <span class="live-dot"></span>
       </div>
     </header>
 
     <main class="workspace">
-      <aside class="left-rail">
-        <section class="panel pad">
-          <div class="panel-title">态势视图 <span>URL state</span></div>
-          <div class="control-grid">
-            <div class="field">
-              <label for="citySelect">城市</label>
-              <select id="citySelect">
-                <option value="qingrun">青润市</option>
-                <option value="north">北城新区</option>
-                <option value="river">江湾片区</option>
-              </select>
+      <section class="panel map-panel">
+        <header class="map-header">
+          <div class="command-line">
+            <select id="citySelect" aria-label="城市">
+              <option value="shanghai">上海</option>
+              <option value="beijing">北京</option>
+              <option value="shenzhen">深圳</option>
+              <option value="tokyo">东京</option>
+              <option value="newyork">纽约</option>
+            </select>
+            <input id="searchInput" placeholder="搜索事件、地点、来源、关键词" />
+            <select id="districtSelect" aria-label="区域">
+              <option value="all">全部区域</option>
+              <option value="浦东新区">浦东新区</option>
+              <option value="黄浦区">黄浦区</option>
+              <option value="徐汇区">徐汇区</option>
+              <option value="静安区">静安区</option>
+              <option value="杨浦区">杨浦区</option>
+              <option value="宝山区">宝山区</option>
+            </select>
+            <button class="btn primary" id="shareBtn">分享视图</button>
+          </div>
+          <div class="map-stats" id="mapStats"></div>
+        </header>
+
+        <aside class="layer-rail">
+          <div class="section-title">City Layers <span>多源城市图层</span></div>
+          <div id="layerList"></div>
+        </aside>
+
+        <section class="city-map" id="cityMap">
+          <div class="map-overlay">
+            <div class="ai-summary">
+              <h1 id="aiHeadline">上海城市情报态势</h1>
+              <p id="aiSummary"></p>
             </div>
-            <div class="field">
-              <label for="searchInput">搜索态势关键词</label>
-              <input id="searchInput" placeholder="输入校门口、停水、欠薪、医院、暴雨等关键词" />
+            <div class="map-tools">
+              <button class="btn primary" data-map-mode="heat">热力图</button>
+              <button class="btn primary" data-map-mode="risk">风险圈</button>
+              <button class="btn primary" data-map-mode="path">传播路径</button>
+              <button class="btn" id="zoomStreet">街道级</button>
             </div>
-            <div>
-              <label class="field-label">时间范围</label>
-              <div class="segmented" id="timeButtons">
-                <button data-time="1h">1h</button>
-                <button data-time="6h">6h</button>
-                <button data-time="24h">24h</button>
-                <button data-time="7d">7d</button>
+          </div>
+          <div class="legend" id="legend"></div>
+          <div id="zoneLayer"></div>
+          <div id="roadLayer"></div>
+          <div id="heatLayer"></div>
+          <div id="riskLayer"></div>
+          <div id="pathLayer"></div>
+          <div id="markerLayer"></div>
+
+          <article class="detail-drawer" id="detailDrawer">
+            <div class="detail-top">
+              <div>
+                <h2 id="detailTitle"></h2>
+                <p id="detailSummary"></p>
+              </div>
+              <button class="btn" id="closeDetail">收起</button>
+            </div>
+            <div class="detail-body">
+              <div class="detail-grid" id="detailMetrics"></div>
+              <div class="intel-module">
+                <div class="module-head">原始内容与来源 <span class="pill" id="detailSourceCount"></span></div>
+                <div class="module-body" id="rawContent"></div>
+              </div>
+              <div class="intel-module">
+                <div class="module-head">AI 判断 <span class="pill cyan">自动研判</span></div>
+                <div class="module-body" id="aiJudgement"></div>
+              </div>
+              <div class="intel-module">
+                <div class="module-head">关联事件 <span class="pill blue" id="relatedCount"></span></div>
+                <div class="module-body" id="relatedEvents"></div>
               </div>
             </div>
-            <div>
-              <label class="field-label">模态</label>
-              <div class="segmented" id="modalityButtons"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel pad">
-          <div class="panel-title">城市风险图层 <span>全开为常态</span></div>
-          <div class="layer-list" id="layerList"></div>
-        </section>
-
-        <section class="panel pad">
-          <div class="panel-title">来源范围 <span>只影响呈现</span></div>
-          <div class="source-list" id="sourceList"></div>
-        </section>
-
-        <section class="panel pad">
-          <div class="panel-title">当前视图链接 <span>可复现</span></div>
-          <div class="url-box mono" id="urlPreview"></div>
-          <button class="btn primary" id="copyLink" style="width:100%;margin-top:8px">复制当前态势链接</button>
-        </section>
-      </aside>
-
-      <section class="center">
-        <section class="panel hero">
-          <div>
-            <div class="eyebrow">CITY SITUATIONAL AWARENESS</div>
-            <h1>先知道这座城市正在发生什么，再决定是否接管成事件</h1>
-            <p>这里不是任务页，也不是单一事件模板。它把文字、音频、视频、直播、图片和官方信息统一落到城市空间与时间轴上，值班用户可以先掌握全城动态，再从异常信号进入事中接管。</p>
-          </div>
-          <div class="metric-strip" id="metricStrip"></div>
-        </section>
-
-        <section class="panel map-panel">
-          <div class="map-stage" id="mapStage">
-            <div class="map-caption">
-              <b>青润市实时态势图</b>
-              <span>标记代表聚合后的城市动态，不代表单条数据。点击任意节点查看多模态证据、热度曲线、传播路径和是否需要转入事中处置。</span>
-            </div>
-            <div id="districtLayer"></div>
-            <div id="flowLayer"></div>
-            <div id="markerLayer"></div>
-            <div class="timeline">
-              <button class="btn primary" id="playTimeline">播放态势演进</button>
-              <div class="timeline-line" id="timelineLine"></div>
-              <button class="btn" id="resetFilters">重置筛选</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="bottom-grid">
-          <section class="panel pad">
-            <div class="panel-title">多模态态势矩阵 <span id="matrixHint">按当前筛选聚合</span></div>
-            <div class="media-matrix" id="mediaMatrix"></div>
-          </section>
-          <section class="panel pad">
-            <div class="panel-title">城市热点排序 <span>非任务也可浏览</span></div>
-            <div class="trend-list" id="trendList"></div>
-          </section>
+            <footer class="detail-actions">
+              <button class="btn primary" id="joinMainline">加入主线</button>
+              <button class="btn" data-status="confirmed">标记已确认</button>
+              <button class="btn" data-status="review">标记待核验</button>
+              <button class="btn" data-status="noise">标记噪声</button>
+              <button class="btn" id="exportEvent">导出事件</button>
+            </footer>
+          </article>
         </section>
       </section>
 
-      <aside class="right-stack">
-        <section class="panel pad">
-          <div class="panel-title">选中动态详情 <span id="selectedId">SIG-000</span></div>
-          <div class="selected-title">
-            <h2 id="detailTitle"></h2>
-            <p id="detailSummary"></p>
+      <aside class="panel intel-panel">
+        <header class="intel-header">
+          <div class="intel-tabs" id="intelTabs">
+            <button data-tab="all" class="active">全部情报</button>
+            <button data-tab="risk">重点风险</button>
+            <button data-tab="traffic">交通</button>
+            <button data-tab="social">舆情</button>
+            <button data-tab="response">处置</button>
           </div>
-          <div class="meta-grid">
-            <div><span>热度</span><b id="detailHeat">0</b></div>
-            <div><span>风险</span><b id="detailRisk">0</b></div>
-            <div><span>可信</span><b id="detailTrust">0</b></div>
-          </div>
-          <div class="detail-list" id="detailRows"></div>
-        </section>
-
-        <section class="panel pad panel-scroll">
-          <div class="panel-title">实时内容流 <span>文字 / 音频 / 视频 / 直播</span></div>
-          <div class="feed-list" id="feedList"></div>
-        </section>
-
-        <section class="panel pad">
-          <div class="panel-title">事中接管判断 <span>当前选中</span></div>
-          <div class="action-block">
-            <div class="detail-row">
-              <span><b>系统建议</b><span id="decisionText"></span></span>
-              <i class="pill hot" id="decisionLevel"></i>
+          <button class="btn primary" id="reportBtn">生成报告</button>
+        </header>
+        <div class="intel-scroll">
+          <section class="intel-module">
+            <div class="module-head">城市 AI 摘要 <span class="pill cyan" id="summaryTime">10:42</span></div>
+            <div class="module-body">
+              <p class="brief" id="rightSummary"></p>
+              <div class="forecast-list" id="summarySignals"></div>
             </div>
-            <button class="btn primary" id="takeoverBtn">进入事中接管</button>
-            <div class="btn-row">
-              <button class="btn" id="draftBtn">加入值班摘要</button>
-              <button class="btn" id="watchBtn">持续观察</button>
-            </div>
-          </div>
-        </section>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">今日重点风险 <span class="pill hot" id="riskCount">0</span></div>
+            <div class="module-body risk-list" id="riskList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">突发事件列表 <span class="pill" id="incidentCount">0</span></div>
+            <div class="module-body event-list" id="incidentList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">热门话题与本地网络 <span class="pill warn">热度</span></div>
+            <div class="module-body" id="topicList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">交通 / 地铁 / 公交异常 <span class="pill blue">出行</span></div>
+            <div class="module-body" id="trafficList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">天气 / 基础设施 / 灾害 <span class="pill good">城市运行</span></div>
+            <div class="module-body" id="infraList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">警情 / 消防 / 急救线索 <span class="pill hot">应急</span></div>
+            <div class="module-body" id="emergencyList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">商圈与人流变化 <span class="pill cyan">人流</span></div>
+            <div class="module-body" id="crowdList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">社区反馈与政务公告 <span class="pill">基层</span></div>
+            <div class="module-body" id="communityList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">城市主线追踪 <span class="pill blue" id="mainlineCount">0</span></div>
+            <div class="module-body line-list" id="mainlineList"></div>
+          </section>
+
+          <section class="intel-module">
+            <div class="module-head">AI 推演 <span class="pill cyan">1h / 6h / 24h</span></div>
+            <div class="module-body forecast-list" id="forecastList"></div>
+          </section>
+        </div>
       </aside>
+
+      <section class="panel timeline-panel">
+        <div class="timeline-side">
+          <div class="timeline-title">城市事件时间线 <span id="timeRangeLabel">过去 24 小时</span></div>
+          <div class="range-tabs" id="rangeTabs">
+            <button data-range="1h">1h</button>
+            <button data-range="6h">6h</button>
+            <button data-range="24h" class="active">24h</button>
+            <button data-range="7d">7d</button>
+          </div>
+          <div style="height:8px"></div>
+          <div class="kv-row"><b>事件密度</b><span id="densityLabel">中高</span></div>
+          <div class="kv-row"><b>扩散最快</b><span id="fastestLabel">短视频热点</span></div>
+          <div class="kv-row"><b>当前播放</b><span id="playbackLabel">实时</span></div>
+        </div>
+        <div class="density" id="densityPanel">
+          <div class="density-track"></div>
+          <div id="densityDots"></div>
+        </div>
+        <div class="mainline-panel">
+          <div class="timeline-title">选中主线 <span id="activeMainlineName">地铁站故障导致周边交通与舆情升温</span></div>
+          <div class="mainline-chain" id="mainlineChain"></div>
+          <div class="range-tabs">
+            <button class="active" id="playbackBtn">回放演变</button>
+            <button id="simulationBtn">进入推演</button>
+            <button id="briefBtn">加入汇报</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
   <div class="toast" id="toast"></div>
 
   <script>
-    const DEFAULT_STATE = {
-      lat: 31.2380,
-      lon: 121.4860,
-      zoom: 11.20,
-      view: "city",
-      timeRange: "24h",
-      layers: ["conflicts", "bases", "hotspots", "weather", "economic", "waterways", "outages", "military", "natural", "sanctions"],
-      modalities: ["text", "audio", "video", "live", "image", "official"],
-      sources: ["douyin", "kuaishou", "toutiao", "weibo", "wechat", "media"]
-    };
-
-    const layerDefs = [
-      { id: "conflicts", label: "聚集与冲突", desc: "线下聚集、对峙、维权、围观", tone: "var(--red)", code: "聚" },
-      { id: "bases", label: "重点场所", desc: "学校、医院、园区、枢纽", tone: "var(--blue)", code: "点" },
-      { id: "hotspots", label: "网络热点", desc: "本地热榜、转评赞异常", tone: "var(--amber)", code: "热" },
-      { id: "weather", label: "天气扰动", desc: "暴雨、积水、高温、灾害前兆", tone: "var(--green)", code: "天" },
-      { id: "economic", label: "民生经济", desc: "欠薪、退费、价格、就业", tone: "var(--amber)", code: "民" },
-      { id: "waterways", label: "交通水系", desc: "桥梁、河道、道路、站点", tone: "var(--blue)", code: "交" },
-      { id: "outages", label: "停服中断", desc: "断水、断电、停运、停课", tone: "var(--red)", code: "断" },
-      { id: "military", label: "现场力量", desc: "警情、管控、救援、疏导", tone: "var(--slate)", code: "力" },
-      { id: "natural", label: "自然事件", desc: "火情、积水、坍塌、地质灾害", tone: "var(--green)", code: "灾" },
-      { id: "sanctions", label: "回应处置", desc: "通报、辟谣、限流、官方动作", tone: "var(--violet)", code: "应" },
-      { id: "nuclear", label: "高危设施", desc: "危化、施工、敏感设施周边", tone: "var(--red)", code: "危" },
-      { id: "iranAttacks", label: "高烈度专题", desc: "突发重大事件专题槽", tone: "var(--red)", code: "专" }
+    const layers = [
+      { id: "incident", name: "突发事件", group: "事件", code: "突", color: "var(--red)" },
+      { id: "accident", name: "交通事故", group: "交通", code: "事", color: "var(--amber)" },
+      { id: "congestion", name: "拥堵", group: "交通", code: "堵", color: "var(--amber)" },
+      { id: "metro", name: "地铁 / 公交异常", group: "交通", code: "轨", color: "var(--blue)" },
+      { id: "fire", name: "火警 / 救援", group: "应急", code: "火", color: "var(--red)" },
+      { id: "security", name: "治安事件", group: "应急", code: "安", color: "var(--magenta)" },
+      { id: "weather", name: "天气灾害", group: "自然", code: "天", color: "var(--green)" },
+      { id: "outage", name: "停电 / 停水 / 通信", group: "基础设施", code: "断", color: "var(--red)" },
+      { id: "construction", name: "施工 / 封路", group: "基础设施", code: "施", color: "var(--amber)" },
+      { id: "medical", name: "医疗急救", group: "应急", code: "医", color: "var(--cyan)" },
+      { id: "school", name: "学校相关事件", group: "重点场所", code: "校", color: "var(--violet)" },
+      { id: "business", name: "商圈活动", group: "城市生活", code: "商", color: "var(--cyan)" },
+      { id: "crowd", name: "人群聚集", group: "城市生活", code: "聚", color: "var(--red)" },
+      { id: "opinion", name: "舆情热点", group: "网络", code: "舆", color: "var(--violet)" },
+      { id: "shortvideo", name: "短视频热点", group: "网络", code: "短", color: "var(--magenta)" },
+      { id: "news", name: "本地新闻", group: "媒体", code: "新", color: "var(--blue)" },
+      { id: "gov", name: "政务公告", group: "媒体", code: "政", color: "var(--green)" },
+      { id: "community", name: "社区爆料", group: "基层", code: "社", color: "var(--amber)" },
+      { id: "price", name: "价格 / 物资 / 服务", group: "民生", code: "价", color: "var(--cyan)" },
+      { id: "infrastructure", name: "城市基础设施异常", group: "基础设施", code: "基", color: "var(--red)" }
     ];
 
-    const modalityDefs = [
-      { id: "text", label: "文字", code: "文", tone: "var(--slate)" },
-      { id: "audio", label: "音频", code: "音", tone: "var(--violet)" },
-      { id: "video", label: "视频", code: "视", tone: "var(--red)" },
-      { id: "live", label: "直播", code: "直", tone: "var(--amber)" },
-      { id: "image", label: "图片", code: "图", tone: "var(--green)" },
-      { id: "official", label: "官方", code: "官", tone: "var(--blue)" }
-    ];
-
-    const sourceDefs = [
-      { id: "douyin", label: "抖音", desc: "短视频与直播", tone: "var(--red)" },
-      { id: "kuaishou", label: "快手", desc: "下沉短视频", tone: "var(--amber)" },
-      { id: "toutiao", label: "头条", desc: "资讯推荐流", tone: "var(--blue)" },
-      { id: "weibo", label: "微博", desc: "热搜与本地号", tone: "var(--violet)" },
-      { id: "wechat", label: "公众号", desc: "长文与社区转发", tone: "var(--green)" },
-      { id: "media", label: "其他媒体", desc: "新闻站点与论坛", tone: "var(--slate)" }
-    ];
-
-    const districts = [
-      { name: "城北区", x: 18, y: 18, w: 22, h: 18, tone: "var(--blue)" },
-      { name: "城中区", x: 42, y: 24, w: 23, h: 22, tone: "var(--amber)" },
-      { name: "城东区", x: 70, y: 23, w: 22, h: 21, tone: "var(--green)" },
-      { name: "城西区", x: 18, y: 56, w: 24, h: 23, tone: "var(--red)" },
-      { name: "江湾片区", x: 57, y: 60, w: 31, h: 24, tone: "var(--violet)" }
+    const zones = [
+      { name: "陆家嘴商圈", kind: "商圈", x: 58, y: 38, w: 18, h: 13, color: "var(--cyan)" },
+      { name: "人民广场", kind: "交通枢纽", x: 39, y: 43, w: 15, h: 12, color: "var(--blue)" },
+      { name: "徐汇学校带", kind: "学校", x: 31, y: 66, w: 18, h: 14, color: "var(--violet)" },
+      { name: "瑞金医疗区", kind: "医院", x: 45, y: 57, w: 16, h: 11, color: "var(--cyan)" },
+      { name: "静安政务区", kind: "政府机构", x: 31, y: 37, w: 16, h: 12, color: "var(--green)" },
+      { name: "五角场社区", kind: "社区", x: 69, y: 24, w: 17, h: 13, color: "var(--amber)" },
+      { name: "宝山工业带", kind: "基础设施", x: 74, y: 67, w: 18, h: 14, color: "var(--red)" }
     ];
 
     const events = [
       {
-        id: "SIG-041", title: "校门口聚集与责任追问升温", layer: "conflicts", district: "城西区", x: 30, y: 55,
-        heat: 92, risk: 89, trust: 0.76, status: "需接管", trend: "+41%", sources: ["douyin", "weibo", "toutiao"], modalities: ["video", "live", "text", "audio"],
-        summary: "现场视频、家长语音、微博长帖和本地号转述同时出现，热度在 42 分钟内快速放大，核心叙事从求证事实转向责任归属。",
-        clues: ["短视频出现校门口聚集画面，3 条搬运账号使用相近标题", "家长群语音被转述，重点质疑知情时间与校方回应", "本地微博号开始汇总时间线，评论区出现线下同行表达"],
-        gaps: ["现场人数是否继续增加", "官方是否已到场沟通", "学生隐私信息是否被二次传播"],
-        decision: "满足高热度、线下聚集、多模态互证和回应缺口四项条件，建议进入事中接管。"
+        id: "EV-021", title: "陆家嘴站信号故障导致换乘拥堵", layer: "metro", district: "浦东新区", place: "陆家嘴站 2 号线换乘厅",
+        x: 62, y: 41, risk: 84, confidence: 0.86, heat: 92, time: "10:18", status: "持续", spread: "二次扩散", source: "地铁公告 / 微博 / 短视频",
+        sources: ["政务公告", "微博", "抖音", "本地新闻"], raw: "多名乘客发布站台排队视频，地铁运营方 10:12 发布限流提示，周边道路导航拥堵同步升高。",
+        summary: "轨交故障、道路拥堵和线上吐槽正在形成同一主线，6 小时内若运力恢复不完整，晚高峰会出现二次放大。",
+        cause: "信号系统短时异常叠加商圈通勤流量", consequence: "换乘压力、网约车价格上行、舆情吐槽扩散", follow: "运营恢复时间、限流解除、周边公交接驳",
+        related: ["EV-022", "EV-024", "EV-035"], mainline: "ML-TRAFFIC-001", category: "traffic", modality: ["text", "video", "official"]
       },
       {
-        id: "SIG-033", title: "小区停水引发业主群集中投诉", layer: "outages", district: "城北区", x: 23, y: 28,
-        heat: 76, risk: 61, trust: 0.82, status: "观察", trend: "+18%", sources: ["wechat", "douyin", "media"], modalities: ["text", "video", "image"],
-        summary: "停水通知、业主群截图和老人取水视频同步出现，主要诉求集中在恢复时间和临时供水点。",
-        clues: ["公众号转载物业通知，评论追问恢复时间", "短视频出现排队接水画面", "社区群截图中出现集体去街道反映的讨论"],
-        gaps: ["影响楼栋数量", "是否已有临时供水安排", "物业与供水公司责任边界"],
-        decision: "当前风险以服务投诉为主，建议持续观察并补齐恢复时间。"
+        id: "EV-022", title: "世纪大道至延安东路高架拥堵上升", layer: "congestion", district: "黄浦区", place: "延安东路高架西向东",
+        x: 49, y: 45, risk: 71, confidence: 0.78, heat: 76, time: "10:26", status: "持续", spread: "区域扩散", source: "导航热力 / 出行平台 / 微博",
+        sources: ["导航平台", "微博", "本地新闻"], raw: "导航热力显示平均车速下降至 12km/h，部分用户将拥堵归因于地铁故障后的接驳需求。",
+        summary: "交通压力从轨交转移到道路，已经和陆家嘴站事件形成空间关联。",
+        cause: "轨交限流后替代出行增加", consequence: "商圈周边通勤迟到、网约车溢价", follow: "绕行建议、公交接驳、网约车价格",
+        related: ["EV-021", "EV-024"], mainline: "ML-TRAFFIC-001", category: "traffic", modality: ["text", "image"]
       },
       {
-        id: "SIG-028", title: "医院窗口排队争执进入本地热议", layer: "hotspots", district: "城中区", x: 49, y: 39,
-        heat: 71, risk: 56, trust: 0.68, status: "观察", trend: "+23%", sources: ["kuaishou", "weibo", "media"], modalities: ["video", "text", "audio"],
-        summary: "短视频片段被剪辑为窗口态度争议，本地论坛出现当事双方不同说法，尚未形成线下动员。",
-        clues: ["快手片段被二次剪辑，标题强化冲突", "微博本地号引用视频截图", "疑似现场录音缺少完整上下文"],
-        gaps: ["完整排队过程", "窗口工作人员身份", "院方是否已回应"],
-        decision: "传播仍在升温但线下风险低，建议纳入热点观察。"
+        id: "EV-023", title: "徐汇中学门口家长聚集讨论校内纠纷", layer: "school", district: "徐汇区", place: "衡山路附近学校门口",
+        x: 31, y: 66, risk: 88, confidence: 0.72, heat: 86, time: "09:54", status: "持续", spread: "线下风险", source: "短视频 / 家长群 / 社区爆料",
+        sources: ["抖音", "微信群转述", "社区爆料"], raw: "短视频出现校门口人群聚集片段，家长群讨论校方沟通时间表，部分评论出现继续到校表达。",
+        summary: "学校相关线下聚集与线上情绪互相增强，存在隐私传播和现场秩序压力。",
+        cause: "校内纠纷事实不清，家长对沟通节奏不满", consequence: "现场聚集扩大、未成年人隐私外泄、媒体跟进", follow: "人数变化、校方说明、家属诉求、隐私保护",
+        related: ["EV-031", "EV-032"], mainline: "ML-SCHOOL-002", category: "risk", modality: ["video", "audio", "text"]
       },
       {
-        id: "SIG-052", title: "园区欠薪群聊截图外溢", layer: "economic", district: "江湾片区", x: 72, y: 67,
-        heat: 83, risk: 78, trust: 0.72, status: "预警", trend: "+34%", sources: ["kuaishou", "toutiao", "wechat"], modalities: ["text", "image", "video"],
-        summary: "员工群截图、工资条局部图片与短视频口播互相引用，出现约定时间集体到园区办公室的表达。",
-        clues: ["群聊提到统一时间到园区门口", "头条问答出现公司名模糊搜索增长", "短视频口播提到欠薪周期超过两个月"],
-        gaps: ["欠薪人数与金额", "是否已有劳动监察介入", "企业经营状态"],
-        decision: "出现线下动员苗头和利益诉求，建议生成预警任务并持续补证。"
+        id: "EV-024", title: "南京东路商圈客流异常上升", layer: "business", district: "黄浦区", place: "南京东路步行街",
+        x: 43, y: 39, risk: 62, confidence: 0.81, heat: 79, time: "10:31", status: "持续", spread: "区域聚集", source: "商圈客流 / 短视频 / 本地新闻",
+        sources: ["商圈客流", "抖音", "本地新闻"], raw: "客流指数较工作日均值高 31%，短视频平台出现街头活动直播，部分道路出现临时管控。",
+        summary: "商圈活动与交通异常叠加，可能加重人民广场至外滩区域通行压力。",
+        cause: "品牌活动与游客流叠加", consequence: "人流拥堵、临时管控、短视频围观", follow: "现场容量、警力疏导、活动结束时间",
+        related: ["EV-022", "EV-034"], mainline: "ML-TRAFFIC-001", category: "crowd", modality: ["live", "video", "text"]
       },
       {
-        id: "SIG-019", title: "暴雨积水造成交通节点拥堵", layer: "weather", district: "城东区", x: 77, y: 36,
-        heat: 64, risk: 42, trust: 0.91, status: "稳定", trend: "+12%", sources: ["weibo", "media"], modalities: ["image", "text", "video"],
-        summary: "道路积水图片和拥堵反馈增多，主要影响通勤效率，与其它民生投诉存在时间叠加。",
-        clues: ["路段图片来自多个账号", "交通广播提示绕行", "评论集中在排水和公交延误"],
-        gaps: ["积水点是否消退", "公交绕行持续时间"],
-        decision: "自然扰动明确，社会风险低，建议作为背景图层解释其它投诉。"
+        id: "EV-025", title: "杨浦居民区短时停电", layer: "outage", district: "杨浦区", place: "控江路周边小区",
+        x: 71, y: 31, risk: 66, confidence: 0.83, heat: 69, time: "09:42", status: "恢复中", spread: "社区扩散", source: "小区群 / 物业通知 / 公众号",
+        sources: ["公众号", "小区群", "物业通知"], raw: "多栋居民楼反馈停电，物业称抢修中，社区公众号整理临时充电点和电梯停运提醒。",
+        summary: "停电主要影响社区生活和电梯安全，若抢修延迟会转向民生投诉。",
+        cause: "配电箱故障", consequence: "电梯停运、老人上下楼困难、社区投诉增加", follow: "恢复时间、电梯困人、抢修公告",
+        related: ["EV-026"], mainline: "ML-INFRA-003", category: "infra", modality: ["text", "image", "official"]
       },
       {
-        id: "SIG-067", title: "网传处置通报引发二次质疑", layer: "sanctions", district: "城中区", x: 58, y: 48,
-        heat: 79, risk: 74, trust: 0.59, status: "预警", trend: "+29%", sources: ["weibo", "toutiao", "wechat"], modalities: ["official", "text", "image"],
-        summary: "网民认为通报口径过短，关键事实缺少时间、责任和后续安排，质疑从原事件扩展到信息透明度。",
-        clues: ["官方截图被多账号转发解读", "评论高频词包括避重就轻、什么时候说清楚", "公众号长文开始拼接历史案例"],
-        gaps: ["通报原文版本", "是否有后续说明计划", "关键事实是否受隐私保护限制"],
-        decision: "回应可信度不足可能抬升事件风险，建议与对应主事件合并研判。"
+        id: "EV-026", title: "宝山道路施工导致公交绕行", layer: "construction", district: "宝山区", place: "共和新路北段",
+        x: 75, y: 65, risk: 48, confidence: 0.88, heat: 51, time: "08:35", status: "持续", spread: "低扩散", source: "公交公告 / 导航平台",
+        sources: ["公交公告", "导航平台"], raw: "施工封路影响 3 条公交线路，导航建议绕行，居民反馈早高峰等待时间延长。",
+        summary: "施工封路为明确低风险运行事件，需要在交通图层保留。",
+        cause: "道路维修施工", consequence: "公交绕行、通勤延迟", follow: "施工结束时间、临时站点通知",
+        related: ["EV-025"], mainline: "ML-INFRA-003", category: "traffic", modality: ["official", "text"]
+      },
+      {
+        id: "EV-027", title: "静安商务楼火警触发疏散", layer: "fire", district: "静安区", place: "南京西路商务楼",
+        x: 33, y: 38, risk: 82, confidence: 0.77, heat: 72, time: "10:07", status: "处置中", spread: "现场扩散", source: "短视频 / 消防警情 / 现场图片",
+        sources: ["消防线索", "抖音", "现场图片"], raw: "楼外人员疏散视频出现，消防车辆到场，现场烟雾不明显，等待官方警情确认。",
+        summary: "火警线索可信度中高，需确认是否为误报或设备故障。",
+        cause: "疑似消防报警设备触发", consequence: "楼宇疏散、周边围观、交通短时占道", follow: "消防通报、人员伤亡、复工时间",
+        related: ["EV-034"], mainline: "ML-EMERGENCY-004", category: "emergency", modality: ["video", "image", "official"]
+      },
+      {
+        id: "EV-028", title: "瑞金医院急救通道拥堵", layer: "medical", district: "黄浦区", place: "瑞金医院急诊入口",
+        x: 45, y: 57, risk: 73, confidence: 0.69, heat: 64, time: "10:39", status: "待核验", spread: "局部", source: "短视频 / 社媒爆料",
+        sources: ["快手", "微博"], raw: "视频显示急诊入口车辆排队，有评论称救护车通行受影响，但缺少连续时间证据。",
+        summary: "医疗急救通道问题需要快速核验，避免由单段视频造成误判。",
+        cause: "入口车流集中或临停占道", consequence: "急救通行受阻、医院服务舆情", follow: "救护车是否受阻、院方疏导措施",
+        related: ["EV-022"], mainline: "ML-HEALTH-005", category: "emergency", modality: ["video", "text"]
+      },
+      {
+        id: "EV-029", title: "浦东暴雨黄色预警", layer: "weather", district: "浦东新区", place: "浦东沿江片区",
+        x: 66, y: 58, risk: 58, confidence: 0.93, heat: 67, time: "09:20", status: "持续", spread: "跨区影响", source: "气象公告 / 本地新闻",
+        sources: ["气象公告", "本地新闻"], raw: "气象部门发布短时强降雨提醒，沿江路段可能出现积水，部分学校推送放学安全提示。",
+        summary: "天气事件本身风险中等，但会放大交通、学校、商圈等运行压力。",
+        cause: "短时强对流云团过境", consequence: "积水、拥堵、活动取消、放学安全", follow: "雨量峰值、积水点、交通恢复",
+        related: ["EV-021", "EV-023"], mainline: "ML-WEATHER-006", category: "infra", modality: ["official", "text"]
+      },
+      {
+        id: "EV-030", title: "外滩短视频直播围观升温", layer: "shortvideo", district: "黄浦区", place: "外滩观景平台",
+        x: 52, y: 35, risk: 55, confidence: 0.74, heat: 89, time: "10:44", status: "持续", spread: "线上扩散", source: "抖音 / 快手直播",
+        sources: ["抖音", "快手"], raw: "多个直播间使用相似标题吸引围观，部分评论将商圈活动和交通拥堵联系起来。",
+        summary: "短视频热点正在放大外滩周边人流感知，需监测是否反向吸引线下围观。",
+        cause: "活动直播与旅游流量叠加", consequence: "围观增加、交通压力、片段二次传播", follow: "直播间热度、线下人流、标题变化",
+        related: ["EV-024", "EV-034"], mainline: "ML-TRAFFIC-001", category: "social", modality: ["live", "video"]
+      },
+      {
+        id: "EV-031", title: "本地新闻跟进校园纠纷沟通会", layer: "news", district: "徐汇区", place: "徐汇区教育片区",
+        x: 36, y: 67, risk: 70, confidence: 0.8, heat: 77, time: "10:50", status: "持续", spread: "舆情扩散", source: "本地新闻 / 公众号",
+        sources: ["本地新闻", "公众号"], raw: "本地新闻账号称校方将组织沟通会，但未披露具体议题，评论继续追问事实和责任。",
+        summary: "媒体进入会改变事件节奏，原本的线下聚集可能转入公开追责。",
+        cause: "校园纠纷回应不足", consequence: "媒体追问、家长诉求公开化", follow: "沟通会口径、家长代表、隐私处理",
+        related: ["EV-023", "EV-032"], mainline: "ML-SCHOOL-002", category: "social", modality: ["text", "official"]
+      },
+      {
+        id: "EV-032", title: "社交媒体出现校园事件不实截图", layer: "opinion", district: "徐汇区", place: "线上传播",
+        x: 27, y: 73, risk: 79, confidence: 0.56, heat: 82, time: "10:57", status: "待核验", spread: "二次扩散", source: "微博 / 论坛 / 群聊截图",
+        sources: ["微博", "论坛", "群聊截图"], raw: "多张截图来源不明，内容相互矛盾，有账号提醒不要传播未成年人信息。",
+        summary: "信息污染开始出现，会降低回应可信度并增加二次伤害风险。",
+        cause: "事实空白与情绪扩散", consequence: "谣言、隐私泄露、对立升级", follow: "截图源头、辟谣需求、平台处置",
+        related: ["EV-023", "EV-031"], mainline: "ML-SCHOOL-002", category: "social", modality: ["text", "image"]
+      },
+      {
+        id: "EV-033", title: "社区团购蔬菜价格异常讨论", layer: "price", district: "杨浦区", place: "五角场社区群",
+        x: 69, y: 26, risk: 42, confidence: 0.67, heat: 58, time: "09:12", status: "观察", spread: "社区", source: "社区群 / 公众号",
+        sources: ["社区群", "公众号"], raw: "居民比较三家团购价格，部分评论认为暴雨预警前价格波动异常。",
+        summary: "当前为低烈度民生价格讨论，可与天气事件交叉观察。",
+        cause: "天气预期与供应波动", consequence: "社区投诉、物资抢购谣言", follow: "价格是否持续、平台回应",
+        related: ["EV-029"], mainline: "ML-COMMUNITY-007", category: "community", modality: ["text", "image"]
+      },
+      {
+        id: "EV-034", title: "外滩治安纠纷短视频发酵", layer: "security", district: "黄浦区", place: "外滩观景平台南侧",
+        x: 54, y: 38, risk: 69, confidence: 0.62, heat: 74, time: "10:48", status: "待核验", spread: "线上扩散", source: "短视频 / 现场围观",
+        sources: ["抖音", "快手", "现场图片"], raw: "短视频显示游客与摊贩争执，评论称有人员受伤，但缺少警方或医疗确认。",
+        summary: "治安线索与商圈人流和短视频直播重叠，需要避免被误合并为大型群体事件。",
+        cause: "现场纠纷被剪辑扩散", consequence: "围观、争议、外地游客评论加入", follow: "警方处置、是否受伤、原视频完整性",
+        related: ["EV-024", "EV-030", "EV-027"], mainline: "ML-BUND-008", category: "risk", modality: ["video", "image", "text"]
+      },
+      {
+        id: "EV-035", title: "交通部门发布陆家嘴临时接驳公告", layer: "gov", district: "浦东新区", place: "陆家嘴站周边",
+        x: 65, y: 43, risk: 35, confidence: 0.94, heat: 52, time: "10:55", status: "已确认", spread: "处置回应", source: "交通部门公告",
+        sources: ["政务公告", "本地新闻"], raw: "交通部门提示增开临时接驳车并建议绕行世纪大道站。",
+        summary: "官方处置动作对主线风险有缓释作用，但仍需观察乘客实际反馈。",
+        cause: "轨交故障处置", consequence: "风险缓释、部分质疑转向执行效果", follow: "接驳车到位、乘客反馈、恢复时间",
+        related: ["EV-021", "EV-022"], mainline: "ML-TRAFFIC-001", category: "response", modality: ["official", "text"]
+      },
+      {
+        id: "EV-036", title: "小区电梯困人线索待核验", layer: "infrastructure", district: "杨浦区", place: "控江路周边小区",
+        x: 73, y: 34, risk: 77, confidence: 0.53, heat: 61, time: "10:59", status: "待核验", spread: "社区", source: "小区群 / 物业电话",
+        sources: ["小区群", "物业电话"], raw: "停电影响区域内有居民称电梯困人，但物业未确认，消防线索暂无匹配。",
+        summary: "与停电事件高度相关，应优先核验是否有人身安全风险。",
+        cause: "停电引发电梯停运", consequence: "人员被困、救援需求、投诉升级", follow: "物业确认、消防出动、恢复供电",
+        related: ["EV-025"], mainline: "ML-INFRA-003", category: "emergency", modality: ["audio", "text"]
       }
     ];
 
-    const contentFeed = [
-      { id: "F-001", eventId: "SIG-041", source: "douyin", modality: "video", title: "校门口人群聚集片段被连续转发", time: "10:18", score: 94 },
-      { id: "F-002", eventId: "SIG-041", source: "weibo", modality: "text", title: "本地号整理学生坠楼后家属到校时间线", time: "10:23", score: 91 },
-      { id: "F-003", eventId: "SIG-041", source: "douyin", modality: "live", title: "围观直播出现，但画面中隐私遮挡不足", time: "10:26", score: 88 },
-      { id: "F-004", eventId: "SIG-041", source: "wechat", modality: "audio", title: "家长群语音转述校方沟通细节", time: "10:31", score: 82 },
-      { id: "F-005", eventId: "SIG-052", source: "kuaishou", modality: "video", title: "园区员工口播欠薪经过", time: "10:35", score: 78 },
-      { id: "F-006", eventId: "SIG-033", source: "wechat", modality: "text", title: "物业停水通知下方评论集中追问恢复时间", time: "10:41", score: 71 },
-      { id: "F-007", eventId: "SIG-028", source: "kuaishou", modality: "audio", title: "医院窗口争执录音片段缺少前后文", time: "10:44", score: 64 },
-      { id: "F-008", eventId: "SIG-019", source: "media", modality: "image", title: "城东主干路积水图片被交通账号引用", time: "10:47", score: 58 },
-      { id: "F-009", eventId: "SIG-067", source: "toutiao", modality: "official", title: "处置通报截图被解读为信息不足", time: "10:52", score: 80 }
+    const mainlines = [
+      {
+        id: "ML-TRAFFIC-001", title: "陆家嘴地铁站故障导致周边交通与舆情升温",
+        nodes: ["EV-021", "EV-022", "EV-024", "EV-030", "EV-035"],
+        summary: "轨交故障触发道路拥堵、商圈人流异常和短视频传播，官方接驳公告正在缓释风险。"
+      },
+      {
+        id: "ML-SCHOOL-002", title: "校园纠纷由线下聚集转向公开追责",
+        nodes: ["EV-023", "EV-031", "EV-032"],
+        summary: "学校门口聚集、媒体跟进和不实截图扩散共同推动事件升级。"
+      },
+      {
+        id: "ML-INFRA-003", title: "杨浦停电影响社区运行并出现安全线索",
+        nodes: ["EV-025", "EV-026", "EV-036"],
+        summary: "停电和施工绕行叠加，电梯困人线索需要快速核验。"
+      },
+      {
+        id: "ML-BUND-008", title: "外滩商圈活动与治安纠纷被短视频放大",
+        nodes: ["EV-024", "EV-030", "EV-034", "EV-027"],
+        summary: "商圈客流、直播围观和治安纠纷形成舆情噪声，需要分辨真实风险。"
+      }
     ];
+
+    const forecasts = [
+      { horizon: "未来 1 小时", text: "陆家嘴站若未完全恢复，拥堵将沿世纪大道和延安东路继续扩散。", level: "warn" },
+      { horizon: "未来 6 小时", text: "校园纠纷若沟通会信息不足，可能从线下聚集转为多平台追责叙事。", level: "hot" },
+      { horizon: "未来 24 小时", text: "暴雨和基础设施事件可能叠加社区投诉，需关注停电、积水和电梯安全。", level: "warn" }
+    ];
+
+    const state = {
+      city: "shanghai",
+      range: "24h",
+      tab: "all",
+      district: "all",
+      query: "",
+      layers: new Set(layers.map((layer) => layer.id)),
+      selected: "EV-021",
+      mainline: "ML-TRAFFIC-001",
+      detailOpen: false
+    };
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-    function parseList(value, fallback, valid) {
-      const items = (value || fallback.join(",")).split(",").map((item) => item.trim()).filter(Boolean);
-      const filtered = items.filter((item) => valid.includes(item));
-      return filtered.length ? Array.from(new Set(filtered)) : [...fallback];
+    function layerOf(id) {
+      return layers.find((layer) => layer.id === id) || layers[0];
     }
 
-    function parseState() {
-      const params = new URLSearchParams(window.location.search);
-      return {
-        lat: clamp(Number(params.get("lat") || DEFAULT_STATE.lat), -85, 85),
-        lon: clamp(Number(params.get("lon") || DEFAULT_STATE.lon), -180, 180),
-        zoom: clamp(Number(params.get("zoom") || DEFAULT_STATE.zoom), 1, 18),
-        view: params.get("view") || DEFAULT_STATE.view,
-        timeRange: params.get("timeRange") || DEFAULT_STATE.timeRange,
-        layers: parseList(params.get("layers"), DEFAULT_STATE.layers, layerDefs.map((item) => item.id)),
-        modalities: parseList(params.get("modalities"), DEFAULT_STATE.modalities, modalityDefs.map((item) => item.id)),
-        sources: parseList(params.get("sources"), DEFAULT_STATE.sources, sourceDefs.map((item) => item.id)),
-        selected: params.get("signalId") || events[0].id,
-      query: params.get("q") || ""
-      };
+    function eventOf(id) {
+      return events.find((event) => event.id === id) || events[0];
     }
 
-    const state = parseState();
-
-    function currentUrl() {
-      const params = new URLSearchParams();
-      params.set("lat", state.lat.toFixed(4));
-      params.set("lon", state.lon.toFixed(4));
-      params.set("zoom", state.zoom.toFixed(2));
-      params.set("view", state.view);
-      params.set("timeRange", state.timeRange);
-      params.set("layers", state.layers.join(","));
-      params.set("modalities", state.modalities.join(","));
-      params.set("sources", state.sources.join(","));
-      params.set("signalId", state.selected);
-      params.set("q", state.query);
-      return `${window.location.pathname}?${params.toString()}`;
-    }
-
-    function syncUrl() {
-      window.history.replaceState(null, "", currentUrl());
-      $("#urlPreview").textContent = window.location.href;
-      $("#timeBadge").textContent = state.timeRange;
+    function mainlineOf(id) {
+      return mainlines.find((line) => line.id === id) || mainlines[0];
     }
 
     function showToast(message) {
@@ -828,295 +1231,399 @@
       showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1500);
     }
 
-    function selectedEvent() {
-      return events.find((event) => event.id === state.selected) || events[0];
-    }
-
-    function layerDef(id) {
-      return layerDefs.find((item) => item.id === id) || layerDefs[0];
-    }
-
-    function modalityDef(id) {
-      return modalityDefs.find((item) => item.id === id) || modalityDefs[0];
-    }
-
-    function sourceDef(id) {
-      return sourceDefs.find((item) => item.id === id) || sourceDefs[0];
+    function eventMatchesTab(event) {
+      if (state.tab === "all") return true;
+      if (state.tab === "risk") return event.risk >= 72 || event.category === "risk";
+      if (state.tab === "traffic") return event.category === "traffic" || ["metro", "congestion", "accident", "construction"].includes(event.layer);
+      if (state.tab === "social") return ["social", "crowd"].includes(event.category) || ["opinion", "shortvideo", "news", "community"].includes(event.layer);
+      if (state.tab === "response") return event.category === "response" || ["gov", "news"].includes(event.layer);
+      return true;
     }
 
     function eventVisible(event) {
-      const layerOk = state.layers.includes(event.layer);
-      const sourceOk = event.sources.some((source) => state.sources.includes(source));
-      const modalityOk = event.modalities.some((modality) => state.modalities.includes(modality));
       const query = state.query.trim();
-      const queryOk = !query || query.split(/\s+/).some((word) => event.title.includes(word) || event.summary.includes(word));
-      return layerOk && sourceOk && modalityOk && queryOk;
+      const queryOk = !query || [event.title, event.district, event.place, event.source, event.summary, event.raw].join(" ").includes(query);
+      const districtOk = state.district === "all" || event.district === state.district;
+      return state.layers.has(event.layer) && districtOk && queryOk && eventMatchesTab(event);
     }
 
     function visibleEvents() {
       return events.filter(eventVisible);
     }
 
-    function renderFilters() {
-      $("#timeButtons").querySelectorAll("button").forEach((button) => {
-        button.classList.toggle("active", button.dataset.time === state.timeRange);
-      });
+    function ensureSelection() {
+      if (!eventVisible(eventOf(state.selected))) {
+        state.selected = (visibleEvents()[0] || events[0]).id;
+      }
+      const selected = eventOf(state.selected);
+      state.mainline = selected.mainline;
+    }
 
-      $("#modalityButtons").innerHTML = modalityDefs.map((item) => `
-        <button class="${state.modalities.includes(item.id) ? "active" : ""}" data-modality="${item.id}">${item.label}</button>
+    function syncUrl() {
+      const params = new URLSearchParams();
+      params.set("city", state.city);
+      params.set("timeRange", state.range);
+      params.set("layers", Array.from(state.layers).join(","));
+      params.set("tab", state.tab);
+      params.set("district", state.district);
+      params.set("eventId", state.selected);
+      if (state.query) params.set("q", state.query);
+      history.replaceState(null, "", `${location.pathname}?${params.toString()}`);
+    }
+
+    function renderLayers() {
+      const groups = Array.from(new Set(layers.map((layer) => layer.group)));
+      $("#layerList").innerHTML = groups.map((group) => `
+        <div class="layer-group">
+          <h3 class="group-title">${group}</h3>
+          ${layers.filter((layer) => layer.group === group).map((layer) => {
+            const count = events.filter((event) => event.layer === layer.id).length;
+            return `
+              <button class="layer-btn ${state.layers.has(layer.id) ? "active" : ""}" data-layer="${layer.id}" style="--tone:${layer.color}">
+                <i class="layer-dot">${layer.code}</i>
+                <span><b>${layer.name}</b><span>${group}</span></span>
+                <strong>${count}</strong>
+              </button>
+            `;
+          }).join("")}
+        </div>
       `).join("");
-      $("#modalityButtons").querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          const id = button.dataset.modality;
-          state.modalities = state.modalities.includes(id) ? state.modalities.filter((item) => item !== id) : [...state.modalities, id];
-          if (!state.modalities.length) state.modalities = [id];
-          ensureSelectedVisible();
-          render();
-        });
-      });
-
-      $("#layerList").innerHTML = layerDefs.map((item) => {
-        const count = events.filter((event) => event.layer === item.id).length;
-        return `
-          <button class="filter-btn ${state.layers.includes(item.id) ? "active" : ""}" data-layer="${item.id}" style="--tone:${item.tone}">
-            <i class="filter-dot">${item.code}</i>
-            <span><b>${item.label}</b><span>${item.desc}</span></span>
-            <strong>${count}</strong>
-          </button>
-        `;
-      }).join("");
-      $("#layerList").querySelectorAll("button").forEach((button) => {
+      $$(".layer-btn").forEach((button) => {
         button.addEventListener("click", () => {
           const id = button.dataset.layer;
-          state.layers = state.layers.includes(id) ? state.layers.filter((item) => item !== id) : [...state.layers, id];
-          if (!state.layers.length) state.layers = [id];
-          ensureSelectedVisible();
-          render();
-        });
-      });
-
-      $("#sourceList").innerHTML = sourceDefs.map((item) => {
-        const count = contentFeed.filter((feed) => feed.source === item.id).length;
-        return `
-          <button class="filter-btn ${state.sources.includes(item.id) ? "active" : ""}" data-source="${item.id}" style="--tone:${item.tone}">
-            <i class="filter-dot">${item.label.slice(0, 1)}</i>
-            <span><b>${item.label}</b><span>${item.desc}</span></span>
-            <strong>${count}</strong>
-          </button>
-        `;
-      }).join("");
-      $("#sourceList").querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          const id = button.dataset.source;
-          state.sources = state.sources.includes(id) ? state.sources.filter((item) => item !== id) : [...state.sources, id];
-          if (!state.sources.length) state.sources = [id];
-          ensureSelectedVisible();
+          if (state.layers.has(id)) state.layers.delete(id);
+          else state.layers.add(id);
+          if (!state.layers.size) state.layers.add(id);
           render();
         });
       });
     }
 
-    function ensureSelectedVisible() {
-      if (!visibleEvents().some((event) => event.id === state.selected)) {
-        const next = visibleEvents()[0] || events[0];
-        state.selected = next.id;
-      }
-    }
-
-    function renderMetrics() {
-      const rows = visibleEvents();
-      const avgRisk = rows.length ? Math.round(rows.reduce((sum, item) => sum + item.risk, 0) / rows.length) : 0;
-      const multimodal = rows.filter((item) => item.modalities.length >= 3).length;
-      const needTakeover = rows.filter((item) => item.risk >= 80 || item.status === "需接管").length;
-      const liveCount = contentFeed.filter((item) => state.modalities.includes(item.modality) && state.sources.includes(item.source)).length;
-      const metrics = [
-        ["当前动态", rows.length, "通过图层、来源、模态筛选"],
-        ["平均风险", avgRisk, "跨事件综合风险"],
-        ["多模态互证", multimodal, "至少三类内容形态"],
-        ["实时内容", liveCount, "近时窗内容片段"],
-        ["建议接管", needTakeover, "需进入事中处理"]
-      ];
-      $("#metricStrip").innerHTML = metrics.map((item, index) => `
-        <div class="metric">
-          <span>${item[0]}</span>
-          <b class="mono">${item[1]}</b>
-          <small>${item[2]}</small>
+    function renderMapBase() {
+      $("#zoneLayer").innerHTML = zones.map((zone) => `
+        <div class="zone" style="left:${zone.x}%;top:${zone.y}%;width:${zone.w}%;height:${zone.h}%;--tone:${zone.color}">
+          ${zone.name}
         </div>
       `).join("");
+      $("#roadLayer").innerHTML = [
+        [12, 45, 780, 2], [18, 62, 680, -8], [24, 28, 620, 18], [48, 20, 520, 76],
+        [38, 74, 520, -28], [57, 16, 460, 102], [9, 36, 420, 37]
+      ].map((road) => `<i class="road" style="left:${road[0]}%;top:${road[1]}%;width:${road[2]}px;transform:rotate(${road[3]}deg)"></i>`).join("") + [
+        [22, 55, 560, -18, "var(--blue)"], [38, 41, 430, 5, "var(--cyan)"], [58, 68, 360, -38, "var(--green)"]
+      ].map((metro) => `<i class="metro" style="left:${metro[0]}%;top:${metro[1]}%;width:${metro[2]}px;transform:rotate(${metro[3]}deg);--tone:${metro[4]}"></i>`).join("");
     }
 
-    function renderMap() {
-      $("#districtLayer").innerHTML = districts.map((district) => `
-        <div class="district" style="--tone:${district.tone};left:${district.x}%;top:${district.y}%;width:${district.w}%;height:${district.h}%">${district.name}</div>
-      `).join("");
-      $("#flowLayer").innerHTML = [
-        { x: 28, y: 53, w: 330, r: -18, tone: "var(--red)" },
-        { x: 49, y: 38, w: 260, r: 16, tone: "var(--amber)" },
-        { x: 23, y: 28, w: 310, r: 28, tone: "var(--blue)" },
-        { x: 58, y: 48, w: 220, r: -30, tone: "var(--violet)" }
-      ].map((line) => `<i class="flow-line" style="left:${line.x}%;top:${line.y}%;width:${line.w}px;transform:rotate(${line.r}deg);--tone:${line.tone}"></i>`).join("");
+    function renderMapLayers() {
+      const shown = visibleEvents();
+      $("#heatLayer").innerHTML = shown.filter((event) => event.heat >= 72).map((event) => {
+        const layer = layerOf(event.layer);
+        return `<i class="heat" style="left:${event.x}%;top:${event.y}%;--tone:${layer.color}"></i>`;
+      }).join("");
+      $("#riskLayer").innerHTML = shown.filter((event) => event.risk >= 70).map((event) => {
+        const layer = layerOf(event.layer);
+        const size = Math.max(84, event.risk * 1.45);
+        return `<i class="risk-ring" style="left:${event.x}%;top:${event.y}%;--tone:${layer.color};--size:${size}px"></i>`;
+      }).join("");
+      const line = mainlineOf(state.mainline);
+      const nodes = line.nodes.map(eventOf);
+      $("#pathLayer").innerHTML = nodes.slice(0, -1).map((event, index) => {
+        const next = nodes[index + 1];
+        const dx = next.x - event.x;
+        const dy = next.y - event.y;
+        const length = Math.sqrt(dx * dx + dy * dy) * 10;
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        return `<i class="path" style="left:${event.x}%;top:${event.y}%;width:${length}px;transform:rotate(${angle}deg);--tone:${layerOf(next.layer).color}"></i>`;
+      }).join("");
       $("#markerLayer").innerHTML = events.map((event) => {
-        const layer = layerDef(event.layer);
+        const layer = layerOf(event.layer);
         const visible = eventVisible(event);
         return `
-          <button class="event-marker ${visible ? "" : "dim"} ${event.id === state.selected ? "active" : ""}" data-id="${event.id}" style="--tone:${layer.tone};left:${event.x}%;top:${event.y}%">
+          <button class="event-marker ${visible ? "" : "dim"} ${event.id === state.selected ? "active" : ""}" data-event="${event.id}" style="left:${event.x}%;top:${event.y}%;--tone:${layer.color}">
             ${event.risk}
-            <label>${event.title}<span>${event.district} · ${event.status} · ${event.trend}</span></label>
+            <label>${event.title}<span>${event.place} · ${event.time} · ${event.status}</span></label>
           </button>
         `;
       }).join("");
-      $("#markerLayer").querySelectorAll("button").forEach((button) => {
+      $$(".event-marker").forEach((button) => {
         button.addEventListener("click", () => {
-          const event = events.find((item) => item.id === button.dataset.id);
-          if (!event || !eventVisible(event)) return;
+          const event = eventOf(button.dataset.event);
+          if (!eventVisible(event)) return;
           state.selected = event.id;
+          state.detailOpen = true;
           render();
         });
       });
-      $("#timelineLine").innerHTML = [
-        ["8%", "good"], ["27%", "warn"], ["48%", "hot"], ["66%", "warn"], ["82%", "hot"]
-      ].map((item) => `<i class="tick ${item[1]}" style="left:${item[0]}"></i>`).join("");
+      $("#legend").innerHTML = layers.filter((layer) => ["incident", "metro", "fire", "weather", "school", "shortvideo"].includes(layer.id)).map((layer) => `
+        <div class="legend-row" style="--tone:${layer.color}"><i></i><span>${layer.name}</span><b>${events.filter((event) => event.layer === layer.id).length}</b></div>
+      `).join("");
     }
 
-    function renderSelected() {
-      const event = selectedEvent();
-      const layer = layerDef(event.layer);
-      $("#selectedId").textContent = event.id;
-      $("#detailTitle").textContent = event.title;
-      $("#detailSummary").textContent = event.summary;
-      $("#detailHeat").textContent = event.heat;
-      $("#detailRisk").textContent = event.risk;
-      $("#detailTrust").textContent = event.trust;
-      $("#detailRows").innerHTML = [
-        ["所属图层", `${layer.label} / ${event.district}`, "blue"],
-        ["内容形态", event.modalities.map((item) => modalityDef(item).label).join("、"), "good"],
-        ["主要来源", event.sources.map((item) => sourceDef(item).label).join("、"), "warn"],
-        ["关键线索", event.clues.join("；"), "blue"],
-        ["待补缺口", event.gaps.join("；"), "hot"]
-      ].map((row) => `
-        <div class="detail-row">
-          <span><b>${row[0]}</b><span>${row[1]}</span></span>
-          <i class="pill ${row[2]}">${event.status}</i>
+    function renderStats() {
+      const shown = visibleEvents();
+      const top = shown.length ? Math.max(...shown.map((event) => event.risk)) : 0;
+      const hot = shown.filter((event) => event.heat >= 75).length;
+      const ongoing = shown.filter((event) => event.status === "持续" || event.status === "处置中").length;
+      $("#activeCount").textContent = shown.length;
+      $("#topRisk").textContent = top;
+      $("#mapStats").innerHTML = [
+        ["事件", shown.length], ["高热", hot], ["持续", ongoing], ["主线", mainlines.length]
+      ].map((item) => `<div class="mini-stat"><span>${item[0]}</span><b class="mono">${item[1]}</b></div>`).join("");
+      $("#riskCount").textContent = shown.filter((event) => event.risk >= 72).length;
+      $("#incidentCount").textContent = shown.length;
+      $("#mainlineCount").textContent = mainlines.length;
+    }
+
+    function renderSummary() {
+      const shown = visibleEvents();
+      const high = shown.filter((event) => event.risk >= 75).length;
+      const selected = eventOf(state.selected);
+      const text = `当前上海可见 ${shown.length} 个城市动态，其中 ${high} 个进入高关注区间。交通运行、校园线下聚集、外滩商圈短视频扩散和杨浦基础设施异常是当前主要态势。`;
+      $("#aiSummary").textContent = text;
+      $("#rightSummary").textContent = text;
+      $("#summarySignals").innerHTML = [
+        ["多源归并", `${mainlineOf(selected.mainline).title}`, "cyan"],
+        ["可信度波动", `当前选中事件可信度 ${selected.confidence}`, "warn"],
+        ["线下风险", selected.spread, selected.risk >= 75 ? "hot" : "blue"]
+      ].map((row) => `<div class="forecast-row"><span><b>${row[0]}</b><br>${row[1]}</span><i class="pill ${row[2]}">AI</i></div>`).join("");
+    }
+
+    function eventCard(event) {
+      const layer = layerOf(event.layer);
+      return `
+        <button class="event-card ${event.id === state.selected ? "active" : ""}" data-event="${event.id}" style="--tone:${layer.color}">
+          <i class="event-icon">${layer.code}</i>
+          <span><b>${event.title}</b><span>${event.time} · ${event.district} · ${event.source}</span></span>
+          <strong>${event.risk}</strong>
+        </button>
+      `;
+    }
+
+    function wireEventCards(root = document) {
+      root.querySelectorAll(".event-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          state.selected = card.dataset.event;
+          state.detailOpen = true;
+          render();
+        });
+      });
+    }
+
+    function renderIntel() {
+      const shown = visibleEvents();
+      const riskRows = shown.filter((event) => event.risk >= 72).sort((a, b) => b.risk - a.risk).slice(0, 5);
+      const incidentRows = shown.sort((a, b) => b.heat - a.heat).slice(0, 7);
+      $("#riskList").innerHTML = riskRows.map(eventCard).join("") || emptyRow("暂无重点风险");
+      $("#incidentList").innerHTML = incidentRows.map(eventCard).join("") || emptyRow("暂无突发事件");
+      $("#topicList").innerHTML = topicRows(shown);
+      $("#trafficList").innerHTML = moduleRows(shown, ["metro", "congestion", "accident", "construction"], "traffic");
+      $("#infraList").innerHTML = moduleRows(shown, ["weather", "outage", "infrastructure", "price"], "infra");
+      $("#emergencyList").innerHTML = moduleRows(shown, ["fire", "medical", "security"], "emergency");
+      $("#crowdList").innerHTML = moduleRows(shown, ["business", "crowd", "shortvideo"], "crowd");
+      $("#communityList").innerHTML = moduleRows(shown, ["community", "gov", "news"], "community");
+      $("#mainlineList").innerHTML = mainlines.map((line) => `
+        <button class="line-row" data-line="${line.id}">
+          <span><b>${line.title}</b><br>${line.summary}</span>
+          <i class="pill ${line.id === state.mainline ? "cyan" : "blue"}">${line.nodes.length}</i>
+        </button>
+      `).join("");
+      $("#forecastList").innerHTML = forecasts.map((item) => `
+        <div class="forecast-row">
+          <span><b>${item.horizon}</b><br>${item.text}</span>
+          <i class="pill ${item.level}">推演</i>
         </div>
       `).join("");
-      $("#decisionText").textContent = event.decision;
-      $("#decisionLevel").textContent = event.risk >= 80 ? "高优先级" : event.risk >= 65 ? "预警" : "观察";
-    }
-
-    function renderFeeds() {
-      const rows = contentFeed.filter((item) => {
-        const event = events.find((entry) => entry.id === item.eventId);
-        return event && eventVisible(event) && state.sources.includes(item.source) && state.modalities.includes(item.modality);
-      });
-      $("#feedList").innerHTML = rows.map((item) => {
-        const source = sourceDef(item.source);
-        const modality = modalityDef(item.modality);
-        return `
-          <button class="feed-row ${item.eventId === state.selected ? "active" : ""}" data-event="${item.eventId}" style="--tone:${source.tone}">
-            <span class="feed-src">${source.label.slice(0, 2)}</span>
-            <span><b>${item.title}</b><span>${item.time} · ${source.label} · ${modality.label}</span></span>
-            <i class="pill ${item.score >= 85 ? "hot" : "warn"}">${item.score}</i>
-          </button>
-        `;
-      }).join("") || `<div class="detail-row"><span><b>当前筛选无内容</b><span>打开更多来源、模态或图层后恢复内容流。</span></span><i class="pill">0</i></div>`;
-      $("#feedList").querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          state.selected = button.dataset.event;
+      $$("#mainlineList .line-row").forEach((row) => {
+        row.addEventListener("click", () => {
+          state.mainline = row.dataset.line;
+          state.selected = mainlineOf(state.mainline).nodes[0];
           render();
         });
       });
+      wireEventCards();
     }
 
-    function renderMatrix() {
-      $("#mediaMatrix").innerHTML = modalityDefs.slice(0, 4).map((item) => {
-        const rows = contentFeed.filter((feed) => feed.modality === item.id && state.sources.includes(feed.source));
-        const eventCount = new Set(rows.map((feed) => feed.eventId)).size;
-        const maxScore = rows.length ? Math.max(...rows.map((feed) => feed.score)) : 0;
+    function topicRows(rows) {
+      const topics = [
+        ["陆家嘴地铁故障", rows.some((event) => event.mainline === "ML-TRAFFIC-001") ? 92 : 22, "var(--blue)"],
+        ["校园沟通会", rows.some((event) => event.mainline === "ML-SCHOOL-002") ? 86 : 18, "var(--violet)"],
+        ["外滩直播围观", rows.some((event) => event.mainline === "ML-BUND-008") ? 78 : 12, "var(--magenta)"],
+        ["杨浦停电", rows.some((event) => event.mainline === "ML-INFRA-003") ? 69 : 15, "var(--red)"]
+      ];
+      return topics.map((topic) => `
+        <div class="topic-row">
+          <span><b>${topic[0]}</b><div class="bar" style="--tone:${topic[2]}"><i style="--w:${topic[1]}%"></i></div></span>
+          <i class="pill warn">${topic[1]}</i>
+        </div>
+      `).join("");
+    }
+
+    function moduleRows(rows, layerIds, category) {
+      const filtered = rows.filter((event) => layerIds.includes(event.layer) || event.category === category).slice(0, 4);
+      return filtered.map((event) => `
+        <div class="topic-row">
+          <span><b>${event.title}</b><br>${event.place} · ${event.status}</span>
+          <i class="pill ${event.risk >= 75 ? "hot" : "blue"}">${event.risk}</i>
+        </div>
+      `).join("") || emptyRow("当前筛选下暂无匹配");
+    }
+
+    function emptyRow(text) {
+      return `<div class="topic-row"><span><b>${text}</b><br>调整图层、时间或关键词后刷新。</span><i class="pill">0</i></div>`;
+    }
+
+    function renderDetail() {
+      const detail = $("#detailDrawer");
+      detail.style.display = state.detailOpen ? "grid" : "none";
+      if (!state.detailOpen) return;
+      const event = eventOf(state.selected);
+      const layer = layerOf(event.layer);
+      $("#detailTitle").textContent = event.title;
+      $("#detailSummary").textContent = event.summary;
+      $("#detailSourceCount").textContent = `${event.sources.length} 源`;
+      $("#relatedCount").textContent = `${event.related.length} 个`;
+      $("#detailMetrics").innerHTML = [
+        ["类型", layer.name],
+        ["地点", event.place],
+        ["时间", event.time],
+        ["风险", event.risk],
+        ["可信度", event.confidence],
+        ["影响范围", event.spread],
+        ["持续状态", event.status],
+        ["热度", event.heat]
+      ].map((item) => `<div class="detail-metric"><span>${item[0]}</span><b>${item[1]}</b></div>`).join("");
+      $("#rawContent").innerHTML = `
+        <div class="kv-row"><b>来源</b><span>${event.source}</span></div>
+        <div class="kv-row"><b>原始内容</b><span>${event.raw}</span></div>
+      `;
+      $("#aiJudgement").innerHTML = [
+        ["可能原因", event.cause],
+        ["可能后果", event.consequence],
+        ["后续关注点", event.follow]
+      ].map((row) => `<div class="kv-row"><b>${row[0]}</b><span>${row[1]}</span></div>`).join("");
+      $("#relatedEvents").innerHTML = event.related.map((id) => {
+        const related = eventOf(id);
+        return `<button class="event-card" data-event="${related.id}" style="--tone:${layerOf(related.layer).color}"><i class="event-icon">${layerOf(related.layer).code}</i><span><b>${related.title}</b><span>${related.time} · ${related.place}</span></span><strong>${related.risk}</strong></button>`;
+      }).join("") || emptyRow("暂无关联事件");
+      wireEventCards($("#detailDrawer"));
+    }
+
+    function renderTimeline() {
+      const shown = visibleEvents().sort((a, b) => a.time.localeCompare(b.time));
+      $("#timeRangeLabel").textContent = `过去 ${state.range}`;
+      $("#densityLabel").textContent = shown.length >= 10 ? "高" : shown.length >= 5 ? "中高" : "低";
+      const fastest = [...shown].sort((a, b) => b.heat - a.heat)[0];
+      $("#fastestLabel").textContent = fastest ? layerOf(fastest.layer).name : "无";
+      $("#densityDots").innerHTML = shown.map((event, index) => {
+        const x = 7 + (index / Math.max(1, shown.length - 1)) * 86;
+        const size = Math.max(12, Math.min(30, event.heat / 3.4));
         return `
-          <div class="media-card" style="--tone:${item.tone}">
-            <div class="media-head">
-              <i class="media-icon">${item.code}</i>
-              <span><b>${item.label}</b><span>${eventCount} 个关联动态</span></span>
-              <i class="pill ${maxScore >= 85 ? "hot" : "blue"}">${maxScore}</i>
-            </div>
-            <div class="media-body">
-              <div class="spark">${[34, 58, 47, 73, 61, maxScore || 36].map((value) => `<i style="height:${value}%"></i>`).join("")}</div>
-              ${rows.slice(0, 2).map((row) => `<div class="signal-line"><span>${row.title}</span><b>${row.time}</b></div>`).join("") || `<div class="signal-line"><span>暂无片段</span><b>--</b></div>`}
-            </div>
-          </div>
+          <button class="density-dot" data-event="${event.id}" style="--x:${x}%;--size:${size}px;--tone:${layerOf(event.layer).color}" title="${event.title}"></button>
+          <span class="time-label" style="--x:${x}%">${event.time}</span>
         `;
       }).join("");
-    }
-
-    function renderTrends() {
-      const rows = [...visibleEvents()].sort((a, b) => b.heat - a.heat);
-      $("#trendList").innerHTML = rows.map((event, index) => `
-        <button class="trend-row ${event.id === state.selected ? "active" : ""}" data-event="${event.id}">
-          <span><b>${index + 1}. ${event.title}</b><span>${event.district} · ${layerDef(event.layer).label} · ${event.sources.map((item) => sourceDef(item).label).join("/")}</span></span>
-          <i class="pill ${event.risk >= 80 ? "hot" : "warn"}">${event.heat}</i>
-        </button>
-      `).join("") || `<div class="detail-row"><span><b>暂无热点</b><span>当前筛选条件下未命中城市动态。</span></span><i class="pill">0</i></div>`;
-      $("#trendList").querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          state.selected = button.dataset.event;
+      $$("#densityDots .density-dot").forEach((dot) => {
+        dot.addEventListener("click", () => {
+          state.selected = dot.dataset.event;
+          state.detailOpen = true;
           render();
         });
       });
+      const line = mainlineOf(state.mainline);
+      $("#activeMainlineName").textContent = line.title;
+      $("#mainlineChain").innerHTML = line.nodes.map((id, index) => {
+        const event = eventOf(id);
+        const layer = layerOf(event.layer);
+        return `
+          <button class="chain-node" data-event="${event.id}" style="--tone:${layer.color}">
+            <i>${index + 1}</i>
+            <span><b>${event.title}</b><br>${event.time} · ${event.place}</span>
+            <span>${event.risk}</span>
+          </button>
+        `;
+      }).join("");
+      $$("#mainlineChain .chain-node").forEach((node) => {
+        node.addEventListener("click", () => {
+          state.selected = node.dataset.event;
+          state.detailOpen = true;
+          render();
+        });
+      });
+    }
+
+    function renderControls() {
+      $("#searchInput").value = state.query;
+      $("#districtSelect").value = state.district;
+      $("#citySelect").value = state.city;
+      $$("#rangeTabs button").forEach((button) => button.classList.toggle("active", button.dataset.range === state.range));
+      $$("#intelTabs button").forEach((button) => button.classList.toggle("active", button.dataset.tab === state.tab));
     }
 
     function render() {
-      ensureSelectedVisible();
+      ensureSelection();
       syncUrl();
-      renderFilters();
-      renderMetrics();
-      renderMap();
-      renderSelected();
-      renderFeeds();
-      renderMatrix();
-      renderTrends();
-      $("#searchInput").value = state.query;
+      renderControls();
+      renderLayers();
+      renderMapBase();
+      renderMapLayers();
+      renderStats();
+      renderSummary();
+      renderIntel();
+      renderDetail();
+      renderTimeline();
     }
 
-    $("#timeButtons").querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.timeRange = button.dataset.time;
-        render();
-      });
-    });
     $("#searchInput").addEventListener("input", (event) => {
       state.query = event.target.value;
-      ensureSelectedVisible();
+      render();
+    });
+    $("#districtSelect").addEventListener("change", (event) => {
+      state.district = event.target.value;
       render();
     });
     $("#citySelect").addEventListener("change", (event) => {
-      $("#cityBadge").textContent = event.target.options[event.target.selectedIndex].textContent;
+      state.city = event.target.value;
+      $("#cityName").textContent = event.target.options[event.target.selectedIndex].textContent;
       showToast("城市视图已切换");
-    });
-    $("#resetFilters").addEventListener("click", () => {
-      state.layers = [...DEFAULT_STATE.layers];
-      state.modalities = [...DEFAULT_STATE.modalities];
-      state.sources = [...DEFAULT_STATE.sources];
-      state.query = "";
-      state.selected = events[0].id;
       render();
-      showToast("已恢复全城态势默认视图");
     });
-    $("#playTimeline").addEventListener("click", () => showToast("态势演进已播放到最近 24 小时"));
-    $("#copyLink").addEventListener("click", async () => {
+    $$("#rangeTabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.range = button.dataset.range;
+        $("#playbackLabel").textContent = `回放 ${state.range}`;
+        render();
+      });
+    });
+    $$("#intelTabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.tab = button.dataset.tab;
+        render();
+      });
+    });
+    $("#closeDetail").addEventListener("click", () => {
+      state.detailOpen = false;
+      renderDetail();
+    });
+    $("#joinMainline").addEventListener("click", () => showToast("已加入当前城市主线"));
+    $("#exportEvent").addEventListener("click", () => showToast("事件摘要已生成"));
+    $("#shareBtn").addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(window.location.href);
-        showToast("当前态势链接已复制");
+        await navigator.clipboard.writeText(location.href);
+        showToast("当前视图链接已复制");
       } catch {
-        showToast("当前态势链接已生成");
+        showToast("当前视图链接已生成");
       }
     });
-    $("#takeoverBtn").addEventListener("click", () => {
-      const event = selectedEvent();
-      localStorage.setItem("citySituationTakeover", JSON.stringify({ signalId: event.id, title: event.title, at: new Date().toISOString() }));
-      window.location.href = `data-hub.html?caseId=campus-death-high-intensity&signalId=${encodeURIComponent(event.id)}&from=city-monitor`;
+    $("#reportBtn").addEventListener("click", () => showToast("城市态势报告已生成草稿"));
+    $("#playbackBtn").addEventListener("click", () => showToast("正在回放城市事件演变"));
+    $("#simulationBtn").addEventListener("click", () => showToast("AI 推演入口已打开"));
+    $("#briefBtn").addEventListener("click", () => showToast("主线已加入汇报"));
+    $("#zoomStreet").addEventListener("click", () => showToast("地图已缩放至街道级 mock 视图"));
+    $$(".map-tools [data-map-mode]").forEach((button) => {
+      button.addEventListener("click", () => showToast(`${button.textContent}已保持开启`));
     });
-    $("#draftBtn").addEventListener("click", () => showToast("已加入值班摘要草稿"));
-    $("#watchBtn").addEventListener("click", () => showToast("已加入持续观察队列"));
+    $$(".detail-actions [data-status]").forEach((button) => {
+      button.addEventListener("click", () => showToast(`已${button.textContent}`));
+    });
 
     render();
   </script>
