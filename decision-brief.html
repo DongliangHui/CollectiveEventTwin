@@ -1,0 +1,452 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 推演完成汇报</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    button, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app { height: 100dvh; min-height: 900px; display: grid; grid-template-rows: 56px 96px minmax(0, 1fr) 68px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 450px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark { width: 25px; height: 25px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #7bd0ff); position: relative; }
+    .brand-mark::after { content: ""; position: absolute; left: 7px; top: 3px; width: 4px; height: 20px; border-radius: 3px; background: white; transform: rotate(42deg); }
+    .mode-tabs { justify-self: center; display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 16px; background: #e8e1d6; }
+    .mode-tabs a { min-width: 64px; height: 34px; display: grid; place-items: center; padding: 0 14px; border-radius: 12px; color: var(--muted); font-weight: 800; }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .brief-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: start;
+      padding: 10px 18px 9px;
+    }
+    .brief-head h1 { margin: 0; font-size: 22px; line-height: 1.1; }
+    .brief-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .meta-pills { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; max-height: 30px; overflow: hidden; }
+    .meta-pills span { min-height: 24px; display: inline-grid; place-items: center; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-solid); color: var(--muted); font-size: 11px; font-weight: 900; }
+    .head-actions { display: flex; gap: 8px; align-self: start; padding-top: 2px; }
+    .primary-btn, .outline-btn {
+      min-height: 34px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-solid);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .primary-btn { background: var(--ink); border-color: var(--ink); color: white; }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 390px minmax(300px, .82fr) minmax(292px, .78fr) 350px;
+      grid-template-rows: 1.08fr .92fr;
+      gap: 10px;
+      padding: 0 14px 9px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .pad { padding: 14px; }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 900; }
+    .title span, .title a { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .title > span:first-child { color: var(--ink); font-size: 14px; font-weight: 900; }
+    .title a { color: var(--ink); padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
+    .title-actions { display: inline-flex; align-items: center; gap: 6px; }
+    .title-actions .outline-btn { min-height: 28px; padding: 0 9px; border-radius: 9px; font-size: 11px; }
+    .span2 { grid-column: span 2; }
+    .right-col { grid-row: 1 / span 2; grid-column: 4; display: grid; grid-template-rows: minmax(0, 1fr) 136px 84px 116px; gap: 10px; min-height: 0; }
+    .section-no {
+      display: none;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      font-style: normal;
+      font-size: 12px;
+      font-weight: 900;
+      vertical-align: -2px;
+    }
+
+    .donut-wrap { display: grid; grid-template-columns: 136px minmax(0, 1fr); gap: 12px; align-items: center; }
+    .donut {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0 41%, var(--blue) 41% 69%, var(--red) 69% 90%, var(--amber) 90% 100%);
+      position: relative;
+    }
+    .donut::after { content: "41%"; position: absolute; inset: 25px; display: grid; place-items: center; border-radius: 50%; background: var(--panel-solid); font-size: 23px; font-weight: 900; }
+    .legend { display: grid; gap: 6px; min-width: 0; }
+    .legend div { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; line-height: 1.15; font-weight: 800; }
+    .legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--tone); }
+    .legend span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .legend b { font-size: 12px; white-space: nowrap; }
+    .finding-list { display: grid; gap: 7px; margin-top: 9px; }
+    .finding-list div { padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.68); color: var(--muted); font-size: 12px; line-height: 1.34; }
+    .finding-list b { color: var(--ink); }
+    .pivot-table { display: grid; gap: 4px; margin-top: 8px; }
+    .pivot-row { display: grid; grid-template-columns: 1fr 48px 52px; gap: 6px; align-items: center; color: var(--muted); font-size: 10.5px; font-weight: 800; }
+    .pivot-row b { color: var(--ink); }
+    .pivot-row span:nth-child(2) { color: var(--red); font-weight: 900; }
+    .sparkline { height: 16px; border-radius: 999px; background: linear-gradient(90deg, rgba(47,109,246,.14), rgba(47,109,246,.32), rgba(47,109,246,.1)); }
+
+    .timeline { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; min-height: 0; }
+    .ticks {
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 8px;
+      color: var(--muted);
+      font-size: 10.5px;
+      line-height: 1.15;
+      font-weight: 900;
+    }
+    .ticks span {
+      display: flex;
+      align-items: center;
+      min-height: 54px;
+      border-right: 1px solid rgba(216,205,188,.85);
+    }
+    .path-list { display: grid; grid-template-rows: repeat(4, 1fr); gap: 8px; min-width: 0; }
+    .path-row {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      gap: 2px 7px;
+      align-items: center;
+      min-height: 54px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.68);
+      font-size: 12px;
+    }
+    .path-row i { grid-row: 1 / span 2; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid)); color: var(--tone); font-style: normal; font-weight: 900; }
+    .path-row b { grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .path-row span { grid-column: 2; color: var(--muted); font-size: 11px; line-height: 1.15; font-weight: 800; }
+
+    .council-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; min-width: 0; }
+    .council-grid .mini-box:nth-child(n+3) { grid-column: 1 / -1; }
+    .mini-box { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,253,247,.68); }
+    .mini-box b { display: block; font-size: 13px; margin-bottom: 7px; }
+    .mini-box p, .mini-box li { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .mini-box ul { margin: 0; padding-left: 18px; }
+    .council-grid .mini-box:nth-child(-n+2) li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stance-list { display: grid; gap: 6px; }
+    .stance-list div { display: grid; grid-template-columns: 1fr auto; gap: 8px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .stance-list b { margin: 0; color: var(--ink); }
+
+    .action-list { display: grid; gap: 9px; }
+    .action-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 7px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,253,247,.68); font-size: 12px; }
+    .action-row i { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid)); color: var(--tone); font-style: normal; font-weight: 900; }
+    .action-row p { margin: 3px 0 0; color: var(--muted); font-size: 10.5px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stars { color: var(--tone); font-weight: 900; }
+
+    .docs { display: grid; gap: 7px; }
+    .doc-row, .task-row, .watch-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; min-height: 38px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.68); font-size: 12px; }
+    .watch-row { min-height: 32px; padding: 5px 8px; }
+    .doc-row span, .task-row span, .watch-row span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .doc-row span, .task-row span { min-width: 0; }
+    .doc-row b, .task-row b { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+    .doc-row button, .task-row button { min-height: 26px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); color: var(--ink); font-size: 11px; font-weight: 900; }
+    .task-row.done button { color: var(--green); }
+
+    .data-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .data-metric { padding: 10px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,253,247,.68); }
+    .data-metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .data-metric b { display: block; margin-top: 6px; color: var(--tone); font-size: 20px; }
+    .data-panel { padding-top: 10px; padding-bottom: 10px; }
+    .data-panel .title { margin-bottom: 6px; }
+    .data-panel .data-metrics { gap: 6px; }
+    .data-panel .data-metric { padding: 5px 8px; border-radius: 10px; }
+    .data-panel .data-metric b { margin-top: 3px; font-size: 17px; line-height: 1; }
+    .data-panel .finding-list { margin-top: 5px; }
+    .data-panel .finding-list div { padding: 6px 8px; font-size: 11px; line-height: 1.26; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tracking-panel { padding-top: 8px; padding-bottom: 8px; }
+    .tracking-panel .title { margin-bottom: 4px; }
+    .tracking-panel .data-metrics { gap: 4px; }
+    .tracking-panel .data-metric { padding: 5px 7px; border-radius: 10px; }
+    .tracking-panel .data-metric b { margin-top: 2px; font-size: 14px; line-height: 1; }
+    .info-panel .title { margin-bottom: 8px; }
+    .info-panel .stance-list { gap: 4px; }
+    .info-panel .stance-list div { font-size: 10.5px; line-height: 1.1; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr) 190px;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 14px 12px;
+    }
+    .flow-step { min-height: 46px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.68); }
+    .flow-step.active { border-color: var(--green); background: color-mix(in srgb, var(--green) 7%, var(--panel-solid)); }
+    .flow-step b { display: block; font-size: 12px; }
+    .flow-step span { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .flow a { height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: white; font-size: 13px; font-weight: 900; }
+    .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 14px); min-width: 280px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,247,.96); box-shadow: var(--soft); opacity: 0; pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); font-size: 12px; font-weight: 800; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="agent-council.html">会议</a>
+        <a class="active" href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status"><span>推演完成 <strong>2026-04-17 10:30:22</strong></span><span>报告状态 <strong>已生成</strong></span><i class="live-dot"></i></div>
+    </header>
+
+    <section class="brief-head">
+      <div>
+        <h1>推演完成：城市更新补偿争议</h1>
+        <p>推演完成于 2026-04-17 10:30:22</p>
+        <div class="meta-pills"><span>推演版本 v2.3.1</span><span>使用数据 128 条</span><span>使用证据 68 条</span><span>参与 Agent 7 个</span><span>耗时 03:42</span></div>
+      </div>
+      <div class="head-actions">
+        <a class="outline-btn" href="worldline-observer.html">回到推演画布</a>
+        <button class="outline-btn" data-export="brief">导出报告</button>
+        <button class="primary-btn" id="completeBtn">完成并回主线列表</button>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <section class="panel pad">
+        <div class="title"><span>推演结果摘要</span><span>最终分支概率</span></div>
+        <div class="donut-wrap">
+          <div class="donut"></div>
+          <div class="legend">
+            <div style="--tone:var(--green)"><i></i><span>A 短期缓和</span><b>41%</b></div>
+            <div style="--tone:var(--blue)"><i></i><span>B 低烈度拉锯</span><b>28%</b></div>
+            <div style="--tone:var(--red)"><i></i><span>C 二次升温</span><b>21%</b></div>
+            <div style="--tone:var(--amber)"><i></i><span>D 外部叠加</span><b>10%</b></div>
+          </div>
+        </div>
+        <div class="finding-list">
+          <div><b>核心发现：</b>如果只发布模糊回应，C 线仍有明显尾部风险；若补齐 FAQ 与说明会，A/B 分支权重上升。</div>
+          <div><b>主要风险：</b>补偿透明度不足、媒体二次解读、线下询问增加三项仍需监测。</div>
+        </div>
+        <div class="pivot-table" id="pivotTable"></div>
+      </section>
+
+      <section class="panel pad">
+        <div class="title"><span>关键时间节点与路径回看</span><a href="worldline-observer.html">查看完整世界线</a></div>
+        <div class="timeline">
+          <div class="ticks"><span>04-15 18:00</span><span>04-16 09:00</span><span>04-17 10:00</span><span>未来走向</span></div>
+          <div class="path-list">
+            <div class="path-row" style="--tone:var(--blue)"><i>A</i><b>主线起点：补偿标准不一致讨论</b><span>关键信号</span></div>
+            <div class="path-row" style="--tone:var(--amber)"><i>B</i><b>群体上涌讨论发酵</b><span>次级信号</span></div>
+            <div class="path-row" style="--tone:var(--red)"><i>C</i><b>群体不满升级，线下聚集风险</b><span>当前路径</span></div>
+            <div class="path-row" style="--tone:var(--green)"><i>D</i><b>FAQ 与说明会触发缓和分支</b><span>建议注入</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel pad">
+        <div class="title"><span>多方主体研判结论</span><a href="agent-council.html">已执行 · 查看详情</a></div>
+        <div class="council-grid">
+          <div class="mini-box"><b>主要冲突点</b><ul><li>居民对补偿方法透明度不足不满</li><li>模糊回应会强化二次传播</li><li>不同群体诉求存在分歧</li></ul></div>
+          <div class="mini-box"><b>主要共识</b><ul><li>需要公开测算规则与依据</li><li>建立反馈渠道与时间表</li><li>加强一线解释统一口径</li></ul></div>
+          <div class="mini-box"><b>主体态度变化</b><div class="stance-list" id="stanceList"></div></div>
+          <div class="mini-box"><b>红线与风险点</b><ul><li>仅发布“正在核实”风险较高</li><li>过度归因造谣会降低信任</li><li>媒体二次解读可能放大</li></ul></div>
+        </div>
+      </section>
+
+      <aside class="right-col">
+        <section class="panel pad action-panel">
+          <div class="title"><span>建议行动方案</span><span>优先级排序</span></div>
+          <div class="action-list" id="actionList"></div>
+        </section>
+        <section class="panel pad data-panel">
+          <div class="title">数据沉淀状态 <span>已自动完成</span></div>
+          <div class="data-metrics">
+            <div class="data-metric" style="--tone:var(--blue)"><span>使用数据</span><b>128</b></div>
+            <div class="data-metric" style="--tone:var(--green)"><span>关键支点</span><b>23</b></div>
+            <div class="data-metric" style="--tone:var(--violet)"><span>支撑证据</span><b>68</b></div>
+            <div class="data-metric" style="--tone:var(--amber)"><span>支点更新</span><b>7</b></div>
+          </div>
+          <div class="finding-list"><div><b>沉淀说明：</b>本次推演已写回案例库、主线样本库和证据可信度校正表。</div></div>
+        </section>
+        <section class="panel pad tracking-panel">
+          <div class="title">现实结果跟踪状态 <span>已开启</span></div>
+          <div class="data-metrics">
+            <div class="data-metric" style="--tone:var(--blue)"><span>跟踪周期</span><b>7天</b></div>
+            <div class="data-metric" style="--tone:var(--green)"><span>数据源</span><b>8</b></div>
+            <div class="data-metric" style="--tone:var(--amber)"><span>下一评估</span><b>03天</b></div>
+            <div class="data-metric" style="--tone:var(--red)"><span>状态</span><b>等待</b></div>
+          </div>
+        </section>
+        <section class="panel pad info-panel">
+          <div class="title">推演信息 <span>模型与时间</span></div>
+          <div class="stance-list">
+            <div><b>推演成本</b><span>v2.3.1</span></div>
+            <div><b>模型</b><span>Worldline Engine 2.3</span></div>
+            <div><b>开始时间</b><span>10:26:40</span></div>
+            <div><b>完成时间</b><span>10:30:22</span></div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="panel pad">
+        <div class="title"><span>研判报告与文档</span><span class="title-actions"><button class="outline-btn" id="exportAllDocs" data-export-batch="all">批量导出</button></span></div>
+        <div class="docs" id="docs"></div>
+      </section>
+
+      <section class="panel pad">
+        <div class="title"><span>处置任务与跟踪</span><button class="outline-btn" id="newTask">创建任务</button></div>
+        <div class="docs" id="tasks"></div>
+      </section>
+
+      <section class="panel pad">
+        <div class="title"><span>后续监测重点</span><span>用于结果回流</span></div>
+        <div class="docs" id="watch"></div>
+      </section>
+    </main>
+
+    <section class="flow">
+      <div class="flow-step active"><b>执行处置任务</b><span>推动建议进入实际执行</span></div>
+      <div class="flow-step active"><b>监测反馈</b><span>持续跟踪关键指标</span></div>
+      <div class="flow-step active"><b>结果确认</b><span>确认事件发展结果</span></div>
+      <div class="flow-step active"><b>闭环复盘</b><span>评估推演命中情况</span></div>
+      <div class="flow-step active"><b>案例沉淀</b><span>沉淀为系统知识库</span></div>
+      <a href="risk-dashboard.html">回到驾驶舱</a>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const actions = [
+      ["1", "发布解释型 FAQ，明确补偿测算依据与时间表", "高", "red"],
+      ["2", "组织居民代表小范围说明会，建立反馈渠道", "高", "red"],
+      ["3", "统一各部门口径，避免使用模糊表达", "中高", "amber"],
+      ["4", "加强网格和社区一线解释能力，形成答疑话术", "中", "blue"],
+      ["5", "持续监测自媒体与社群扩散动向，及时澄清误读", "中", "blue"]
+    ];
+    const docs = [
+      ["世界线推演结果报告 PDF", "10:30"],
+      ["多方主体研判纪要 PDF", "10:28"],
+      ["关键支点变化分析 PDF", "10:25"],
+      ["处置建议单 DOCX", "10:30"],
+      ["世界线简报 PPTX", "10:31"]
+    ];
+    const tasks = [
+      ["发布解释型 FAQ", "住建局", "待确认"],
+      ["组织居民说明会", "街道办", "待执行"],
+      ["统一口径与话术", "街道办", "已完成"],
+      ["网络谣言巡查", "社区居委会", "未开始"],
+      ["舆情检测与澄清", "宣传部门", "执行中"]
+    ];
+    const watch = [
+      ["12345 咨询量变化", "热线数据"],
+      ["社区群关键词热度", "社群摘要"],
+      ["自媒体传播趋势", "公开平台"],
+      ["居民信任", "支点指标"],
+      ["信息透明度", "支点指标"],
+      ["线下聚集风险", "关键指标"]
+    ];
+    const stances = [["居民群体", "负面增强 -0.15"], ["街道/社区", "中性偏负 -0.07"], ["主管部门", "中性 -0.01"], ["媒体/自媒体", "负面增强 -0.12"]];
+    const pivots = [["居民信任", "-0.08", "下降"], ["信息透明度", "-0.05", "下降"], ["补偿公平感", "-0.02", "下降"], ["街道沟通能力", "+0.02", "上升"], ["舆情扩散风险", "+0.11", "上升"]];
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+
+    function toast(text) {
+      $("#toast").textContent = text;
+      $("#toast").classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => $("#toast").classList.remove("show"), 1800);
+    }
+
+    function render() {
+      $("#actionList").innerHTML = actions.map(a => `
+        <div class="action-row" style="--tone:var(--${a[3]})"><i>${a[0]}</i><span><b>${a[1]}</b><p>影响支点：居民信任、信息透明度、舆情扩散风险</p></span><span class="stars">${a[2]}</span></div>
+      `).join("");
+      $("#docs").innerHTML = docs.map(d => `<div class="doc-row"><span><b>${d[0]}</b><br>生成于 ${d[1]}</span><button data-export="${d[0]}">单个导出</button></div>`).join("");
+      $("#tasks").innerHTML = tasks.map(t => `<div class="task-row ${t[2] === "已完成" ? "done" : ""}"><span><b>${t[0]}</b><br>${t[1]} · ${t[2]}</span><button data-task="${t[0]}">${t[2] === "已完成" ? "已完成" : "更新"}</button></div>`).join("");
+      $("#watch").innerHTML = watch.map(w => `<div class="watch-row"><span><b>${w[0]}</b><br>${w[1]}</span><strong>跟踪中</strong></div>`).join("");
+      $("#stanceList").innerHTML = stances.map(s => `<div><b>${s[0]}</b><span>${s[1]}</span></div>`).join("");
+      $("#pivotTable").innerHTML = pivots.map(p => `<div class="pivot-row"><b>${p[0]}</b><span>${p[1]}</span><i class="sparkline"></i></div>`).join("");
+      $$("[data-export]").forEach(btn => btn.addEventListener("click", () => toast(`已生成导出任务：${btn.dataset.export}`)));
+      $$("[data-task]").forEach(btn => btn.addEventListener("click", () => {
+        btn.textContent = "已更新";
+        btn.closest(".task-row").classList.add("done");
+        toast(`任务状态已更新：${btn.dataset.task}`);
+      }));
+    }
+
+    $("#newTask").addEventListener("click", () => toast("已创建新任务：补充居民代表反馈"));
+    $("#exportAllDocs").addEventListener("click", () => toast(`已生成批量导出任务：${docs.length} 份文档`));
+    $("#completeBtn").addEventListener("click", () => {
+      $("#completeBtn").textContent = "已完成闭环";
+      toast("推演结果已回写主线列表和案例库");
+    });
+    render();
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="iran-narrative-overrides.js?v=20260506-campus"></script>
+  <script src="golden-path.js?v=20260506-campus"></script>
+</body>
+</html>

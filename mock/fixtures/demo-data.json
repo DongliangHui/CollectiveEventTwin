@@ -1,0 +1,186 @@
+{
+  "case": {
+    "id": "CASE-CAMPUS-001",
+    "slug": "campus-death-high-intensity",
+    "title": "校园坠亡与疑似欺凌引发线下聚集风险",
+    "mainlineId": "ML-001",
+    "worldStateId": "WS-001",
+    "councilId": "COUNCIL-001",
+    "reportId": "REPORT-001",
+    "updatedAt": "2026-05-02 14:40:00",
+    "boundary": "Mock based on campus-death-high-intensity-event-story-20260502. This prototype supports risk sensing and coordination only; it does not replace official investigation or legal findings."
+  },
+  "dashboard": {
+    "metrics": [
+      { "id": "risk-index", "label": "爆燃指数", "value": "86/100", "delta": "+18", "tone": "red" },
+      { "id": "new-signals", "label": "新增信号", "value": "486", "delta": "+126", "tone": "violet" },
+      { "id": "offline-gathering", "label": "线下聚集", "value": "85 人", "delta": "+42", "tone": "red" },
+      { "id": "response-trust", "label": "回应可信度", "value": "42/100", "delta": "-16", "tone": "amber" },
+      { "id": "warming", "label": "72h 升温倾向", "value": "58%", "delta": "+11%", "tone": "red" }
+    ],
+    "goldenFeatureId": "area-campus-core"
+  },
+  "signals": [
+    {
+      "id": "SIG-001",
+      "caseId": "CASE-CAMPUS-001",
+      "mainlineId": "ML-001",
+      "priority": "P0",
+      "title": "校门口现场视频与家属聚集快速扩散",
+      "summary": "短视频平台出现校门口哭喊、警车、家属质问和围观画面，评论区集中出现“校园霸凌”“孩子没了”“学校要给说法”等高危语义。",
+      "source": "同城短视频 / 现场回传 / 评论区",
+      "sourceType": "social-video",
+      "regionId": "campus-core",
+      "tags": ["现场视频", "家属聚集", "爆燃窗口"],
+      "confidence": 0.82,
+      "status": "selected_for_mainline",
+      "time": "2026-05-02 10:06",
+      "geo": { "coordinates": [104.063, 30.662], "featureType": "event-point", "relatedRoute": "route-campus-to-city", "impactRadiusKm": 3 },
+      "why": "该信号同时命中死亡事实、线下聚集、平台放大和公众问责四个高烈度支点，适合作为主线起点。",
+      "evidence": [
+        { "source": "同城短视频", "excerpt": "校门口出现家属聚集、哭喊和警车画面，标题指向校园欺凌。", "credibility": "B" },
+        { "source": "评论区聚类", "excerpt": "高频词集中在“孩子没了”“学校不管”“必须给说法”。", "credibility": "B" },
+        { "source": "现场回传", "excerpt": "家属人数在 30 分钟内持续增加，围观学生和家长开始聚集。", "credibility": "C" }
+      ]
+    },
+    {
+      "id": "SIG-012",
+      "caseId": "CASE-CAMPUS-001",
+      "mainlineId": "ML-001",
+      "priority": "P0",
+      "title": "家属称此前已向学校反馈且学生群出现欺凌说法",
+      "summary": "家属陈述、家长群截图和匿名学生爆料同时指向“此前被欺负”“老师知道但没处理”的责任争议，但关键证据仍待核验。",
+      "source": "家属陈述 / 学生群截图 / 家长群",
+      "sourceType": "family-student",
+      "regionId": "campus-core",
+      "tags": ["此前反馈", "校园欺凌指控", "证据缺口"],
+      "confidence": 0.58,
+      "status": "selected_for_mainline",
+      "time": "2026-05-02 10:42",
+      "geo": { "coordinates": [104.061, 30.661], "featureType": "event-point", "relatedRoute": "route-campus-to-authority", "impactRadiusKm": 2 },
+      "why": "该信号不是结论，但它决定公众责任归因会不会从个体冲突转向学校知情不作为。",
+      "evidence": [
+        { "source": "家属口述", "excerpt": "家属称曾多次反馈孩子被欺负，希望调取监控与沟通记录。", "credibility": "C" },
+        { "source": "学生群截图", "excerpt": "匿名账号提到“之前确实有冲突”，但截图来源和完整上下文待核验。", "credibility": "C" },
+        { "source": "家长群转述", "excerpt": "多个家长讨论学校是否提前知情，形成责任追问。", "credibility": "B" }
+      ]
+    },
+    {
+      "id": "SIG-017",
+      "caseId": "CASE-CAMPUS-001",
+      "mainlineId": "ML-001",
+      "priority": "P0",
+      "title": "疑似涉事学生身份传播与网暴风险上升",
+      "summary": "评论区和论坛出现疑似涉事学生姓名、班级、照片等未成年人隐私线索，平台传播可能引发二次伤害和对立升级。",
+      "source": "论坛 / 评论截图 / 平台风控",
+      "sourceType": "privacy-risk",
+      "regionId": "online-spread",
+      "tags": ["未成年人隐私", "网暴风险", "二次伤害"],
+      "confidence": 0.46,
+      "status": "selected_for_mainline",
+      "time": "2026-05-02 11:18",
+      "geo": { "coordinates": [104.073, 30.667], "featureType": "impact-point", "relatedRoute": "route-city-to-national", "impactRadiusKm": 8 },
+      "why": "该信号会把事件从问责议题推向未成年人保护与网暴治理风险，必须进入处置任务。",
+      "evidence": [
+        { "source": "论坛截图", "excerpt": "出现疑似姓名、班级和家庭信息，但真实性不能确认。", "credibility": "C" },
+        { "source": "平台风控摘要", "excerpt": "含未成年人隐私的内容被多次转发和二次加工。", "credibility": "B" },
+        { "source": "评论聚类", "excerpt": "出现“把人找出来”等激化表达。", "credibility": "B" }
+      ]
+    },
+    {
+      "id": "SIG-024",
+      "caseId": "CASE-CAMPUS-001",
+      "mainlineId": "ML-001",
+      "priority": "P1",
+      "title": "校方首轮回应被质疑过于笼统",
+      "summary": "校方回应集中在“正在调查、配合处理”，未明确证据保全、家属沟通机制和下一次更新时间，评论区不信任继续上升。",
+      "source": "校方回应 / 评论区 / 本地媒体",
+      "sourceType": "official-response",
+      "regionId": "authority-response",
+      "tags": ["回应可信度", "信任真空", "调查机制"],
+      "confidence": 0.74,
+      "status": "needs_review",
+      "time": "2026-05-02 12:05",
+      "geo": { "coordinates": [104.081, 30.654], "featureType": "impact-point", "relatedRoute": "route-campus-to-authority", "impactRadiusKm": 6 },
+      "why": "高烈度事件中的回应不是文案问题，而是可信动作是否能压缩信任真空。",
+      "evidence": [
+        { "source": "校方回应", "excerpt": "回应提到配合调查，但没有说明证据保全和后续信息更新时间。", "credibility": "A" },
+        { "source": "本地媒体评论", "excerpt": "评论集中质疑“又是正在调查”。", "credibility": "B" },
+        { "source": "家属转述", "excerpt": "家属仍在要求查看监控和沟通记录。", "credibility": "C" }
+      ]
+    }
+  ],
+  "mainlines": [
+    {
+      "id": "ML-001",
+      "caseId": "CASE-CAMPUS-001",
+      "title": "校园死亡事件事实责任与线下风险主线",
+      "status": "pending_confirmation",
+      "signals": ["SIG-001", "SIG-012", "SIG-017", "SIG-024"],
+      "triggerClusters": ["死亡事实确认", "家属到校问责", "现场视频扩散", "回应可信度不足"],
+      "supportPoints": ["事实主线", "责任归因", "情绪爆燃", "线下聚集", "未成年人保护"],
+      "evidenceGaps": ["监控与报警记录", "家长此前反馈记录", "学生群截图上下文", "联合调查组构成与时间表"],
+      "confidence": 0.84
+    }
+  ],
+  "worldStates": [
+    {
+      "id": "WS-001",
+      "mainlineId": "ML-001",
+      "title": "校园死亡高烈度事件 World State",
+      "status": "world_state_ready",
+      "inputs": ["SIG-001", "SIG-012", "SIG-017", "SIG-024"],
+      "confirmedBy": "analyst-demo",
+      "confirmedAt": "2026-05-02 12:20:00"
+    }
+  ],
+  "worldlineNodes": [
+    { "id": "NODE-S0", "title": "校内低可见信号流动", "step": 0, "branch": "root", "probability": 64, "risk": 52 },
+    { "id": "NODE-A1", "title": "家属到校与死亡事实外溢", "step": 1, "branch": "A", "probability": 78, "risk": 74 },
+    { "id": "NODE-B2", "title": "现场视频引爆同城传播", "step": 2, "branch": "B", "probability": 71, "risk": 82 },
+    { "id": "NODE-C3", "title": "回应不足导致责任叙事固化", "step": 3, "branch": "C", "probability": 58, "risk": 91, "needsCouncil": true },
+    { "id": "NODE-D4", "title": "证据保全与联合调查压缩信任真空", "step": 4, "branch": "D", "probability": 31, "risk": 48 }
+  ],
+  "agents": [
+    { "id": "agent-family", "name": "家属与亲属共同体", "stance": "要求解释死亡原因、查看证据并确认学校责任边界", "tone": "red" },
+    { "id": "agent-school", "name": "校方", "stance": "控制现场、等待调查，同时承受知情不作为质疑", "tone": "amber" },
+    { "id": "agent-students", "name": "学生群体", "stance": "在恐惧、爆料、沉默和自保之间分化", "tone": "violet" },
+    { "id": "agent-authority", "name": "教育主管与属地部门", "stance": "需要建立联合调查、现场稳控和未成年人保护机制", "tone": "blue" },
+    { "id": "agent-public", "name": "公众与媒体/KOL", "stance": "把事件上升为校园欺凌、学校不作为和未成年人保护议题", "tone": "green" }
+  ],
+  "councilResults": [
+    {
+      "id": "COUNCIL-001",
+      "nodeId": "NODE-C3",
+      "status": "ready_to_inject",
+      "hypothesis": "如果校方和主管部门只发布“正在调查”的笼统回应，会如何影响未来 24 小时的线下聚集与公众问责？",
+      "pivotChanges": [
+        { "name": "家属信任", "delta": -0.16 },
+        { "name": "证据完整度", "delta": -0.09 },
+        { "name": "线下聚集指数", "delta": 0.18 },
+        { "name": "隐私扩散风险", "delta": 0.12 }
+      ],
+      "branchChanges": [
+        { "branch": "C", "from": 42, "to": 58 },
+        { "branch": "D", "from": 31, "to": 24 }
+      ],
+      "summary": "笼统回应无法回应家属的核心疑问，也不能证明证据已被保全。公众会继续用碎片信息补全故事，线下聚集和隐私泄露风险同步上升。"
+    }
+  ],
+  "reports": [
+    {
+      "id": "REPORT-001",
+      "caseId": "CASE-CAMPUS-001",
+      "mainlineId": "ML-001",
+      "finalJudgement": "当前事件已进入高烈度处置窗口。C 线“回应不足导致责任叙事固化”是主要风险路径，必须用证据保全、家属沟通、联合调查和隐私保护来压缩信任真空。",
+      "documents": ["高烈度事件态势简报 PDF", "多方立场研判纪要 PDF", "校园事件证据链分册 PDF", "处置任务清单 DOCX", "领导会商简报 PPTX"]
+    }
+  ],
+  "tasks": [
+    { "id": "TASK-001", "title": "固定死亡事实、报警记录、抢救记录与现场时间线", "owner": "事实核验组", "due": "2h 内", "status": "in_progress" },
+    { "id": "TASK-002", "title": "封存监控、家校沟通记录、学生群截图和投诉记录", "owner": "证据保全组", "due": "1h 内", "status": "suggested" },
+    { "id": "TASK-003", "title": "建立家属独立沟通机制并形成纪要", "owner": "属地与教育联络组", "due": "即时", "status": "suggested" },
+    { "id": "TASK-004", "title": "清理未成年人姓名、照片、班级等隐私扩散内容", "owner": "网信与平台协同组", "due": "持续", "status": "in_progress" },
+    { "id": "TASK-005", "title": "准备联合调查机制、证据保全和下次更新时间说明", "owner": "回应准备组", "due": "4h 内", "status": "suggested" }
+  ]
+}

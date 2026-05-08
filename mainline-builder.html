@@ -1,0 +1,1716 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 主线建模确认</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f4f0e8;
+      --panel: rgba(255, 253, 247, .9);
+      --solid: #fffdf7;
+      --ink: #12171d;
+      --muted: #66717d;
+      --line: #d9cebd;
+      --blue: #2f6df6;
+      --violet: #7b61c9;
+      --amber: #d78925;
+      --red: #df4b54;
+      --green: #18a873;
+      --shadow: 0 10px 22px rgba(48, 38, 22, .07);
+      --ease: cubic-bezier(.16, 1, .3, 1);
+      --r: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      min-width: 1320px;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 22% 6%, rgba(47, 109, 246, .08), transparent 30%),
+        radial-gradient(circle at 84% 9%, rgba(24, 168, 115, .08), transparent 28%),
+        linear-gradient(180deg, #fbf8f1 0%, var(--bg) 100%);
+    }
+    button, input, textarea { font: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    button:active, a:active { transform: translateY(1px); }
+
+    .app {
+      height: 100vh;
+      min-height: 900px;
+      display: grid;
+      grid-template-rows: 48px 78px minmax(0, 1fr) 64px;
+      gap: 0;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 300px 1fr 520px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(217,206,189,.82);
+      background: rgba(255,253,247,.8);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: .08em; }
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2f6df6, #70c8ff);
+      position: relative;
+      flex: none;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 18px;
+      border-radius: 3px;
+      background: #fff;
+      transform: rotate(42deg);
+    }
+    .nav {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid rgba(217,206,189,.92);
+      border-radius: 15px;
+      background: rgba(232,225,214,.86);
+    }
+    .nav a {
+      min-width: 64px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .nav a.active { background: var(--ink); color: #fff; box-shadow: 0 6px 16px rgba(20,24,29,.18); }
+    .status {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .status b { color: var(--ink); }
+    .saved { display: inline-flex; align-items: center; gap: 6px; color: var(--green); }
+    .saved::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 5px rgba(24,168,115,.12); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 1.1fr 1.1fr 1fr 1.1fr 1.62fr;
+      gap: 9px;
+      padding: 9px 14px;
+    }
+    .metric {
+      min-width: 0;
+      height: 60px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.82);
+      box-shadow: 0 6px 16px rgba(48,38,22,.045);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease);
+    }
+    .metric:hover, .metric.active { border-color: var(--ink); background: var(--solid); transform: translateY(-1px); }
+    .metric span { display: block; color: var(--muted); font-size: 11px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .metric b { display: inline-block; margin-top: 5px; color: var(--tone); font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+    .metric small { margin-left: 8px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .metric.progress {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      column-gap: 14px;
+    }
+    .progress-line {
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(20,24,29,.12);
+      overflow: hidden;
+    }
+    .progress-line i { display: block; width: 78%; height: 100%; border-radius: inherit; background: var(--green); }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 238px minmax(0, 1fr) 260px;
+      gap: 10px;
+      padding: 0 14px 8px;
+      overflow: hidden;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(217,206,189,.9);
+      border-radius: 13px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel.is-emphasized {
+      border-color: color-mix(in srgb, var(--blue) 44%, var(--line));
+      box-shadow: 0 0 0 3px rgba(47,109,246,.08), var(--shadow);
+    }
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .title span, .subtle { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .title .panel-title-text {
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .title .panel-source {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .pill {
+      min-height: 20px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 7px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--tone) 40%, var(--line));
+      background: color-mix(in srgb, var(--tone) 10%, var(--solid));
+      color: var(--tone);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .left-rail {
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: minmax(0, .98fr) auto minmax(0, 1.02fr);
+      gap: 10px;
+    }
+    .left-panel { padding: 10px; display: grid; gap: 8px; }
+    .clue-card {
+      width: 100%;
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      padding: 7px;
+      border: 1px solid rgba(217,206,189,.82);
+      border-radius: 10px;
+      background: rgba(255,253,247,.72);
+      text-align: left;
+      transition: transform .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+    }
+    .clue-card:hover, .clue-card.active { border-color: var(--ink); background: var(--solid); transform: translateY(-1px); }
+    .icon-box {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      color: var(--tone);
+      background: color-mix(in srgb, var(--tone) 10%, var(--solid));
+      border: 1px solid color-mix(in srgb, var(--tone) 32%, var(--line));
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .clue-card b, .mainline-card b { display: block; font-size: 12px; line-height: 1.22; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .clue-card small, .mainline-card small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 800; line-height: 1.28; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .clue-score { color: var(--muted); text-align: right; font-size: 10px; font-weight: 900; }
+    .clue-score em { color: var(--ink); font-style: normal; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px;
+      border: 1px solid rgba(217,206,189,.86);
+      border-radius: 13px;
+      background: rgba(255,253,247,.75);
+    }
+    .chips .title { width: 100%; margin-bottom: 2px; }
+    .module-caption {
+      width: 100%;
+      margin-top: -2px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .clue-caption {
+      margin-top: -4px;
+      padding: 0 2px 1px;
+      color: #7a6752;
+    }
+    .chip {
+      height: 25px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .chip.active { border-color: var(--ink); color: var(--ink); background: #eef7f2; }
+
+    .candidate-panel {
+      padding: 10px;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      gap: 7px;
+    }
+    .candidate-panel .title { align-items: center; }
+    .new-mainline-btn {
+      min-height: 25px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 9px;
+      border-radius: 8px;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .candidate-tabs { display: flex; gap: 5px; min-width: 0; overflow: hidden; }
+    .candidate-tabs button {
+      flex: 1;
+      min-width: 0;
+      height: 25px;
+      padding: 0 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .candidate-tabs button.active { color: var(--ink); border-color: var(--ink); }
+    .candidate-list {
+      min-height: 0;
+      display: grid;
+      gap: 6px;
+      padding-top: 8px;
+      overflow: auto;
+      align-content: start;
+      scrollbar-width: none;
+    }
+    .candidate-list::-webkit-scrollbar { display: none; }
+    .candidate-list .mainline-card:nth-child(n+4) { display: none; }
+    .mainline-card {
+      width: 100%;
+      display: grid;
+      gap: 4px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.72);
+      text-align: left;
+      min-height: 56px;
+    }
+    .mainline-card.active { border-color: var(--blue); background: rgba(47,109,246,.06); box-shadow: inset 3px 0 0 var(--blue); }
+    .mainline-card header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+    .mainline-meta { display: flex; gap: 10px; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .view-all { justify-self: end; color: var(--blue); font-size: 11px; font-weight: 900; }
+
+    .main-area {
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) 174px;
+      gap: 10px;
+    }
+    .canvas-panel {
+      display: grid;
+      grid-template-rows: 62px minmax(0, 1fr) 28px;
+    }
+    .canvas-head {
+      padding: 9px 14px 7px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 14px;
+      border-bottom: 1px solid rgba(217,206,189,.72);
+    }
+    .canvas-head b { font-size: 14px; }
+    .current-mainline-strip {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: 800;
+      min-width: 0;
+    }
+    .current-mainline-strip b {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--ink);
+      font-size: 12px;
+    }
+    .view-tabs {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .view-tabs button {
+      height: 26px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .view-tabs button.active { color: #fff; background: #4b5563; border-color: #4b5563; }
+
+    .graph {
+      position: relative;
+      min-height: 0;
+      padding: 13px 16px 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(217,206,189,.24) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(217,206,189,.24) 1px, transparent 1px),
+        rgba(255,253,247,.35);
+      background-size: 24px 24px;
+    }
+    .graph::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 2px solid rgba(47,109,246,0);
+      border-radius: 12px;
+      pointer-events: none;
+      transition: border-color .22s var(--ease), box-shadow .22s var(--ease);
+      z-index: 3;
+    }
+    .graph.is-graph-focus::after {
+      border-color: rgba(47,109,246,.35);
+      box-shadow: inset 0 0 0 2px rgba(47,109,246,.05), 0 0 0 3px rgba(47,109,246,.08);
+    }
+    .connection-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: visible;
+    }
+    .connection-layer path {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+    .connection-layer .path-main {
+      stroke: rgba(47,109,246,.74);
+      stroke-width: 3;
+    }
+    .connection-layer.is-focus-visible .path-main {
+      stroke: rgba(47,109,246,.92);
+      stroke-width: 3.8;
+    }
+    .connection-layer .path-support {
+      stroke: rgba(88,97,109,.15);
+      stroke-width: 1.35;
+    }
+    .connection-layer .path-gap {
+      stroke: rgba(223,75,84,.48);
+      stroke-width: 2;
+      stroke-dasharray: 6 6;
+    }
+    .connection-layer .flow-dot {
+      fill: #fffdf7;
+      stroke-width: 2;
+    }
+    .lanes {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: grid;
+      grid-template-columns: .78fr 1.1fr 1fr 1fr 1fr 1fr .9fr;
+      gap: 13px;
+    }
+    .lane {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 36px minmax(0, 1fr);
+      gap: 10px;
+    }
+    .lane-head {
+      width: 100%;
+      min-height: 34px;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      border: 1px solid color-mix(in srgb, var(--tone) 28%, var(--line));
+      background:
+        linear-gradient(180deg,
+          color-mix(in srgb, var(--tone) 18%, #fffdf7),
+          color-mix(in srgb, var(--tone) 9%, #fffdf7)
+        );
+      color: var(--tone);
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,.62), 0 6px 12px rgba(48,38,22,.035);
+      transition: background .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease), transform .2s var(--ease);
+    }
+    .lane.is-lane-focus .lane-head {
+      border-color: color-mix(in srgb, var(--tone) 56%, var(--line));
+      background: color-mix(in srgb, var(--tone) 18%, var(--solid));
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 12%, transparent);
+      transform: translateY(-1px);
+    }
+    .lane-head small { margin-left: 6px; font-size: 10px; opacity: .78; }
+    .lane-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+      min-height: 0;
+    }
+    .lane-body .node-card, .lane-body .add-node { width: 94%; align-self: center; }
+    .node-card {
+      position: relative;
+      min-width: 0;
+      min-height: 54px;
+      padding: 8px 9px 8px;
+      border: 1px solid rgba(217,206,189,.92);
+      border-radius: 10px;
+      background: rgba(255,253,247,.92);
+      box-shadow: 0 8px 18px rgba(48,38,22,.055);
+      text-align: left;
+      transition: border-color .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
+    }
+    .node-card:hover, .node-card.active { border-color: var(--tone); transform: translateY(-1px); background: var(--solid); }
+    .node-card.is-focus-target {
+      z-index: 5;
+      border-color: var(--ink) !important;
+      background: #fff;
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 22%, transparent), 0 16px 28px rgba(48,38,22,.16);
+      transform: translateY(-2px) scale(1.015);
+      animation: focusPulse 1.35s var(--ease) 1;
+    }
+    .node-card b { display: block; font-size: 11px; line-height: 1.22; }
+    .node-card small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.3; font-weight: 800; }
+    .node-card em { position: absolute; right: 9px; top: 9px; color: var(--tone); font-style: normal; font-size: 10px; font-weight: 900; }
+    .node-card::before,
+    .node-card::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--tone);
+      transform: translateY(-50%);
+      opacity: .24;
+    }
+    .node-card::before { left: -4px; }
+    .node-card::after { right: -4px; }
+    .node-card.is-path::before,
+    .node-card.is-path::after {
+      opacity: 1;
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 14%, transparent);
+    }
+    .node-card.is-linked::before,
+    .node-card.is-linked::after { opacity: .56; }
+    .node-card.is-focus-target::before,
+    .node-card.is-focus-target::after {
+      width: 9px;
+      height: 9px;
+      opacity: 1;
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--tone) 18%, transparent);
+    }
+    @keyframes focusPulse {
+      0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 0%, transparent), 0 8px 18px rgba(48,38,22,.08); }
+      42% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--tone) 20%, transparent), 0 18px 30px rgba(48,38,22,.18); }
+      100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 22%, transparent), 0 16px 28px rgba(48,38,22,.16); }
+    }
+    .start-card {
+      min-height: 112px;
+      display: grid;
+      align-content: center;
+      border-color: rgba(47,109,246,.3);
+    }
+    .confirm-card {
+      min-height: 154px;
+      display: grid;
+      align-content: center;
+      border-color: rgba(47,109,246,.38);
+      background: rgba(255,253,247,.94);
+    }
+    .confirm-card h3 { margin: 0; font-size: 12px; line-height: 1.35; }
+    .confirm-card p { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.45; font-weight: 800; }
+    .confirm-card .primary {
+      width: auto;
+      min-width: 160px;
+      justify-self: center;
+      margin-top: 9px;
+      min-height: 28px;
+      padding: 0 14px;
+      border: 1px solid var(--ink);
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 10px;
+    }
+    .add-node {
+      min-height: 30px;
+      border: 1px dashed color-mix(in srgb, var(--tone) 45%, var(--line));
+      border-radius: 10px;
+      color: var(--tone);
+      font-size: 12px;
+      font-weight: 900;
+      background: rgba(255,253,247,.6);
+    }
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 14px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      border-top: 1px solid rgba(217,206,189,.6);
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .legend i { width: 7px; height: 7px; border-radius: 50%; background: var(--tone); }
+
+    .quality-panel {
+      display: grid;
+      grid-template-columns: 1fr 1.05fr 1.05fr;
+      gap: 0;
+    }
+    .quality-section {
+      min-width: 0;
+      padding: 8px 10px;
+      border-right: 1px solid rgba(217,206,189,.86);
+    }
+    .quality-section:last-child { border-right: 0; }
+    .quality-list { margin-top: 6px; display: grid; gap: 4px; }
+    .quality-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .quality-row b { color: var(--ink); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .quality-row small { display: block; margin-top: 1px; color: var(--muted); font-size: 9px; line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .quality-row button {
+      min-height: 22px;
+      padding: 0 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--solid);
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .right-rail {
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) 180px 158px;
+      gap: 10px;
+    }
+    .explain-panel, .manual-panel, .check-panel { padding: 12px; }
+    .explain-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+    .explain-body {
+      min-height: 0;
+      overflow: auto;
+      scrollbar-width: none;
+      display: grid;
+      gap: 8px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.48;
+      font-weight: 800;
+    }
+    .explain-body::-webkit-scrollbar { display: none; }
+    .explain-block {
+      padding: 9px 10px;
+      border: 1px solid rgba(217,206,189,.86);
+      border-radius: 10px;
+      background: rgba(255,253,247,.68);
+    }
+    .explain-block:first-child {
+      border-color: rgba(47,109,246,.28);
+      background: rgba(47,109,246,.055);
+    }
+    .explain-block b { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 12px; }
+    .explain-block b::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 3px rgba(47,109,246,.1);
+      flex: none;
+    }
+    .explain-block p, .explain-block ul { margin: 0; color: var(--muted); }
+    .explain-block ul { padding-left: 14px; }
+    .detail-chain {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .detail-chain span {
+      padding: 3px 6px;
+      border: 1px solid rgba(217,206,189,.9);
+      border-radius: 999px;
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .explain-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .explain-kpis span {
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .explain-kpis b {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+    .explain-kpis.clue-kpis span {
+      height: 42px;
+      padding: 5px 7px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .explain-kpis.clue-kpis b {
+      margin-top: 2px;
+      font-size: 12px;
+      line-height: 1.12;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .link { justify-self: end; color: var(--blue); font-size: 11px; font-weight: 900; }
+    .manual-grid { margin-top: 10px; display: grid; gap: 8px; }
+    .manual-item {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) 24px;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .manual-item input {
+      min-width: 0;
+      height: 30px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .edit-btn {
+      height: 24px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--solid);
+      color: var(--muted);
+      font-size: 0;
+      font-weight: 900;
+    }
+    .edit-btn::before { content: "✎"; font-size: 13px; line-height: 1; }
+    .check-list { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px; }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .check-item::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(24,168,115,.12);
+      flex: none;
+    }
+    .check-item.warn::before { background: var(--amber); box-shadow: 0 0 0 3px rgba(215,137,37,.12); }
+    .primary, .secondary {
+      width: 100%;
+      min-height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 900;
+      transition: transform .2s var(--ease), background .2s var(--ease);
+    }
+    .primary { color: #fff; background: var(--ink); }
+    .primary:hover { background: #202832; transform: translateY(-1px); }
+    .secondary { margin-top: 8px; border: 1px solid var(--line); color: var(--ink); background: var(--solid); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 9px;
+      padding: 8px 14px;
+      border-top: 1px solid rgba(217,206,189,.82);
+      background: rgba(255,253,247,.74);
+    }
+    .flow a, .flow button {
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.76);
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .flow b { display: block; color: var(--ink); font-size: 12px; }
+    .flow .active { border-color: var(--green); background: rgba(24,168,115,.08); color: var(--green); }
+
+    .structure-drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      justify-items: end;
+      background: rgba(20,24,29,.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s var(--ease);
+    }
+    .structure-drawer.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drawer-panel {
+      width: min(440px, calc(100vw - 28px));
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 0;
+      padding: 18px;
+      border-left: 1px solid var(--line);
+      background: rgba(255,253,247,.98);
+      box-shadow: -24px 0 52px rgba(48,38,22,.18);
+      transform: translateX(28px);
+      transition: transform .24s var(--ease);
+    }
+    .structure-drawer.open .drawer-panel { transform: translateX(0); }
+    .drawer-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .drawer-head h2 { margin: 4px 0 0; font-size: 18px; line-height: 1.2; }
+    .drawer-head p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; font-weight: 800; }
+    .drawer-close {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--solid);
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .drawer-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px 0;
+      display: grid;
+      gap: 10px;
+      scrollbar-width: none;
+    }
+    .drawer-body::-webkit-scrollbar { display: none; }
+    .drawer-section {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--solid);
+    }
+    .drawer-section b {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .drawer-section b span {
+      flex: none;
+      color: var(--blue);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+    }
+    .drawer-section p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .drawer-metric {
+      min-width: 0;
+      padding: 9px;
+      border: 1px solid rgba(217,206,189,.85);
+      border-radius: 10px;
+      background: rgba(255,253,247,.78);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .drawer-metric b {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 15px;
+    }
+    .drawer-list { margin: 8px 0 0; padding-left: 16px; color: var(--muted); font-size: 12px; line-height: 1.55; font-weight: 800; }
+    .drawer-foot {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .drawer-foot .primary, .drawer-foot .secondary { margin: 0; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 86px;
+      transform: translateX(-50%) translateY(12px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(18,23,29,.92);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      transition: opacity .22s var(--ease), transform .22s var(--ease);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span>WORLDLINE OBSERVER</div>
+      <nav class="nav" aria-label="主导航">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="data-hub.html">数据</a>
+        <a class="active" href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="agent-council.html">会议</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status">
+        <span>主线建模批次：<b>batch-20260425-001</b></span>
+        <span>建模者：张三</span>
+        <span>更新时间：10:30:22</span>
+        <span class="saved">已保存</span>
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="建模指标">
+      <div class="metric" data-focus="start" style="--tone:var(--blue)"><span>输入数据包</span><b>11</b><small>联动起点与数据依据</small></div>
+      <div class="metric" data-focus="ais" style="--tone:var(--amber)"><span>已识别线索</span><b>86</b><small>联动异常信号列</small></div>
+      <div class="metric" data-focus="confirm" data-panel=".candidate-panel" style="--tone:var(--violet)"><span>系统成线建议</span><b>5</b><small>联动候选主线池</small></div>
+      <div class="metric" data-focus="start" data-panel=".candidate-panel" style="--tone:var(--blue)"><span>人工主线草稿</span><b>7</b><small>联动新建主线入口</small></div>
+      <div class="metric" data-focus="gapAis" style="--tone:var(--red)"><span>证据缺口</span><b>3</b><small>联动质量控制</small></div>
+      <div class="metric" data-focus="confirm" style="--tone:var(--green)"><span>可推演主线</span><b>1</b><small>联动确认主线</small></div>
+      <div class="metric progress" data-focus="confirm" data-panel=".check-panel" style="--tone:var(--green)">
+        <div><span>建模完成度</span><b>78%</b><small>建议补充证据以提升完整度</small></div>
+        <div class="progress-line"><i></i></div>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <aside class="left-rail">
+        <section class="panel left-panel">
+          <div class="title">问题线索识别 <span>收起</span></div>
+          <div class="module-caption clue-caption">点击线索后，右侧展开详情；中央图谱同步高亮它落到哪条链上。</div>
+          <button class="clue-card active" data-clue="seed" style="--tone:var(--blue)">
+            <span class="icon-box">起</span>
+            <span><b>起点线索箱</b><small>定义主线起点的关键事件/异常</small></span>
+            <span class="clue-score"><em>7条</em><br>0.86</span>
+          </button>
+          <button class="clue-card" data-clue="support" style="--tone:var(--violet)">
+            <span class="icon-box">支</span>
+            <span><b>支撑线索箱</b><small>支持问题持续存在的证据</small></span>
+            <span class="clue-score"><em>14条</em><br>0.74</span>
+          </button>
+          <button class="clue-card" data-clue="official" style="--tone:var(--amber)">
+            <span class="icon-box">官</span>
+            <span><b>官方回应线索</b><small>官方声明/通报/公告</small></span>
+            <span class="clue-score"><em>3条</em><br>0.69</span>
+          </button>
+          <button class="clue-card" data-clue="field" style="--tone:var(--green)">
+            <span class="icon-box">现</span>
+            <span><b>现场反馈线索</b><small>一线反馈/日志/视频/图片</small></span>
+            <span class="clue-score"><em>8条</em><br>0.68</span>
+          </button>
+          <button class="clue-card" data-clue="history" style="--tone:var(--red)">
+            <span class="icon-box">史</span>
+            <span><b>冲突与历史线索</b><small>信号冲突/历史相似前兆</small></span>
+            <span class="clue-score"><em>3项</em><br>0.61</span>
+          </button>
+        </section>
+
+        <section class="chips">
+          <div class="title">线索标签快速筛选</div>
+          <div class="module-caption">选择标签后同步高亮图谱节点，并刷新右侧解释链。</div>
+          <button class="chip">军事动态</button>
+          <button class="chip">航运舆情</button>
+          <button class="chip">能源市场</button>
+          <button class="chip">官方声明</button>
+          <button class="chip">保险市场</button>
+          <button class="chip">地缘站位</button>
+          <button class="chip">海上安全</button>
+          <button class="chip">核查制度</button>
+          <button class="chip active">24小时内</button>
+          <button class="chip">高可信度</button>
+        </section>
+
+        <section class="panel candidate-panel">
+          <div class="title">候选主线池 <button class="new-mainline-btn" id="newMainline">+ 新建人工主线</button></div>
+          <div class="module-caption">切换候选后同步更新当前主线、图谱焦点与解释面板。</div>
+          <div class="candidate-tabs">
+            <button class="active">系统建议 4</button>
+            <button>人工草稿 3</button>
+            <button>已确认 1</button>
+          </div>
+          <div class="candidate-list" id="candidateList">
+            <button class="mainline-card active" data-mainline="ML-001">
+              <header><b>霍尔木兹通航受限与能源外溢主线</b><span class="pill" style="--tone:var(--amber)">待确认</span></header>
+              <small>证据 23 · 缺口 3</small>
+              <div class="mainline-meta"><span>重叠度 0.82</span><span>成线 0.88</span></div>
+            </button>
+            <button class="mainline-card" data-mainline="ML-002">
+              <header><b>红海袭击与航运成本主线</b><span class="pill" style="--tone:var(--amber)">待确认</span></header>
+              <small>证据 18 · 缺口 2</small>
+              <div class="mainline-meta"><span>重叠度 0.79</span><span>成线 0.76</span></div>
+            </button>
+            <button class="mainline-card" data-mainline="ML-003">
+              <header><b>IAEA 核查受阻与制裁争议主线</b><span class="pill" style="--tone:var(--amber)">待确认</span></header>
+              <small>证据 16 · 缺口 4</small>
+              <div class="mainline-meta"><span>重叠度 0.74</span><span>成线 0.73</span></div>
+            </button>
+            <button class="mainline-card" data-mainline="ML-004">
+              <header><b>黎以北部战线升温主线</b><span class="pill" style="--tone:var(--blue)">补证中</span></header>
+              <small>证据 21 · 缺口 2</small>
+              <div class="mainline-meta"><span>重叠度 0.82</span><span>成线 0.77</span></div>
+            </button>
+          </div>
+          <a class="view-all" href="data-hub.html">查看全部候选主线 ></a>
+        </section>
+      </aside>
+
+      <section class="main-area">
+        <section class="panel canvas-panel">
+          <header class="canvas-head">
+            <div>
+              <div class="title">主线结构图谱画布</div>
+              <div class="current-mainline-strip">当前主线 <b id="currentMainline">霍尔木兹通航受限与能源外溢主线</b><span class="pill" style="--tone:var(--green)">系统建议</span></div>
+            </div>
+            <div class="view-tabs">
+              <span class="subtle">视图：</span>
+              <button class="active">结构图</button>
+              <button>证据链</button>
+              <button>时间线</button>
+              <button id="fitView">全屏</button>
+            </div>
+          </header>
+
+          <div class="graph">
+            <svg class="connection-layer" aria-hidden="true"></svg>
+
+            <div class="lanes">
+              <div class="lane" style="--tone:var(--blue)">
+                <div class="lane-head">起点 / 背景</div>
+                <div class="lane-body">
+                  <button class="node-card start-card active" data-node="start" style="--tone:var(--blue)">
+                    <b>IRGC 船舶活动增大</b>
+                    <small>04-15 至今<br>多源监测显示 IRGC 舰只在波斯湾活动频率上升</small>
+                    <span class="pill" style="--tone:var(--blue); width:max-content; margin-top:10px;">起点信号</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="lane" style="--tone:var(--blue)">
+                <div class="lane-head">异常信号 <small>12条</small></div>
+                <div class="lane-body">
+                  <button class="node-card" data-node="ais" style="--tone:var(--blue)"><b>AIS 等待船舶增加</b><small>AIS 航行数据</small><em>3条</em></button>
+                  <button class="node-card" data-node="insurance" style="--tone:var(--blue)"><b>保险条款波动</b><small>Lloyd's / JUMI 数据</small><em>2条</em></button>
+                  <button class="node-card" data-node="quote" style="--tone:var(--blue)"><b>航运银行讨论增加</b><small>社交媒体/航运论坛</small><em>4条</em></button>
+                  <button class="node-card" data-node="energy" style="--tone:var(--blue)"><b>能源价格波动</b><small>布伦特原油数据</small><em>3条</em></button>
+                </div>
+              </div>
+
+              <div class="lane" style="--tone:var(--violet)">
+                <div class="lane-head">小问题聚合 <small>4项</small></div>
+                <div class="lane-body">
+                  <button class="node-card" data-node="passage" style="--tone:var(--violet)"><b>通航不确定性上升</b><small>影响航线选择与时效</small></button>
+                  <button class="node-card" data-node="shipowner" style="--tone:var(--violet)"><b>船东避险情绪增强</b><small>等待周期偏长</small></button>
+                  <button class="node-card" data-node="premium" style="--tone:var(--violet)"><b>保险定价分歧</b><small>风险溢价上升</small></button>
+                  <button class="node-card" data-node="price" style="--tone:var(--violet)"><b>能源供应预期波动</b><small>价格与库存预期变化</small></button>
+                </div>
+              </div>
+
+              <div class="lane" style="--tone:var(--amber)">
+                <div class="lane-head">核心诱因 <small>3项</small></div>
+                <div class="lane-body">
+                  <button class="node-card" data-node="security" style="--tone:var(--amber)"><b>航运安全预期下降</b><small>对通航安全的担忧增强</small></button>
+                  <button class="node-card" data-node="repricing" style="--tone:var(--amber)"><b>海险风险重新定价</b><small>战争险/罢免上升</small></button>
+                  <button class="node-card" data-node="external" style="--tone:var(--amber)"><b>外部军事事件扰动</b><small>IRGC 活动 / 地区冲突升级</small></button>
+                  <button class="add-node" style="--tone:var(--amber)" id="addTrigger">添加诱因</button>
+                </div>
+              </div>
+
+              <div class="lane" style="--tone:var(--green)">
+                <div class="lane-head">关键支点 <small>4项</small></div>
+                <div class="lane-body">
+                  <button class="node-card" data-node="hormuz" style="--tone:var(--green)"><b>霍尔木兹通航</b><small>影响 0.28<br>关键度 高</small></button>
+                  <button class="node-card" data-node="insurancePivot" style="--tone:var(--green)"><b>航运保险</b><small>影响 0.22<br>关键度 高</small></button>
+                  <button class="node-card" data-node="oil" style="--tone:var(--green)"><b>能源价格</b><small>影响 0.18<br>关键度 中</small></button>
+                  <button class="node-card" data-node="gulf" style="--tone:var(--green)"><b>海湾基地安全</b><small>影响 0.15<br>关键度 中</small></button>
+                  <button class="add-node" style="--tone:var(--green)" id="addPivot">添加支点</button>
+                </div>
+              </div>
+
+              <div class="lane" style="--tone:var(--red)">
+                <div class="lane-head">证据缺口 <small>3项</small></div>
+                <div class="lane-body">
+                  <button class="node-card" data-node="gapAis" style="--tone:var(--red)"><b>缺少 AIS 连续轨迹</b><small>无法确认等待船舶的持续时间与范围</small></button>
+                  <button class="node-card" data-node="gapInsurance" style="--tone:var(--red)"><b>缺少保险报价原始文件</b><small>无法验证保费波动原因是地缘还是航线调整</small></button>
+                  <button class="node-card" data-node="gapOfficial" style="--tone:var(--red)"><b>缺少官方统一口径</b><small>缺少 IRGC 活动边界与通航风险官方口径</small></button>
+                  <button class="add-node" style="--tone:var(--red)" id="addGap">添加缺口</button>
+                </div>
+              </div>
+
+              <div class="lane" style="--tone:var(--blue)">
+                <div class="lane-head">确认主线</div>
+                <div class="lane-body">
+                  <article class="node-card confirm-card" data-node="confirm" style="--tone:var(--blue)">
+                    <h3>霍尔木兹通航与能源外溢风险主线</h3>
+                    <p>主线编号：ML-001</p>
+                    <p>状态：待确认<br>置信度：0.88<br>适用范围：波斯湾、霍尔木兹海峡及周边</p>
+                    <button class="primary" id="confirmEvidence">确认为主线证据</button>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span style="--tone:var(--blue)"><i></i>起点/背景</span>
+            <span style="--tone:var(--blue)"><i></i>异常信号</span>
+            <span style="--tone:var(--violet)"><i></i>小问题</span>
+            <span style="--tone:var(--amber)"><i></i>核心诱因</span>
+            <span style="--tone:var(--green)"><i></i>关键支点</span>
+            <span style="--tone:var(--red)"><i></i>证据缺口</span>
+            <span><i style="background:#d9cebd"></i>可编辑</span>
+            <span><i style="background:#14181d"></i>必填项</span>
+          </div>
+        </section>
+
+        <section class="panel quality-panel">
+          <div class="quality-section">
+            <div class="title">建模质量控制 <span>建议优先补充</span></div>
+            <div class="quality-list">
+              <div class="quality-row"><span><b>缺少 AIS 连续轨迹</b><small>影响：通航受限支点置信度</small></span><span class="pill" style="--tone:var(--red)">高</span></div>
+              <div class="quality-row"><span><b>缺少保险报价原始文件</b><small>影响：海险重新定价判断</small></span><span class="pill" style="--tone:var(--red)">高</span></div>
+              <div class="quality-row"><span><b>缺少官方统一口径</b><small>影响：军事活动边界解释</small></span><span class="pill" style="--tone:var(--amber)">中</span></div>
+              <div class="quality-row"><span><b>历史相似样本匹配不足</b><small>影响：推演分支初始概率</small></span><button id="addEvidence">补充</button></div>
+            </div>
+          </div>
+          <div class="quality-section">
+            <div class="title">可补充数据 <span>系统推荐</span></div>
+            <div class="quality-list">
+              <div class="quality-row"><span><b>保险公司最新公告/保单</b><small>补齐报价变化原文</small></span><button>加入主线</button></div>
+              <div class="quality-row"><span><b>AIIB / PIIE 航线影响报告</b><small>验证绕航成本与时效</small></span><button>加入主线</button></div>
+              <div class="quality-row"><span><b>油价期货综合波动率</b><small>关联 Brent 与风险溢价</small></span><button>加入主线</button></div>
+              <div class="quality-row"><span><b>海湾国家护航表态</b><small>补充外交缓和变量</small></span><button>加入主线</button></div>
+            </div>
+          </div>
+          <div class="quality-section">
+            <div class="title">合并 / 拆分 / 排除建议 <span>去重与降噪</span></div>
+            <div class="quality-list">
+              <div class="quality-row"><span><b>红海袭击与航运成本主线</b><small>重叠支点：航运保险、绕航成本</small></span><button>合并</button></div>
+              <div class="quality-row"><span><b>船员情绪类数据</b><small>与主支点弱相关，建议降权</small></span><button>排除</button></div>
+              <div class="quality-row"><span><b>IAEA 核查争议</b><small>作为制裁节奏背景说明</small></span><button>关联</button></div>
+              <div class="quality-row"><span><b>重复转述的论坛片段</b><small>同源转发，不作为独立证据</small></span><button>降噪</button></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="right-rail">
+        <section class="panel explain-panel">
+          <div class="title"><span class="panel-title-text" id="explainTitleText">主线解释</span><span class="panel-source" id="explainSource">系统生成 <b id="mainlineId">ML-001</b></span></div>
+          <div class="explain-body" id="explainBody">
+            <div class="explain-block"><b>1. 当前判断</b><p>系统将当前主线识别为“霍尔木兹通航受限与能源外溢风险主线”，建议进入世界线推演。</p></div>
+            <div class="explain-kpis"><span>置信度<b>0.88</b></span><span>证据数<b>23</b></span><span>缺口<b>3</b></span></div>
+            <div class="explain-block"><b>2. 成线路径</b><p>IRGC 活动上升 → 通航不确定 → 保险重新定价 → 能源外溢风险。</p></div>
+            <div class="explain-block"><b>3. 使用数据</b><ul><li>AIS 航行数据、保险市场报价、G7 声明、IAEA 摘要、船东论坛讨论、原油市场数据等 6 类数据。</li></ul></div>
+            <div class="explain-block"><b>4. 关键诱因</b><ul><li>航运安全预期下降</li><li>保险风险重新定价</li><li>外部军事事件扰动</li></ul></div>
+            <div class="explain-block"><b>5. 关键支点</b><ul><li>霍尔木兹通航（影响 0.28）</li><li>航运保险（影响 0.22）</li><li>能源价格（影响 0.18）</li><li>海湾基地安全（影响 0.15）</li></ul></div>
+            <div class="explain-block"><b>6. 证据缺口 / 不确定性</b><ul><li>AIS 连续轨迹缺失</li><li>保险报价原始文件缺失</li><li>官方核查口径缺失</li></ul></div>
+          </div>
+          <a class="link" href="data-hub.html">查看完整建模依据 ></a>
+        </section>
+
+        <section class="panel manual-panel">
+          <div class="title">人工确认项 <span>待填写</span></div>
+          <div class="manual-grid">
+            <label class="manual-item"><span>主线名称确认</span><input value="霍尔木兹通航与能源外溢风险主线" /><button class="edit-btn">改</button></label>
+            <label class="manual-item"><span>建模依据说明</span><input value="请说明选择这条主线的判断依据..." /><button class="edit-btn">改</button></label>
+            <label class="manual-item"><span>特殊备注（可选）</span><input value="请填写备注..." /><button class="edit-btn">改</button></label>
+          </div>
+        </section>
+
+        <section class="panel check-panel">
+          <div class="title">进入推演前检查</div>
+          <div class="check-list">
+            <span class="check-item">起点已确认</span>
+            <span class="check-item">关键支点已确认</span>
+            <span class="check-item">主线名称已确认</span>
+            <span class="check-item warn">证据缺口 3 项</span>
+            <span class="check-item">关键诱因已确认</span>
+            <span class="check-item">人工判断说明已填写</span>
+          </div>
+          <a class="primary" href="worldline-observer.html?mainlineId=hormuz-blockade" id="enterWorldline">确认主线并生成推演输入</a>
+          <button class="secondary" id="withGaps">带缺口确认并生成输入</button>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="flow">
+      <a href="data-hub.html"><b>1 数据中枢</b>数据接入、治理、标签体系</a>
+      <a href="data-hub.html"><b>2 问题线索识别</b>从数据发现线索与问题</a>
+      <button class="active"><b>3 主线建模确认</b>组织证据、诱因、支点、确认主线</button>
+      <a href="worldline-observer.html"><b>4 World State 输入包</b>构建世界状态，进入推演</a>
+      <a href="worldline-observer.html"><b>5 世界线推演</b>生成世界线与节点</a>
+      <a href="agent-council.html"><b>6 多方主体研判</b>Agent Council 研判校准</a>
+      <a href="decision-brief.html"><b>7 汇报与闭环</b>输出结论与处置建议</a>
+    </footer>
+  </div>
+  <div class="toast" id="toast"></div>
+  <section class="structure-drawer" id="structureDrawer" aria-hidden="true">
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <header class="drawer-head">
+        <div>
+          <span class="pill" id="drawerType" style="--tone:var(--blue)">主线编辑</span>
+          <h2 id="drawerTitle">补充主线结构</h2>
+          <p id="drawerIntro">把新增项先作为可追溯草稿纳入图谱，后续再由证据和人工确认提升置信度。</p>
+        </div>
+        <button class="drawer-close" id="drawerClose" aria-label="关闭">×</button>
+      </header>
+      <div class="drawer-body" id="drawerBody"></div>
+      <footer class="drawer-foot">
+        <button class="secondary" id="drawerCancel">取消</button>
+        <button class="primary" id="drawerConfirm">加入当前主线</button>
+      </footer>
+    </div>
+  </section>
+
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => Array.from(document.querySelectorAll(selector));
+    const explainMap = {
+      start: ["起点信号", "IRGC 舰船活动增大是本条主线的起点。它不直接等同于封锁，但会显著改变船东、保险与能源市场对霍尔木兹通航稳定性的判断。"],
+      ais: ["AIS 等待船舶增加", "AIS 等待时间是判断通航受限的硬证据之一。当前需要补连续轨迹，确认是否只是短时排队，还是航线风险导致的系统性等待。"],
+      insurance: ["保险条款波动", "保险定价是市场对风险的快速反应。如果保费上调与船舶等待同步出现，说明风险已从军事叙事传导到航运成本。"],
+      security: ["航运安全预期下降", "该诱因把零散信号聚合为风险主线：船舶等待、保险波动和能源价格变化都可被解释为对通航安全预期下降的反应。"],
+      hormuz: ["关键支点：霍尔木兹通航", "这是当前主线的核心支点。若通航稳定性进一步下降，后续世界线会向能源风险溢价、航运保险收紧和海湾安全压力三个方向分叉。"],
+      gapAis: ["证据缺口：AIS 连续轨迹", "没有连续轨迹会降低主线置信度。建议补齐过去 24-72 小时等待船舶、掉头船舶和绕行船舶的时序样本。"]
+    };
+
+    function toast(message) {
+      const el = $("#toast");
+      el.textContent = message;
+      el.classList.add("show");
+      window.clearTimeout(toast.timer);
+      toast.timer = window.setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    const structurePanels = {
+      addTrigger: {
+        type: "核心诱因",
+        tone: "var(--amber)",
+        title: "添加诱因：责任归因与处置延迟",
+        intro: "诱因用于解释零散信号为什么会合并成高烈度主线。这里先把系统识别到的候选诱因纳入草稿，等待证据补强。",
+        metrics: [["建议权重", "0.31"], ["相关信号", "12条"], ["置信度", "0.74"], ["影响路径", "C线↑"]],
+        sections: [
+          ["候选诱因", "家属质疑“事发前是否存在欺凌、校方是否及时介入、关键监控是否完整保全”，把死亡事实与责任归因连接起来。", "TRG-004"],
+          ["触发依据", "校门口视频、学生群截图、家长群转述和校方初始说明之间存在时间线缺口。", "SIG-001"],
+          ["纳入后影响", "若该诱因被确认，主线将从单纯突发事件升级为“校园安全与未成年人保护责任争议”。", "IMPACT"]
+        ],
+        checklist: ["补齐事发前班级/宿舍/楼道时序", "核验学生群截图源头与传播链", "标记涉未成年人内容的脱敏边界"]
+      },
+      addPivot: {
+        type: "关键支点",
+        tone: "var(--green)",
+        title: "添加支点：证据保全公开窗口",
+        intro: "支点用于判断世界线是否转向。该支点会影响家属信任、公众质疑和线下聚集强度。",
+        metrics: [["影响度", "0.27"], ["可干预性", "高"], ["时限", "2小时"], ["关联任务", "5项"]],
+        sections: [
+          ["支点定义", "是否能公开说明监控、报警、急救、沟通记录的保全状态，并给出家属可参与核验的时间表。", "PVT-006"],
+          ["支撑证据", "现场视频爆发后，评论中反复追问“监控在哪里”“什么时候通知家属”“是否保护现场”。", "E-021"],
+          ["变化方向", "公开证据清单会使 A/B 分支上升；继续使用模糊口径会推动 C/D 分支。", "WORLD"]
+        ],
+        checklist: ["生成证据清单版本号", "绑定责任部门与更新时间", "同步给会商简报和任务中心"]
+      },
+      addGap: {
+        type: "证据缺口",
+        tone: "var(--red)",
+        title: "添加缺口：事发前欺凌线索未核验",
+        intro: "缺口不是结论，而是系统提醒：当前判断最容易被反证或被外部叙事放大的位置。",
+        metrics: [["缺口等级", "高"], ["影响节点", "4个"], ["风险抬升", "+0.18"], ["补证时限", "6小时"]],
+        sections: [
+          ["缺口描述", "学生群/家长群中出现“此前被欺凌”的说法，但缺少时间、主体、原始截图链和校方处置记录。", "GAP-003"],
+          ["为什么重要", "如果缺口长期未补，公众会把“未知”解释为“隐瞒”，并强化线下聚集与媒体追问。", "WHY"],
+          ["补证动作", "建立截图来源表、访谈清单和校内记录调阅任务，只展示脱敏后的事实状态。", "TASK"]
+        ],
+        checklist: ["创建核验任务并分配责任人", "标记隐私与未成年人保护级别", "回写事实面板为“待核验”"]
+      }
+    };
+
+    let activeStructurePanel = null;
+
+    function openStructurePanel(id) {
+      const data = structurePanels[id];
+      if (!data) return;
+      activeStructurePanel = id;
+      const drawer = $("#structureDrawer");
+      $("#drawerType").textContent = data.type;
+      $("#drawerType").style.setProperty("--tone", data.tone);
+      $("#drawerTitle").textContent = data.title;
+      $("#drawerIntro").textContent = data.intro;
+      $("#drawerBody").innerHTML = `
+        <section class="drawer-section">
+          <b>系统建议 <span>${data.type}</span></b>
+          <div class="drawer-grid">
+            ${data.metrics.map(([label, value]) => `<div class="drawer-metric">${label}<b>${value}</b></div>`).join("")}
+          </div>
+        </section>
+        ${data.sections.map(section => `
+          <section class="drawer-section">
+            <b>${section[0]} <span>${section[2]}</span></b>
+            <p>${section[1]}</p>
+          </section>
+        `).join("")}
+        <section class="drawer-section">
+          <b>确认前动作 <span>CHECK</span></b>
+          <ul class="drawer-list">${data.checklist.map(item => `<li>${item}</li>`).join("")}</ul>
+        </section>
+      `;
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+      emphasizePanel(".canvas-panel");
+    }
+
+    function closeStructurePanel() {
+      const drawer = $("#structureDrawer");
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    function confirmStructurePanel() {
+      const data = structurePanels[activeStructurePanel];
+      if (!data) return closeStructurePanel();
+      setExplainHeading("主线草稿更新", `人工补充 <b>${data.type}</b>`);
+      $("#explainBody").insertAdjacentHTML("afterbegin", `
+        <div class="explain-block">
+          <b>${data.title}</b>
+          <p>${data.sections[0][1]}</p>
+        </div>
+      `);
+      closeStructurePanel();
+      toast(`${data.type}已加入当前主线草稿`);
+    }
+
+    function setActive(listSelector, target) {
+      $$(listSelector).forEach(item => item.classList.toggle("active", item === target));
+    }
+
+    function emphasizePanel(selector) {
+      $$(".panel").forEach(panel => panel.classList.remove("is-emphasized"));
+      const panel = selector ? document.querySelector(selector) : null;
+      if (!panel) return;
+      panel.classList.add("is-emphasized");
+      window.clearTimeout(emphasizePanel.timer);
+      emphasizePanel.timer = window.setTimeout(() => panel.classList.remove("is-emphasized"), 1800);
+    }
+
+    function focusNode(nodeName) {
+      const node = document.querySelector(`[data-node="${nodeName}"]`);
+      if (!node) return false;
+      node.dispatchEvent(new Event("click", { bubbles: true }));
+      return true;
+    }
+
+    function markGraphFocus(node) {
+      $$(".node-card").forEach(item => item.classList.remove("is-focus-target"));
+      $$(".lane").forEach(item => item.classList.remove("is-lane-focus"));
+      node.classList.add("is-focus-target");
+      node.closest(".lane")?.classList.add("is-lane-focus");
+      $(".graph")?.classList.add("is-graph-focus");
+      $(".connection-layer")?.classList.add("is-focus-visible");
+    }
+
+    function drawConnections() {
+      const graph = $(".graph");
+      const svg = $(".connection-layer");
+      if (!graph || !svg) return;
+
+      const graphRect = graph.getBoundingClientRect();
+      if (!graphRect.width || !graphRect.height) return;
+
+      svg.setAttribute("viewBox", `0 0 ${graphRect.width} ${graphRect.height}`);
+      svg.innerHTML = "";
+      $$(".node-card").forEach(node => node.classList.remove("is-path", "is-linked"));
+
+      const node = name => document.querySelector(`[data-node="${name}"]`);
+      const endpoint = (el, side) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          x: (side === "right" ? rect.right : rect.left) - graphRect.left,
+          y: rect.top + rect.height / 2 - graphRect.top
+        };
+      };
+      const make = (tag, attrs) => {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+        return el;
+      };
+      const draw = edge => {
+        const from = node(edge[0]);
+        const to = node(edge[1]);
+        if (!from || !to) return;
+
+        const a = endpoint(from, "right");
+        const b = endpoint(to, "left");
+        const dx = Math.max(8, b.x - a.x);
+        const bend = dx * .45;
+        const d = `M ${a.x} ${a.y} C ${a.x + bend} ${a.y}, ${b.x - bend} ${b.y}, ${b.x} ${b.y}`;
+        const kind = edge[2] || "path-support";
+        svg.appendChild(make("path", { d, class: kind }));
+
+        if (kind === "path-main") {
+          from.classList.add("is-path");
+          to.classList.add("is-path");
+        } else {
+          from.classList.add("is-linked");
+          to.classList.add("is-linked");
+        }
+
+        if (kind !== "path-support") {
+          const stroke = kind === "path-gap" ? "rgba(223,75,84,.76)" : "rgba(47,109,246,.9)";
+          const radius = kind === "path-main" ? 3.4 : 2.4;
+          svg.appendChild(make("circle", { cx: a.x, cy: a.y, r: radius, class: "flow-dot", stroke }));
+          svg.appendChild(make("circle", { cx: b.x, cy: b.y, r: radius, class: "flow-dot", stroke }));
+        }
+      };
+
+      [
+        ["start", "insurance"], ["insurance", "shipowner"], ["shipowner", "repricing"], ["repricing", "insurancePivot"], ["insurancePivot", "gapInsurance"],
+        ["start", "quote"], ["quote", "premium"], ["premium", "repricing"],
+        ["start", "energy"], ["energy", "price"], ["price", "external"], ["external", "oil"], ["oil", "gapOfficial"],
+        ["gapInsurance", "confirm", "path-gap"], ["gapOfficial", "confirm", "path-gap"],
+        ["start", "ais", "path-main"], ["ais", "passage", "path-main"], ["passage", "security", "path-main"], ["security", "hormuz", "path-main"], ["hormuz", "gapAis", "path-gap"], ["gapAis", "confirm", "path-main"]
+      ].forEach(draw);
+    }
+
+    explainMap.confirm = ["确认主线", "该节点汇总起点、异常信号、诱因、关键支点与证据缺口。确认后生成 World State 输入包，进入世界线推演。"];
+
+    const clueDetailMap = {
+      seed: {
+        id: "CLUE-SEED",
+        focus: "start",
+        title: "起点线索箱",
+        count: "7条",
+        confidence: "0.86",
+        action: "作为起点",
+        why: "这组线索回答“主线从哪里开始”。当前以 IRGC 舰船活动频率上升作为起点，但仍需要和 AIS 等待、保险报价、论坛讨论一起验证，避免把单一军事动态误判成稳定主线。",
+        evidence: ["IRGC 舰艇在波斯湾活动频率上升", "AIS 显示部分船舶等待时间拉长", "船东论坛出现通航风险讨论"],
+        chain: ["起点", "异常信号", "通航不确定性"],
+        next: "补齐 24-72 小时 AIS 连续轨迹，确认该起点是否持续影响通航预期。"
+      },
+      support: {
+        id: "CLUE-SUPPORT",
+        focus: "hormuz",
+        title: "支撑线索箱",
+        count: "14条",
+        confidence: "0.74",
+        action: "支撑主链",
+        why: "这组线索回答“问题是否持续存在”。它把船舶等待、保险条款、油价波动和航运讨论连接起来，支撑霍尔木兹通航成为关键支点。",
+        evidence: ["船舶等待样本增加", "保险公司更新战争险条款", "Brent 风险溢价与航运讨论同步升温"],
+        chain: ["异常信号", "核心诱因", "霍尔木兹通航"],
+        next: "优先补充保险报价原始文件，区分地缘风险定价和普通航线调整。"
+      },
+      official: {
+        id: "CLUE-OFFICIAL",
+        focus: "gapOfficial",
+        title: "官方回应线索",
+        count: "3条",
+        confidence: "0.69",
+        action: "等待核验",
+        why: "这组线索回答“官方口径是否足够明确”。目前公开声明对 IRGC 活动边界、通航风险、核查安排的解释不足，因此被标记为证据缺口。",
+        evidence: ["G7 声明强调地区降温", "IAEA 摘要存在核查争议", "地区国家声明偏向航运安全保障"],
+        chain: ["官方声明", "证据缺口", "确认主线"],
+        next: "补入官方通报原文和第三方核查摘要，避免只用媒体转述确认主线。"
+      },
+      field: {
+        id: "CLUE-FIELD",
+        focus: "insurancePivot",
+        title: "现场反馈线索",
+        count: "8条",
+        confidence: "0.68",
+        action: "补证后采用",
+        why: "这组线索回答“风险是否传导到一线行为”。一线反馈显示船东、保险、港口排队和绕行成本开始变化，但部分样本来源分散，需要先做去重和可信度校正。",
+        evidence: ["港口等待日志出现排队延长", "保险经纪提到附加费讨论", "船东社群出现绕行与停航选项"],
+        chain: ["现场反馈", "航运保险", "能源外溢"],
+        next: "把重复转述样本降权，保留可追溯的一手日志、报价单和航线记录。"
+      },
+      history: {
+        id: "CLUE-HISTORY",
+        focus: "external",
+        title: "冲突与历史线索",
+        count: "3项",
+        confidence: "0.61",
+        action: "作为参照",
+        why: "这组线索回答“过去有没有相似前兆”。历史样本能帮助解释外部军事事件如何扰动航运保险和能源价格，但不能直接替代当前证据。",
+        evidence: ["历史红海袭击后战争险上调样本", "霍尔木兹紧张期油价短时跳升记录", "代理人组织活动与航线绕行案例"],
+        chain: ["历史前兆", "外部军事事件扰动", "分支概率校准"],
+        next: "只把历史样本用于推演概率校准，不作为当前主线的独立事实证据。"
+      }
+    };
+
+    function setExplainHeading(title, sourceHtml) {
+      const titleEl = $("#explainTitleText");
+      const sourceEl = $("#explainSource");
+      if (titleEl) titleEl.textContent = title;
+      if (sourceEl) sourceEl.innerHTML = sourceHtml;
+    }
+
+    function renderClueDetail(key) {
+      const detail = clueDetailMap[key] || clueDetailMap.seed;
+      setExplainHeading("线索详情", `问题线索识别 <b>${detail.id}</b>`);
+      $("#explainBody").innerHTML = `
+        <div class="explain-block"><b>${detail.title}</b><p>${detail.why}</p></div>
+        <div class="explain-kpis clue-kpis"><span>信号数<b>${detail.count}</b></span><span>可信度<b>${detail.confidence}</b></span><span>建议动作<b>${detail.action}</b></span></div>
+        <div class="explain-block"><b>关联证据</b><ul>${detail.evidence.map(item => `<li>${item}</li>`).join("")}</ul></div>
+        <div class="explain-block"><b>图谱落点</b><p>点击后同步高亮中央图谱中的关键落点。</p><div class="detail-chain">${detail.chain.map(item => `<span>${item}</span>`).join("")}</div></div>
+        <div class="explain-block"><b>下一步补证</b><p>${detail.next}</p></div>
+      `;
+      emphasizePanel(".explain-panel");
+    }
+
+    $$(".clue-card").forEach(card => {
+      card.addEventListener("click", () => {
+        setActive(".clue-card", card);
+        const detail = clueDetailMap[card.dataset.clue] || clueDetailMap.seed;
+        focusNode(detail.focus);
+        renderClueDetail(card.dataset.clue);
+        toast(`已展开线索详情：${card.querySelector("b").textContent}`);
+      });
+    });
+
+    $$(".mainline-card").forEach(card => {
+      card.addEventListener("click", () => {
+        setActive(".mainline-card", card);
+        $("#currentMainline").textContent = card.querySelector("b").textContent;
+        const targetMap = {
+          "ML-001": "hormuz",
+          "ML-002": "insurancePivot",
+          "ML-003": "gapOfficial",
+          "ML-004": "external"
+        };
+        focusNode(targetMap[card.dataset.mainline] || "confirm");
+        emphasizePanel(".canvas-panel");
+        toast(`已切换候选主线：${card.dataset.mainline}`);
+      });
+    });
+
+    $$(".node-card").forEach(card => {
+      card.addEventListener("click", () => {
+        setActive(".node-card", card);
+        markGraphFocus(card);
+        const data = explainMap[card.dataset.node];
+        if (!data) return;
+        setExplainHeading("主线解释", `系统生成 <b id="mainlineId">ML-001</b>`);
+        $("#explainBody").innerHTML = `
+          <div class="explain-block"><b>${data[0]}</b><p>${data[1]}</p></div>
+          <div class="explain-kpis"><span>关联证据<b>6类</b></span><span>影响支点<b>3项</b></span><span>复核状态<b>待确认</b></span></div>
+          <div class="explain-block"><b>数据依据</b><p>AIS、保险报价、船东论坛、能源价格和官方声明共同支撑该判断。</p></div>
+          <div class="explain-block"><b>影响对象</b><p>航运保险、能源市场、海湾基地安全和外交斡旋窗口。</p></div>
+          <div class="explain-block"><b>下一步建议</b><p>补充原始证据后再确认主线，避免把单点波动误判为稳定趋势。</p></div>
+        `;
+        emphasizePanel(".explain-panel");
+      });
+    });
+
+    $$(".metric").forEach(metric => {
+      metric.setAttribute("role", "button");
+      metric.tabIndex = 0;
+      metric.addEventListener("click", () => {
+        setActive(".metric", metric);
+        if (metric.dataset.focus) focusNode(metric.dataset.focus);
+        if (metric.dataset.panel) emphasizePanel(metric.dataset.panel);
+        if (metric.dataset.focus && metric.dataset.focus.startsWith("gap")) emphasizePanel(".quality-panel");
+        toast(`已联动：${metric.querySelector("span").textContent}`);
+      });
+      metric.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          metric.click();
+        }
+      });
+    });
+
+    $$(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        setActive(".chip", chip);
+        const text = chip.textContent;
+        const target =
+          text.includes("保险") ? "insurancePivot" :
+          text.includes("能源") ? "oil" :
+          text.includes("官方") ? "gapOfficial" :
+          text.includes("海上") ? "hormuz" :
+          text.includes("核查") ? "external" :
+          text.includes("航运") ? "passage" :
+          text.includes("军事") ? "start" :
+          text.includes("24") ? "ais" : "gapAis";
+        focusNode(target);
+        emphasizePanel(".canvas-panel");
+        toast(`标签已联动图谱：${text}`);
+      });
+    });
+
+    ["newMainline", "addTrigger", "addPivot", "addGap", "addEvidence", "confirmEvidence", "withGaps", "fitView"].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("click", event => {
+        if (id === "withGaps") event.preventDefault();
+        if (["addTrigger", "addPivot", "addGap"].includes(id)) {
+          event.preventDefault();
+          openStructurePanel(id);
+          return;
+        }
+        if (id === "newMainline") emphasizePanel(".manual-panel");
+        if (id === "addEvidence") emphasizePanel(".quality-panel");
+        const labels = {
+          newMainline: "已创建人工主线草稿",
+          addTrigger: "已添加一个待填写诱因",
+          addPivot: "已添加一个待确认支点",
+          addGap: "已添加一个证据缺口",
+          addEvidence: "已打开证据补充清单",
+          confirmEvidence: "已将当前结构确认为主线证据",
+          withGaps: "已带缺口确认，生成 World State 输入包",
+          fitView: "结构图已适配当前画布"
+        };
+        toast(labels[id]);
+      });
+    });
+
+    $("#drawerClose").addEventListener("click", closeStructurePanel);
+    $("#drawerCancel").addEventListener("click", closeStructurePanel);
+    $("#drawerConfirm").addEventListener("click", confirmStructurePanel);
+    $("#structureDrawer").addEventListener("click", event => {
+      if (event.target.id === "structureDrawer") closeStructurePanel();
+    });
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeStructurePanel();
+    });
+
+    window.addEventListener("resize", () => requestAnimationFrame(drawConnections));
+    requestAnimationFrame(drawConnections);
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="iran-narrative-overrides.js?v=20260506-campus"></script>
+  <script src="golden-path.js?v=20260506-campus"></script>
+</body>
+</html>

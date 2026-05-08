@@ -1,0 +1,313 @@
+{
+  "caseId": "campus-death-high-intensity",
+  "config": {
+    "center": [104.066, 30.657],
+    "zoom": 12.2,
+    "minZoom": 10,
+    "maxZoom": 16,
+    "maxBounds": [[103.94, 30.54], [104.19, 30.76]],
+    "attribution": "© OpenStreetMap contributors"
+  },
+  "riskAreas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "area-campus-core",
+        "properties": {
+          "featureId": "area-campus-core",
+          "regionId": "campus-core",
+          "featureType": "risk-area",
+          "title": "青澜中学校园与校门口高敏区",
+          "summary": "死亡事实、家属到校、现场视频和围观聚集叠加，进入爆燃前窗口。",
+          "mainlineId": "ML-001",
+          "riskScore": 91,
+          "signalCount": 486,
+          "eventCount": 12,
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.063, 30.662] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-family-gathering",
+        "properties": {
+          "featureId": "area-family-gathering",
+          "regionId": "family-gathering",
+          "featureType": "risk-area",
+          "title": "家属与亲属聚集外溢区",
+          "summary": "亲属、熟人共同体和围观人员持续到场，现场沟通与分流压力上升。",
+          "mainlineId": "ML-001",
+          "riskScore": 84,
+          "signalCount": 126,
+          "eventCount": 7,
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.057, 30.659] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-online-spread",
+        "properties": {
+          "featureId": "area-online-spread",
+          "regionId": "online-spread",
+          "featureType": "risk-area",
+          "title": "同城平台与区域传播区",
+          "summary": "同城短视频、论坛和本地媒体账号共同推高“学校压事”叙事。",
+          "mainlineId": "ML-001",
+          "riskScore": 79,
+          "signalCount": 214,
+          "eventCount": 9,
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.075, 30.668] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-authority-response",
+        "properties": {
+          "featureId": "area-authority-response",
+          "regionId": "authority-response",
+          "featureType": "risk-area",
+          "title": "主管部门与回应窗口",
+          "summary": "回应可信度不足，公众要求联合调查、证据保全和下一次信息发布时间。",
+          "mainlineId": "ML-001",
+          "riskScore": 73,
+          "signalCount": 84,
+          "eventCount": 4,
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.084, 30.654] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-privacy-risk",
+        "properties": {
+          "featureId": "area-privacy-risk",
+          "regionId": "privacy-risk",
+          "featureType": "risk-area",
+          "title": "未成年人隐私与网暴风险区",
+          "summary": "疑似涉事学生身份、照片和班级信息开始扩散，二次伤害风险显著上升。",
+          "mainlineId": "ML-001",
+          "riskScore": 81,
+          "signalCount": 97,
+          "eventCount": 6,
+          "tone": "violet"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.071, 30.651] }
+      }
+    ]
+  },
+  "eventPoints": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "evt-death-fact",
+        "properties": {
+          "featureId": "evt-death-fact",
+          "regionId": "campus-core",
+          "featureType": "event-point",
+          "title": "学生校内坠亡事实形成",
+          "time": "2026-05-02 09:18",
+          "source": "现场处置 / 报警记录待核",
+          "mainlineId": "ML-001",
+          "riskScore": 96,
+          "summary": "死亡事实一旦确认，事件已进入高压状态，网络低热度不等于低风险。",
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.063, 30.662] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-family-arrival",
+        "properties": {
+          "featureId": "evt-family-arrival",
+          "regionId": "family-gathering",
+          "featureType": "event-point",
+          "title": "家属与亲属到校讨说法",
+          "time": "2026-05-02 10:00",
+          "source": "现场回传 / 家属陈述",
+          "mainlineId": "ML-001",
+          "riskScore": 88,
+          "summary": "家属要求查看监控、沟通记录和学校此前处置情况，线下聚集风险开始形成。",
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.058, 30.660] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-first-video",
+        "properties": {
+          "featureId": "evt-first-video",
+          "regionId": "online-spread",
+          "featureType": "event-point",
+          "title": "第一批现场短视频出现",
+          "time": "2026-05-02 10:22",
+          "source": "同城短视频 / 评论区",
+          "mainlineId": "ML-001",
+          "riskScore": 86,
+          "summary": "视频画面不完整但情绪强烈，标题和评论带动“校园霸凌”叙事扩散。",
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.073, 30.667] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-official-response",
+        "properties": {
+          "featureId": "evt-official-response",
+          "regionId": "authority-response",
+          "featureType": "event-point",
+          "title": "首轮回应被质疑笼统",
+          "time": "2026-05-02 12:05",
+          "source": "校方回应 / 本地媒体",
+          "mainlineId": "ML-001",
+          "riskScore": 74,
+          "summary": "回应没有明确证据保全、调查主体和下一次更新时间，信任真空继续扩大。",
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.084, 30.654] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-privacy-leak",
+        "properties": {
+          "featureId": "evt-privacy-leak",
+          "regionId": "privacy-risk",
+          "featureType": "event-point",
+          "title": "疑似涉事学生隐私扩散",
+          "time": "2026-05-02 11:18",
+          "source": "论坛 / 平台风控",
+          "mainlineId": "ML-001",
+          "riskScore": 81,
+          "summary": "疑似未成年人姓名、班级和照片被转发，需要尽快触发平台协同处置。",
+          "tone": "violet"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.071, 30.651] }
+      }
+    ]
+  },
+  "shippingRoutes": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "route-campus-to-city",
+        "properties": {
+          "featureId": "route-campus-to-city",
+          "regionId": "online-spread",
+          "featureType": "shipping-route",
+          "title": "校门口现场视频至同城传播路径",
+          "summary": "现场视频从校门口进入同城流量池，再被本地账号二次剪辑和评论放大。",
+          "mainlineId": "ML-001",
+          "status": "热度上升",
+          "insurance": "+44%",
+          "rerouteCost": "高",
+          "relatedRoute": "Local Video Propagation",
+          "tone": "red"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[104.063, 30.662], [104.068, 30.664], [104.075, 30.668], [104.088, 30.671]] }
+      },
+      {
+        "type": "Feature",
+        "id": "route-campus-to-authority",
+        "properties": {
+          "featureId": "route-campus-to-authority",
+          "regionId": "authority-response",
+          "featureType": "shipping-route",
+          "title": "家属诉求至主管部门回应路径",
+          "summary": "家属诉求从现场沟通、教育主管部门到公开回应，可信动作决定是否降温。",
+          "mainlineId": "ML-001",
+          "status": "回应待补强",
+          "insurance": "-16%",
+          "rerouteCost": "中高",
+          "relatedRoute": "Response Credibility",
+          "tone": "amber"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[104.058, 30.660], [104.071, 30.657], [104.084, 30.654]] }
+      },
+      {
+        "type": "Feature",
+        "id": "route-city-to-national",
+        "properties": {
+          "featureId": "route-city-to-national",
+          "regionId": "online-spread",
+          "featureType": "shipping-route",
+          "title": "同城议题至全国校园安全议题路径",
+          "summary": "若出现强证据、家属长视频或媒体/KOL介入，事件可能从同城扩散到全国公共议题。",
+          "mainlineId": "ML-001",
+          "status": "可能外溢",
+          "insurance": "+31%",
+          "rerouteCost": "中",
+          "relatedRoute": "Narrative Escalation",
+          "tone": "violet"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[104.075, 30.668], [104.102, 30.684], [104.135, 30.702]] }
+      }
+    ]
+  },
+  "placeLabels": {
+    "type": "FeatureCollection",
+    "features": [
+      { "type": "Feature", "id": "label-school", "properties": { "title": "青澜中学" }, "geometry": { "type": "Point", "coordinates": [104.063, 30.662] } },
+      { "type": "Feature", "id": "label-gate", "properties": { "title": "校门口" }, "geometry": { "type": "Point", "coordinates": [104.058, 30.660] } },
+      { "type": "Feature", "id": "label-authority", "properties": { "title": "教育主管部门" }, "geometry": { "type": "Point", "coordinates": [104.084, 30.654] } },
+      { "type": "Feature", "id": "label-platform", "properties": { "title": "同城传播节点" }, "geometry": { "type": "Point", "coordinates": [104.075, 30.668] } },
+      { "type": "Feature", "id": "label-media", "properties": { "title": "本地媒体账号" }, "geometry": { "type": "Point", "coordinates": [104.088, 30.671] } }
+    ]
+  },
+  "impactAreas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "impact-narrative",
+        "properties": {
+          "featureId": "impact-narrative",
+          "regionId": "online-spread",
+          "featureType": "impact",
+          "title": "责任叙事固化风险",
+          "summary": "事实调查尚未完成，但“学校知情不作为”叙事正在成为公众默认解释。",
+          "mainlineId": "ML-001",
+          "riskScore": 88,
+          "signalCount": 168,
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.092, 30.676] }
+      },
+      {
+        "type": "Feature",
+        "id": "impact-evidence-gap",
+        "properties": {
+          "featureId": "impact-evidence-gap",
+          "regionId": "campus-core",
+          "featureType": "impact",
+          "title": "关键证据缺口",
+          "summary": "监控、报警记录、家校沟通记录和学生群截图上下文仍未完成统一索引。",
+          "mainlineId": "ML-001",
+          "riskScore": 82,
+          "signalCount": 73,
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.066, 30.657] }
+      },
+      {
+        "type": "Feature",
+        "id": "impact-privacy",
+        "properties": {
+          "featureId": "impact-privacy",
+          "regionId": "privacy-risk",
+          "featureType": "impact",
+          "title": "未成年人保护压力",
+          "summary": "疑似涉事学生身份和逝者隐私被转发，平台协同和内容降权需要并行。",
+          "mainlineId": "ML-001",
+          "riskScore": 81,
+          "signalCount": 97,
+          "tone": "violet"
+        },
+        "geometry": { "type": "Point", "coordinates": [104.071, 30.651] }
+      }
+    ]
+  }
+}
