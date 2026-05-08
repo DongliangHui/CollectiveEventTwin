@@ -1,0 +1,143 @@
+{
+  "records": [
+    {
+      "id": "RAW-P0-001",
+      "source_id": "local_news_public",
+      "content_type": "text",
+      "title": "School incident response questioned by parents",
+      "text": "Local news reports family gathering near Qinglan School gate. Comments question hidden facts, school responsibility, and response timeline.",
+      "published_at": "2026-05-02T10:06:00+08:00",
+      "location_hint": "Qinglan School",
+      "metrics": {
+        "comments": 180,
+        "shares": 72,
+        "views": 36000
+      },
+      "source_url": "https://example.local/news/qinglan-school-incident"
+    },
+    {
+      "id": "RAW-P0-002",
+      "source_id": "douyin_authorized_export",
+      "content_type": "video",
+      "title": "School gate video spreads in same-city feed",
+      "text": "Authorized short video export shows school gate, police car, crowd, family questions, and demand for evidence preservation.",
+      "media": {
+        "ocr_text": [
+          "give explanation",
+          "preserve evidence"
+        ],
+        "asr_text": "family asks the school to preserve camera records and explain what happened",
+        "scene_tags": [
+          "school_gate",
+          "crowd",
+          "police_car"
+        ],
+        "keyframe_refs": [
+          "manual://keyframes/raw-p0-002-001.jpg"
+        ]
+      },
+      "published_at": "2026-05-02T10:12:00+08:00",
+      "location_hint": "Qinglan School",
+      "metrics": {
+        "comments": 620,
+        "shares": 410,
+        "views": 186000
+      }
+    },
+    {
+      "id": "RAW-P0-003",
+      "source_id": "weibo_partner_feed",
+      "content_type": "text",
+      "title": "Weibo topic shifts to school responsibility",
+      "text": "Partner feed detects topic migration. The main narrative is changing from accident discussion to school response, hidden facts, and accountability.",
+      "published_at": "2026-05-02T10:38:00+08:00",
+      "location_hint": "Local Forum District",
+      "metrics": {
+        "comments": 430,
+        "shares": 260,
+        "views": 122000
+      }
+    },
+    {
+      "id": "RAW-P0-004",
+      "source_id": "gov_notice_public",
+      "content_type": "text",
+      "title": "Education Bureau says verification is ongoing",
+      "text": "Education Bureau notice says response and verification are ongoing, but does not yet provide next update time, evidence scope, or family communication mechanism.",
+      "published_at": "2026-05-02T11:05:00+08:00",
+      "location_hint": "Education Bureau",
+      "metrics": {
+        "comments": 88,
+        "shares": 32,
+        "views": 26000
+      },
+      "source_url": "https://example.gov/notice/qinglan-school-update"
+    },
+    {
+      "id": "RAW-P0-005",
+      "source_id": "wechat_official_authorized",
+      "content_type": "text",
+      "title": "Authorized account summary highlights response gap",
+      "text": "Authorized article summary notes that the current response does not clearly state evidence preservation, family meeting records, or an independent review mechanism.",
+      "published_at": "2026-05-02T11:24:00+08:00",
+      "location_hint": "Education Bureau",
+      "metrics": {
+        "comments": 64,
+        "shares": 128,
+        "views": 51000
+      }
+    },
+    {
+      "id": "RAW-P0-006",
+      "source_id": "manual_live_upload",
+      "content_type": "live_clip",
+      "title": "Manual live clip upload from scene observer",
+      "text": "Manual upload says a crowd remains near Qinglan School. Analyst note marks offline gathering as unverified but important.",
+      "media": {
+        "ocr_text": [
+          "school gate",
+          "parents waiting"
+        ],
+        "asr_text": "people are waiting for the school and bureau to give a clear response",
+        "scene_tags": [
+          "crowd",
+          "school_gate",
+          "offline_attention"
+        ],
+        "clip_refs": [
+          "manual://clips/raw-p0-006.mp4"
+        ]
+      },
+      "published_at": "2026-05-02T11:31:00+08:00",
+      "location_hint": "Qinglan School",
+      "metrics": {
+        "comments": 20,
+        "shares": 6,
+        "views": 800
+      }
+    },
+    {
+      "id": "RAW-P0-007",
+      "source_id": "xiaohongshu_unapproved",
+      "content_type": "image",
+      "title": "Blocked unapproved platform record",
+      "text": "This record represents a platform path without authorization and must be blocked.",
+      "published_at": "2026-05-02T11:32:00+08:00",
+      "location_hint": "Qinglan School",
+      "metrics": {
+        "comments": 10,
+        "shares": 1,
+        "views": 200
+      }
+    },
+    {
+      "id": "RAW-P0-008",
+      "source_id": "private_forum_login",
+      "content_type": "text",
+      "title": "Blocked private login forum record",
+      "text": "This login-only source is not allowed for P0 collection.",
+      "published_at": "2026-05-02T11:33:00+08:00",
+      "location_hint": "Local Forum District"
+    }
+  ]
+}

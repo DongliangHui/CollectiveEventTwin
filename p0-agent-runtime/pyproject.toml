@@ -1,0 +1,11 @@
+[project]
+name = "worldline-p0-agent-runtime"
+version = "0.1.0"
+description = "P0 data collection and signal generation runtime for Worldline Observer."
+requires-python = ">=3.10"
+
+[project.scripts]
+worldline-p0 = "worldline_p0.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

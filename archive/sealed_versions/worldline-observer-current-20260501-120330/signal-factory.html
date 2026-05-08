@@ -1,0 +1,793 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 信号工厂</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 76% 8%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    button, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app { height: 100dvh; display: grid; grid-template-rows: 56px 104px 1fr 70px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 500px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+    .tagline { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs a, .mode-tabs button {
+      min-width: 64px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 15px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status span { white-space: nowrap; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .metrics { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 10px 14px; }
+    .metric {
+      min-height: 84px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.76);
+      text-align: left;
+      transition: border-color .22s var(--ease), background .22s var(--ease), transform .22s var(--ease);
+    }
+    .metric:hover, .metric.active { transform: translateY(-1px); border-color: var(--ink); background: var(--panel-solid); }
+    .metric label { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .metric b { display: block; margin-top: 8px; font-size: 25px; line-height: .95; color: var(--tone); }
+    .metric p { margin: 7px 0 0; color: var(--muted); font-size: 11px; font-weight: 800; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 230px minmax(650px, 1fr) 390px;
+      gap: 10px;
+      min-height: 0;
+      padding: 0 14px 10px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .pad { padding: 14px; }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 11px; font-size: 14px; font-weight: 900; }
+    .title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+
+    .filters { display: grid; gap: 10px; }
+    .filter { display: grid; gap: 6px; }
+    .filter label { color: var(--ink); font-size: 12px; font-weight: 900; }
+    .select, .slider, .toggle, .back {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.64);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .slider { display: grid; gap: 7px; padding: 8px 9px; }
+    .select.active, .toggle.active { border-color: var(--ink); color: var(--ink); background: var(--panel-solid); }
+    .track { height: 4px; border-radius: 999px; background: #e6ddcf; overflow: hidden; }
+    .track i { display: block; height: 100%; width: var(--v); border-radius: inherit; background: var(--blue); }
+    .toggle i { width: 28px; height: 16px; border-radius: 999px; background: #c9c0b3; position: relative; }
+    .toggle.active i { background: var(--ink); }
+    .toggle.active i::after { left: 14px; }
+    .toggle i::after { content: ""; position: absolute; width: 12px; height: 12px; left: 2px; top: 2px; border-radius: 50%; background: white; transition: left .2s var(--ease); }
+    .back { justify-content: center; color: var(--ink); background: var(--panel-solid); }
+
+    .list-panel { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) 152px auto; }
+    .list-tools {
+      display: grid;
+      grid-template-columns: 1fr 120px 220px 108px 128px;
+      gap: 9px;
+      align-items: center;
+      padding: 14px 14px 10px;
+    }
+    .search, .tool-btn, .return-btn {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.64);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tool-btn { justify-content: center; color: var(--ink); background: var(--panel-solid); }
+    .tool-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .return-btn { justify-content: center; color: white; background: var(--ink); border-color: var(--ink); }
+    .quick-tags {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 14px 9px;
+      border-bottom: 1px solid rgba(216,205,188,.7);
+    }
+    .quick-tags button {
+      min-height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,247,.68);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .quick-tags button.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .table-head, .signal-row {
+      display: grid;
+      grid-template-columns: 78px 1.48fr .56fr .56fr .66fr .88fr .38fr .52fr .66fr;
+      gap: 9px;
+      align-items: center;
+    }
+    .table-head {
+      margin: 0 14px;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .table-body { min-height: 0; overflow: hidden; padding: 0 14px; }
+    .signal-row {
+      width: 100%;
+      min-height: 46px;
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(216,205,188,.82);
+      color: var(--ink);
+      transition: background .22s var(--ease), opacity .22s var(--ease);
+      cursor: pointer;
+    }
+    .signal-row:hover, .signal-row.active { background: color-mix(in srgb, var(--tone) 8%, var(--panel-solid)); }
+    .select-pri { display: flex; align-items: center; gap: 7px; }
+    .check {
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-solid);
+      color: transparent;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .check.checked { background: var(--ink); border-color: var(--ink); color: white; }
+    .pri { width: 31px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: var(--tone); color: white; font-size: 11px; font-weight: 900; }
+    .summary b { display: block; font-size: 13px; line-height: 1.25; }
+    .summary span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .summary small { display: block; margin-top: 2px; color: color-mix(in srgb, var(--tone) 70%, var(--ink)); font-size: 10px; font-weight: 900; }
+    .num { font-size: 16px; font-weight: 900; }
+    .tag-list { display: grid; gap: 3px; }
+    .tag { display: inline-flex; width: fit-content; align-items: center; min-height: 20px; padding: 0 7px; border-radius: 999px; color: var(--tone); background: color-mix(in srgb, var(--tone) 12%, var(--panel-solid)); font-size: 10px; font-weight: 900; }
+    .trend.up { color: var(--red); font-weight: 900; }
+    .trend.flat { color: var(--blue); font-weight: 900; }
+    .state { display: inline-flex; width: fit-content; min-height: 24px; align-items: center; padding: 0 8px; border-radius: 8px; border: 1px solid var(--tone); color: var(--tone); font-size: 11px; font-weight: 900; }
+    .pager {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 0 10px;
+    }
+    .pager button {
+      min-width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: rgba(255,253,247,.64);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .pager button.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .triage-dock {
+      display: grid;
+      grid-template-columns: 1.08fr 1.1fr .82fr;
+      gap: 10px;
+      margin: 0 14px;
+      padding: 10px 0 0;
+      border-top: 1px solid rgba(216,205,188,.72);
+      min-height: 0;
+    }
+    .dock-card {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: 12px;
+      background: rgba(255,253,247,.66);
+      overflow: hidden;
+    }
+    .dock-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 12px; font-weight: 900; }
+    .dock-title span { color: var(--muted); font-size: 10px; }
+    .batch-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+    .batch-actions button, .mini-action {
+      min-height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .batch-actions button.primary { background: var(--ink); color: white; border-color: var(--ink); }
+    .merge-list { display: grid; gap: 5px; color: var(--muted); font-size: 11px; }
+    .merge-row { display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
+    .merge-row b { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .graph-box { position: relative; height: 96px; border-radius: 10px; background: linear-gradient(180deg, rgba(20,24,29,.03), rgba(20,24,29,.01)); overflow: hidden; }
+    .graph-box svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .graph-node { position: absolute; min-width: 54px; padding: 4px 6px; border-radius: 999px; background: var(--panel-solid); border: 1px solid var(--line); color: var(--ink); font-size: 10px; font-weight: 900; text-align: center; box-shadow: 0 4px 10px rgba(42,34,22,.05); }
+    .graph-node.core { background: var(--ink); color: white; border-color: var(--ink); }
+    .false-bars { display: grid; gap: 6px; }
+    .false-row { display: grid; grid-template-columns: 70px 1fr 30px; gap: 7px; align-items: center; color: var(--muted); font-size: 11px; }
+    .false-row i { display: block; height: 6px; border-radius: 999px; background: var(--amber); width: var(--v); }
+
+    .detail-panel { display: grid; grid-template-rows: 1fr auto; }
+    .detail { min-height: 0; overflow: hidden; padding: 12px 14px; }
+    .detail h2 { margin: 0; font-size: 18px; line-height: 1.2; }
+    .detail-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .score-box, .why, .sources, .history, .evidence { margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); }
+    .score-title { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 900; }
+    .score-title b { color: var(--red); font-size: 26px; }
+    .bars { display: grid; gap: 4px; margin-top: 7px; }
+    .bar { display: grid; grid-template-columns: 78px 1fr 34px; gap: 8px; align-items: center; color: var(--muted); font-size: 11px; }
+    .bar span:nth-child(2) { height: 6px; border-radius: 999px; background: #e6ddcf; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: var(--v); border-radius: inherit; background: var(--red); }
+    .why b, .sources b, .history b, .evidence b { display: block; margin-bottom: 5px; font-size: 13px; }
+    .why p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.38; }
+    .source-row, .support-row, .history-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; min-height: 23px; align-items: center; border-bottom: 1px solid rgba(216,205,188,.68); color: var(--muted); font-size: 12px; }
+    .evidence-row { display: grid; gap: 3px; padding: 5px 0; border-bottom: 1px solid rgba(216,205,188,.68); color: var(--muted); font-size: 12px; }
+    .evidence-row:last-child { border-bottom: 0; }
+    .evidence-row header { display: flex; justify-content: space-between; gap: 10px; color: var(--ink); font-weight: 900; }
+    .evidence-row p { margin: 0; line-height: 1.32; }
+    .history-row span:last-child { color: var(--ink); font-weight: 900; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .section-head b { margin: 0; }
+    .link-btn { min-height: 22px; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .source-row:last-child, .support-row:last-child { border-bottom: 0; }
+    .source-row span:last-child, .support-row span:last-child { color: var(--ink); font-weight: 800; }
+    .direction { min-width: 42px; text-align: right; font-weight: 900; }
+    .direction.up { color: var(--red); }
+    .direction.down { color: var(--green); }
+    .direction.flat { color: var(--blue); }
+    .source-adjust { display: flex; align-items: center; gap: 4px; }
+    .source-adjust button { min-width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); font-size: 10px; font-weight: 900; background: rgba(255,253,247,.72); }
+    .source-adjust button.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .annotation { padding: 10px 14px 12px; border-top: 1px solid var(--line); background: rgba(255,253,247,.54); }
+    .annotation .label { margin-bottom: 8px; font-size: 13px; font-weight: 900; }
+    .mark-buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+    .mark-buttons button { min-height: 28px; border: 1px solid var(--line); border-radius: 9px; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .mark-buttons button.active { border-color: var(--ink); color: white; background: var(--ink); }
+    .upgrade { margin-top: 7px; min-height: 34px; width: 100%; border-radius: 10px; background: var(--ink); color: white; font-weight: 900; }
+
+    .basket {
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin: 0 14px 10px;
+      padding: 9px 11px;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+    }
+    .basket-left { display: flex; align-items: center; gap: 7px; overflow: hidden; white-space: nowrap; }
+    .basket-info b { display: block; font-size: 13px; }
+    .basket-info span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .basket-left b { font-size: 13px; }
+    .chip { display: inline-flex; align-items: center; min-height: 26px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: 11px; font-weight: 900; background: rgba(255,253,247,.64); }
+    .basket a { min-height: 34px; display: grid; place-items: center; padding: 0 14px; border-radius: 10px; background: var(--ink); color: white; font-size: 12px; font-weight: 900; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 82px;
+      transform: translateX(-50%) translateY(8px);
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 14px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s var(--ease), transform .22s var(--ease);
+      box-shadow: var(--soft);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs" aria-label="Demo navigation">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a class="active" href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="agent-council.html">会议</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status"><span>数据快照：2026-04-25 12:00</span><span>批次：batch-20260425-001</span><span>抽取状态：<strong>已完成</strong></span><span class="live-dot"></span></div>
+    </header>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="workspace">
+      <aside class="panel pad">
+        <div class="title">筛选器 <span>快速定位重点信号</span></div>
+        <div class="filters">
+          <div class="filter"><label>采集时间</label><button class="select control" data-filter="new">近 24 小时新增 <span>⌄</span></button></div>
+          <div class="filter"><label>来源通道</label><button class="select control" data-filter="source">热线/网格优先 <span>⌄</span></button></div>
+          <div class="filter"><label>处置状态</label><button class="select control" data-filter="review">待复核优先 <span>⌄</span></button></div>
+          <div class="filter"><label>入推演阈值</label><button class="slider control" data-filter="threshold"><span>弱信号评分 ≥ 0.86</span><span class="track"><i style="--v:86%"></i></span></button></div>
+          <div class="filter"><label>新近变化</label><button class="slider control" data-filter="novel"><span>新颖性 ≥ 0.70</span><span class="track"><i style="--v:70%"></i></span></button></div>
+          <div class="filter"><label>主线语义</label><button class="select control" data-filter="lead">高价值优先 <span>⌄</span></button></div>
+          <div class="filter"><label>支点命中</label><button class="select control" data-filter="supports">全部支点 <span>⌄</span></button></div>
+          <div class="filter"><button class="toggle control" data-filter="all"><span>重置筛选</span><i></i></button></div>
+        </div>
+      </aside>
+
+      <section class="panel list-panel">
+        <div class="list-tools">
+          <div class="title" style="margin:0">信号列表 <span id="listCount">共 76 条</span></div>
+          <div class="select">综合优先级 <span>⌄</span></div>
+          <div class="search">搜索信号摘要 / 关键词</div>
+          <button class="tool-btn" id="batchBtn">全选可见</button>
+          <a class="return-btn" href="risk-dashboard.html">回到主控台</a>
+        </div>
+        <div class="quick-tags" id="quickTags"></div>
+        <div class="table-head"><span>选择/优先级</span><span>信号摘要</span><span>弱信号评分</span><span>新颖性</span><span>风险语义</span><span>关联支点</span><span>证据</span><span>趋势</span><span>状态</span></div>
+        <div class="table-body" id="signalRows"></div>
+        <div class="triage-dock" id="triageDock"></div>
+        <div class="pager" aria-label="Pagination">
+          <button>‹</button><button class="active">1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>…</button><button>8</button><button>›</button>
+        </div>
+      </section>
+
+      <aside class="panel detail-panel">
+        <section class="detail" id="detail"></section>
+        <section class="annotation">
+          <div class="label">人工标注与入篮</div>
+          <div class="mark-buttons">
+            <button>无关</button>
+            <button class="active" style="--tone:var(--amber)">待观察</button>
+            <button style="--tone:var(--amber)">弱信号</button>
+            <button style="--tone:var(--red)">高价值前兆</button>
+            <button>误报</button>
+          </div>
+          <button class="upgrade" id="addToBasket">加入推演输入</button>
+        </section>
+      </aside>
+    </section>
+
+    <section class="basket">
+      <div class="basket-info"><b>推演输入池</b><span>来源：右侧判断后加入，进入下一页继续推演</span></div>
+      <div class="basket-left" id="basket"></div>
+      <a href="worldline-observer.html">进入平行推演</a>
+    </section>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    const colors = { red: "#df4b54", amber: "#d78925", blue: "#2f6df6", green: "#18a873", violet: "#7f63c9" };
+    const metrics = [
+      { id: "raw", label: "原始数据量", value: "12,486", tag: "raw", tone: "blue", filter: "all", sub: "点击查看全量信号" },
+      { id: "new", label: "新增信号", value: "318", tag: "new", tone: "violet", filter: "new", sub: "联动近24h新增" },
+      { id: "weak", label: "弱信号", value: "76", tag: "weak", tone: "amber", filter: "weak", sub: "联动弱信号队列" },
+      { id: "lead", label: "高价值前兆", value: "12", tag: "lead", tone: "red", filter: "lead", sub: "联动P0/P1前兆" },
+      { id: "supports", label: "关联支点数", value: "24", tag: "supports", tone: "green", filter: "supports", sub: "联动支点命中" },
+      { id: "review", label: "待人工标注", value: "42", tag: "review", tone: "blue", filter: "review", sub: "联动待标注状态" },
+      { id: "selected", label: "已选推演输入", value: "", tag: "input", tone: "green", filter: "selected", sub: "联动底部输入池" }
+    ];
+    const signals = [
+      { id: "SIG-001", priority: "P0", tone: "red", title: "补偿标准不一致在两个社区群重复出现", sub: "公开讨论与热线在同区同题聚合", weak: "0.86", novelty: "0.91", meaning: "城市更新", hotspot: ["urban-renewal"], supports: ["补偿标准", "施工扰民", "历史投诉"], evidence: 3, trend: "升温", state: "待观察", kind: ["new", "weak", "lead", "supports", "review"], reason: "该信号同时命中城市更新主线、补偿支点和施工扰民支点，且过去 12 小时持续升温。适合进入推演输入篮，但仍需人工确认事实边界。", sourceRows: [["12345 工单", "2026-04-25 10:00", "可信度 A"], ["社区群讨论", "2026-04-25 09:42", "可信度 B"], ["网格上报", "2026-04-25 09:10", "可信度 B"]] },
+      { id: "SIG-002", priority: "P0", tone: "red", title: "IAEA访问范围被多方解读为“不完整”", sub: "核查可信度受质疑", weak: "0.82", novelty: "0.77", meaning: "核查机制", hotspot: ["urban-renewal"], supports: ["核查机制", "以色列态度"], evidence: 2, trend: "升温", state: "弱信号", kind: ["new", "weak", "lead", "supports"], reason: "该信号与核查机制支点相关，容易牵动后续解释权争夺。当前证据仍需人工确认来源上下文。", sourceRows: [["媒体报道", "2026-04-25 09:20", "可信度 B"], ["论坛讨论", "2026-04-25 08:48", "可信度 C"]] },
+      { id: "SIG-003", priority: "P1", tone: "amber", title: "园区员工集中询问工资发放日期", sub: "企业侧正式回应缺失", weak: "0.78", novelty: "0.69", meaning: "劳资压力", hotspot: ["industrial-labor"], supports: ["薪资发放", "企业回应"], evidence: 2, trend: "升温", state: "待观察", kind: ["new", "weak", "supports", "review"], reason: "信号集中但事实链不足。需要确认是否存在真实延迟、企业是否已有内部说明。", sourceRows: [["匿名讨论", "2026-04-25 10:12", "可信度 B"], ["热线咨询", "2026-04-25 09:34", "可信度 B"]] },
+      { id: "SIG-004", priority: "P1", tone: "amber", title: "某中学家长群出现校园周边安全隐患讨论", sub: "短时升温，现实反馈不足", weak: "0.65", novelty: "0.88", meaning: "校园安全", hotspot: ["campus-safety"], supports: ["家长舆情", "周边安全"], evidence: 4, trend: "持平", state: "待观察", kind: ["new", "weak", "review"], reason: "讨论具备新颖性，但目前没有现场异常和官方反馈，建议暂不进入高风险推演。", sourceRows: [["家长群摘要", "2026-04-25 10:05", "可信度 B"], ["校方公开信息", "2026-04-25 09:30", "可信度 A"]] },
+      { id: "SIG-005", priority: "P2", tone: "amber", title: "施工围挡附近短视频评论出现集中质疑", sub: "可能触发旧改主线情绪复燃", weak: "0.58", novelty: "0.64", meaning: "施工扰民", hotspot: ["urban-renewal"], supports: ["施工扰民", "信息公开"], evidence: 3, trend: "升温", state: "待观察", kind: ["weak", "supports"], reason: "评论集中度上升，但仍缺少线下反馈。可作为旧改主线辅助信号。", sourceRows: [["短视频评论", "2026-04-25 09:22", "可信度 C"], ["网格记录", "2026-04-25 08:55", "可信度 B"]] },
+      { id: "SIG-006", priority: "P2", tone: "blue", title: "枢纽区晚高峰滞留被多个账号转发", sub: "视频异常与热线咨询需要对齐", weak: "0.52", novelty: "0.71", meaning: "交通出行", hotspot: ["transport"], supports: ["客流异常"], evidence: 1, trend: "升温", state: "待观察", kind: ["new", "weak", "review"], reason: "地空证据尚未与热线地点完全对齐。区域重要，因此保留在观察池。", sourceRows: [["视频点位", "2026-04-25 18:04", "可信度 B"]] },
+      { id: "SIG-007", priority: "P3", tone: "blue", title: "医院排队体验出现跨院区相似表达", sub: "影响城市级民生服务感知", weak: "0.41", novelty: "0.33", meaning: "医疗服务", hotspot: ["medical-service"], supports: ["就诊体验"], evidence: 2, trend: "持平", state: "低相关", kind: ["weak"], reason: "信号较分散，暂不进入推演输入篮，仅用于民生服务监测。", sourceRows: [["公开评论", "2026-04-25 11:05", "可信度 C"], ["热线咨询", "2026-04-25 10:40", "可信度 B"]] },
+      { id: "SIG-008", priority: "P2", tone: "blue", title: "多个市场摊主讨论进货价短时波动", sub: "价格话题集中但线下库存稳定", weak: "0.46", novelty: "0.55", meaning: "民生价格", hotspot: ["market-supply"], supports: ["供给预期", "价格波动"], evidence: 2, trend: "持平", state: "待观察", kind: ["weak", "supports"], reason: "该信号具备民生敏感性，但当前没有明显抢购或断供迹象，适合作为价格波动观察输入。", sourceRows: [["市场走访", "2026-04-25 08:40", "可信度 A"], ["公开讨论", "2026-04-25 08:15", "可信度 C"]] },
+      { id: "SIG-009", priority: "P3", tone: "green", title: "低洼点排水井附近出现短时积水反馈", sub: "天气触发型信号，尚未形成连片影响", weak: "0.38", novelty: "0.49", meaning: "城市韧性", hotspot: ["weather-drainage"], supports: ["低洼点", "排水能力"], evidence: 1, trend: "持平", state: "低相关", kind: ["weak", "review"], reason: "该信号依赖天气条件变化，当前作为低洼点观察样本，不建议直接进入高风险推演。", sourceRows: [["网格巡查", "2026-04-25 07:55", "可信度 B"]] }
+    ];
+    let selectedId = "SIG-001";
+    let activeFilter = "all";
+    let hotspotFilter = new URLSearchParams(location.search).get("hotspot") || "";
+    let basket = ["SIG-001", "SIG-003", "SIG-006"];
+    let batchSelected = ["SIG-001", "SIG-005"];
+    let historyExpanded = false;
+    const sourceCorrections = {};
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+    const selected = () => signals.find(s => s.id === selectedId) || signals[0];
+    const matchesFilter = s => {
+      if (activeFilter === "all") return true;
+      if (activeFilter === "selected") return basket.includes(s.id);
+      if (activeFilter === "threshold") return Number(s.weak) >= 0.86;
+      if (activeFilter === "novel") return Number(s.novelty) >= 0.70;
+      if (activeFilter === "source") return s.sourceRows.some(row => /热线|网格|12345/.test(row[0]));
+      return s.kind.includes(activeFilter);
+    };
+    const isVisible = s => matchesFilter(s) && (!hotspotFilter || s.hotspot?.includes(hotspotFilter));
+    const visibleSignals = () => signals.filter(isVisible);
+    const directionMeta = trend => trend === "升温" ? { text: "↑", label: "上升", cls: "up" } : trend === "降温" ? { text: "↓", label: "下降", cls: "down" } : { text: "→", label: "持平", cls: "flat" };
+    const quickFilters = [
+      { id: "lead", label: "只看高价值前兆" },
+      { id: "review", label: "待人工标注" },
+      { id: "selected", label: "已加入输入池" },
+      { id: "all", label: "查看全部" }
+    ];
+    const systemJudgement = s => {
+      if (s.kind.includes("lead")) return "系统判断：可作为推演起点，需人工确认事实边界";
+      if (s.kind.includes("review")) return "系统判断：证据链未闭合，建议先复核后入池";
+      if (basket.includes(s.id)) return "系统判断：已进入输入池，等待与主线合并";
+      return "系统判断：保留观察，不直接触发推演";
+    };
+    const similarPrecursors = s => {
+      const map = {
+        "城市更新": [["旧改补偿口径分歧", "相似度 0.74"], ["施工扰民转为线下问询", "相似度 0.68"]],
+        "核查机制": [["核查访问范围争议", "相似度 0.72"], ["第三方解释权争夺", "相似度 0.66"]],
+        "劳资压力": [["薪资日期集中咨询", "相似度 0.70"], ["企业沉默期话题升温", "相似度 0.63"]],
+        "校园安全": [["家长群隐患讨论扩散", "相似度 0.69"], ["校门周边巡查请求增加", "相似度 0.61"]],
+        "施工扰民": [["短视频评论集中质疑", "相似度 0.67"], ["围挡点位重复投诉", "相似度 0.64"]],
+        "交通出行": [["枢纽滞留视频二次传播", "相似度 0.65"], ["热线与视频点位待对齐", "相似度 0.58"]],
+        "医疗服务": [["跨院区体验表达趋同", "相似度 0.57"], ["排队时长话题反复出现", "相似度 0.54"]],
+        "民生价格": [["摊主进货价讨论集中", "相似度 0.62"], ["库存稳定但预期波动", "相似度 0.56"]],
+        "城市韧性": [["低洼点短时积水反馈", "相似度 0.59"], ["天气触发型投诉样本", "相似度 0.52"]]
+      };
+      return map[s.meaning] || [["同类信号短时聚合", "相似度 0.60"], ["支点变化前置反馈", "相似度 0.55"]];
+    };
+    const evidenceText = (s, idx) => {
+      const rows = [
+        `原文片段：“${s.title}”，同一主题在 ${s.meaning} 相关渠道重复出现。`,
+        `原文片段：“${s.sub}”，语义与${s.supports[0]}支点存在直接关联。`,
+        `原文片段：“需要确认${s.supports[1] || s.meaning}是否存在现实变化”，仍需人工复核上下文。`
+      ];
+      return rows[idx] || rows[0];
+    };
+    const sourceGrade = (s, idx, fallback) => sourceCorrections[`${s.id}-${idx}`] || fallback.replace("可信度 ", "");
+    const similarRows = s => historyExpanded ? similarPrecursors(s).concat([["相邻支点同步波动", "相似度 0.59"], ["人工复核后进入主线", "相似度 0.53"]]) : similarPrecursors(s);
+
+    function renderMetrics() {
+      $("#metrics").innerHTML = metrics.map(m => `
+        <button class="metric ${activeFilter === m.filter ? "active" : ""}" data-filter="${m.filter}" style="--tone:${colors[m.tone]}">
+          <label><span>${m.label}</span><span>${m.tag}</span></label>
+          <b>${m.id === "selected" ? basket.length : m.value}</b>
+          <p>${m.sub}</p>
+        </button>
+      `).join("");
+      $$(".metric").forEach(card => card.addEventListener("click", () => {
+        activeFilter = card.dataset.filter;
+        hotspotFilter = "";
+        renderAll();
+      }));
+    }
+
+    function renderQuickTags() {
+      $("#quickTags").innerHTML = quickFilters.map(item => `
+        <button class="${activeFilter === item.id ? "active" : ""}" data-filter="${item.id}">${item.label}</button>
+      `).join("");
+      $$("#quickTags button").forEach(btn => btn.addEventListener("click", () => {
+        activeFilter = btn.dataset.filter;
+        hotspotFilter = "";
+        renderAll();
+      }));
+    }
+
+    function renderRows() {
+      const rows = visibleSignals();
+      const count = rows.length;
+      const visibleIds = rows.map(s => s.id);
+      const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => batchSelected.includes(id));
+      $("#batchBtn").textContent = allVisibleSelected ? "清空可见" : "全选可见";
+      $("#listCount").textContent = hotspotFilter ? `当前热区 ${count} 条` : activeFilter === "all" ? "共 76 条" : `当前匹配 ${count} 条`;
+      if (!rows.some(s => s.id === selectedId) && rows[0]) selectedId = rows[0].id;
+      $("#signalRows").innerHTML = rows.map(s => `
+        <div class="signal-row ${s.id === selectedId ? "active" : ""}" data-id="${s.id}" style="--tone:${colors[s.tone]}">
+          <span class="select-pri"><button class="check ${batchSelected.includes(s.id) ? "checked" : ""}" data-check="${s.id}" aria-label="选择 ${s.id}">${batchSelected.includes(s.id) ? "✓" : ""}</button><span class="pri">${s.priority}</span></span>
+          <span class="summary"><b>${s.title}</b><span>${s.sub}</span><small>${systemJudgement(s)}</small></span>
+          <span class="num">${s.weak}</span>
+          <span class="num">${s.novelty}</span>
+          <span class="tag">${s.meaning}</span>
+          <span class="tag-list">${s.supports.slice(0, 2).map(x => `<span class="tag">${x}</span>`).join("")}</span>
+          <span>${s.evidence}</span>
+          <span class="trend ${s.trend === "升温" ? "up" : "flat"}">${s.trend}</span>
+          <span class="state" style="--tone:${colors[s.tone]}">${s.state}</span>
+        </div>
+      `).join("");
+      $$(".signal-row").forEach(row => row.addEventListener("click", () => {
+        selectedId = row.dataset.id;
+        renderRows();
+        renderDetail();
+        renderTriageDock();
+      }));
+      $$("[data-check]").forEach(check => check.addEventListener("click", event => {
+        event.stopPropagation();
+        const id = check.dataset.check;
+        batchSelected = batchSelected.includes(id) ? batchSelected.filter(x => x !== id) : batchSelected.concat(id);
+        renderRows();
+        renderTriageDock();
+      }));
+    }
+
+    function renderTriageDock() {
+      const s = selected();
+      const related = signals.filter(item => item.id !== s.id && item.supports.some(x => s.supports.includes(x))).slice(0, 2);
+      const selectedRows = batchSelected.map(id => signals.find(item => item.id === id)).filter(Boolean);
+      const mergeable = selectedRows.length >= 2 && new Set(selectedRows.flatMap(item => item.supports)).size < selectedRows.length * 2.6;
+      $("#triageDock").innerHTML = `
+        <section class="dock-card">
+          <div class="dock-title">已勾选信号处理 <span>${batchSelected.length} 条</span></div>
+          <div class="batch-actions">
+            <button class="primary" data-batch="merge">合并信号</button>
+            <button data-batch="pool">加入输入池</button>
+            <button data-batch="false">标为误报</button>
+          </div>
+          <div class="merge-list">
+            <div class="merge-row"><b>${mergeable ? "合并建议：可以合并" : "合并建议：先保留独立"}</b><span>${mergeable ? "支点重合" : "语义差异"}</span></div>
+            ${(selectedRows.length ? selectedRows : [s]).slice(0, 3).map(x => `<div class="merge-row"><b>${x.id} ${x.title}</b><span>${x.supports[0]}</span></div>`).join("")}
+          </div>
+        </section>
+        <section class="dock-card">
+          <div class="dock-title">当前信号关系 <span>当前信号 · 支点 · 相似项</span></div>
+          <div class="graph-box">
+            <svg viewBox="0 0 320 96" aria-hidden="true">
+              <path d="M62 48 C112 18, 154 20, 204 30" stroke="#d8cdbc" stroke-width="2" fill="none"/>
+              <path d="M62 48 C116 70, 158 74, 218 66" stroke="#d8cdbc" stroke-width="2" fill="none"/>
+              <path d="M204 30 C236 38, 258 45, 292 48" stroke="#d8cdbc" stroke-width="2" fill="none"/>
+            </svg>
+            <span class="graph-node core" style="left:8px;top:36px">${s.id}</span>
+            <span class="graph-node" style="left:126px;top:16px">${s.supports[0]}</span>
+            <span class="graph-node" style="left:132px;top:58px">${s.supports[1] || s.meaning}</span>
+            <span class="graph-node" style="right:8px;top:36px">${related[0]?.id || "候选"}</span>
+          </div>
+        </section>
+        <section class="dock-card">
+          <div class="dock-title">误报复盘依据 <span>近 24h 误报样本</span></div>
+          <div class="false-bars">
+            <div class="false-row"><span>地点错配</span><span><i style="--v:68%"></i></span><b>18</b></div>
+            <div class="false-row"><span>重复转发</span><span><i style="--v:52%"></i></span><b>14</b></div>
+            <div class="false-row"><span>语义误读</span><span><i style="--v:36%"></i></span><b>9</b></div>
+            <button class="mini-action" data-batch="false">查看误报样本</button>
+          </div>
+        </section>
+      `;
+      $$("[data-batch]").forEach(btn => btn.addEventListener("click", () => handleBatchAction(btn.dataset.batch)));
+    }
+
+    function renderDetail() {
+      const s = selected();
+      $("#detail").innerHTML = `
+        <div class="title">信号详情 <span>${s.id}</span></div>
+        <h2>${s.title}</h2>
+        <div class="detail-meta"><span>首次出现：2026-04-24 22:15</span><span class="state" style="--tone:${colors[s.tone]}">${s.priority}</span></div>
+        <div class="score-box">
+          <div class="score-title"><span>评分拆解</span><b>${s.weak}</b></div>
+          <div class="bars">
+            <div class="bar"><span>风险相关度</span><span><i style="--v:${Number(s.weak) * 100}%"></i></span><em>${s.weak}</em></div>
+            <div class="bar"><span>新颖性</span><span><i style="--v:${Number(s.novelty) * 100}%"></i></span><em>${s.novelty}</em></div>
+            <div class="bar"><span>支点关联度</span><span><i style="--v:88%"></i></span><em>0.88</em></div>
+            <div class="bar"><span>情绪变化</span><span><i style="--v:67%"></i></span><em>0.67</em></div>
+          </div>
+        </div>
+        <div class="why"><b>为什么值得进入推演？</b><p>${s.reason}</p></div>
+        <div class="sources"><b>关联支点</b>${s.supports.map((x, index) => {
+          const d = directionMeta(index === 1 && s.trend === "升温" ? "持平" : s.trend);
+          return `<div class="support-row"><span>${x}</span><span class="direction ${d.cls}">${d.text} ${d.label}</span></div>`;
+        }).join("")}</div>
+        <div class="history">
+          <div class="section-head"><b>历史相似前兆</b><button class="link-btn" id="toggleHistory">${historyExpanded ? "收起" : "展开"}</button></div>
+          ${similarRows(s).map(x => `<div class="history-row"><span>${x[0]}</span><span>${x[1]}</span></div>`).join("")}
+        </div>
+        <div class="evidence"><b>证据链与原文片段</b>${s.sourceRows.map((x, index) => {
+          const grade = sourceGrade(s, index, x[2]);
+          return `<div class="evidence-row">
+            <header><span>${x[0]} · ${x[1]}</span><span class="source-adjust" data-source="${s.id}-${index}">
+              ${["A", "B", "C"].map(g => `<button class="${grade === g ? "active" : ""}" data-grade="${g}">${g}</button>`).join("")}
+            </span></header>
+            <p>${evidenceText(s, index)}</p>
+          </div>`;
+        }).join("")}</div>
+      `;
+      $("#toggleHistory").addEventListener("click", () => {
+        historyExpanded = !historyExpanded;
+        renderDetail();
+      });
+      $$(".source-adjust button").forEach(btn => btn.addEventListener("click", event => {
+        event.stopPropagation();
+        const key = btn.closest(".source-adjust").dataset.source;
+        sourceCorrections[key] = btn.dataset.grade;
+        renderDetail();
+        showToast(`来源可信度已校正为 ${btn.dataset.grade}`);
+      }));
+    }
+
+    function renderBasket() {
+      const selectedSignals = basket.map(id => signals.find(s => s.id === id)).filter(Boolean);
+      $("#basket").innerHTML = `
+        ${selectedSignals.map(s => `<span class="chip">${s.id} ${s.title}</span>`).join("")}
+      `;
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function addSelectedToBasket() {
+      if (!basket.includes(selectedId)) {
+        basket.push(selectedId);
+        showToast(`${selectedId} 已加入推演输入池`);
+      } else {
+        showToast(`${selectedId} 已在推演输入池中`);
+      }
+      renderMetrics();
+      renderBasket();
+    }
+
+    function handleBatchAction(action) {
+      const ids = batchSelected.length ? batchSelected : [selectedId];
+      if (action === "merge") {
+        showToast(`已生成 ${ids.length} 条信号的合并候选，保留原始证据链`);
+      }
+      if (action === "pool") {
+        ids.forEach(id => {
+          if (!basket.includes(id)) basket.push(id);
+        });
+        showToast(`已将 ${ids.length} 条信号加入推演输入池`);
+      }
+      if (action === "false") {
+        showToast("已记录误报原因：地点错配 / 重复转发 / 语义误读");
+      }
+      renderAll();
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderQuickTags();
+      $$(".control").forEach(item => item.classList.toggle("active", item.dataset.filter === activeFilter));
+      renderRows();
+      renderDetail();
+      renderTriageDock();
+      renderBasket();
+    }
+
+    $("#addToBasket").addEventListener("click", addSelectedToBasket);
+    $$(".control").forEach(control => control.addEventListener("click", () => {
+      $$(".control").forEach(item => item.classList.remove("active"));
+      control.classList.add("active");
+      if (control.dataset.filter) {
+        activeFilter = control.dataset.filter;
+        hotspotFilter = "";
+        renderAll();
+        $(`.control[data-filter="${control.dataset.filter}"]`)?.classList.add("active");
+        showToast(`已按“${control.textContent.trim()}”筛选信号列表`);
+      } else {
+        showToast(control.dataset.feedback || "筛选条件已更新");
+      }
+    }));
+    $$(".mark-buttons button").forEach(btn => btn.addEventListener("click", () => {
+      $$(".mark-buttons button").forEach(item => item.classList.remove("active"));
+      btn.classList.add("active");
+      showToast(`人工标注已设为：${btn.textContent.trim()}`);
+    }));
+    $$(".pager button").forEach(btn => btn.addEventListener("click", () => {
+      $$(".pager button").forEach(item => item.classList.remove("active"));
+      if (!["‹", "›", "…"].includes(btn.textContent.trim())) btn.classList.add("active");
+      showToast(`已切换到第 ${btn.textContent.trim()} 页`);
+    }));
+    $("#batchBtn").addEventListener("click", () => {
+      const ids = visibleSignals().map(s => s.id);
+      const allSelected = ids.length > 0 && ids.every(id => batchSelected.includes(id));
+      batchSelected = allSelected ? batchSelected.filter(id => !ids.includes(id)) : [...new Set(batchSelected.concat(ids))];
+      $("#batchBtn").textContent = allSelected ? "全选可见" : "清空可见";
+      showToast(allSelected ? "已清空当前可见信号选择" : `已选择当前可见 ${ids.length} 条信号`);
+      renderRows();
+      renderTriageDock();
+    });
+    if (hotspotFilter) {
+      const firstHotspotSignal = signals.find(s => s.hotspot?.includes(hotspotFilter));
+      if (firstHotspotSignal) selectedId = firstHotspotSignal.id;
+      showToast(`已按地图热区筛选：${hotspotFilter}`);
+    }
+    renderAll();
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="iran-narrative-overrides.js?v=20260428-goldenpath1"></script>
+  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+</body>
+</html>

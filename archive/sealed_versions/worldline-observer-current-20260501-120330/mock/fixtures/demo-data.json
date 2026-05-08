@@ -1,0 +1,158 @@
+{
+  "case": {
+    "id": "CASE-IRAN-001",
+    "slug": "iran-war-escalation",
+    "title": "美伊冲突与霍尔木兹通航受限风险",
+    "mainlineId": "ML-001",
+    "worldStateId": "WS-001",
+    "councilId": "COUNCIL-001",
+    "reportId": "REPORT-001",
+    "updatedAt": "2026-04-27 10:30:22",
+    "boundary": "Mock based on public sources. Human review required before external use."
+  },
+  "dashboard": {
+    "metrics": [
+      { "id": "risk-index", "label": "区域风险指数", "value": "84/100", "delta": "+8", "tone": "red" },
+      { "id": "signals", "label": "新增信号", "value": "326", "delta": "+64", "tone": "violet" },
+      { "id": "hormuz", "label": "霍尔木兹通航", "value": "5 艘等待", "delta": "+3", "tone": "red" },
+      { "id": "brent", "label": "Brent 风险溢价", "value": "105", "delta": "+6.4%", "tone": "amber" },
+      { "id": "warming", "label": "72h 升温倾向", "value": "69%", "delta": "+11%", "tone": "red" }
+    ],
+    "goldenFeatureId": "area-hormuz"
+  },
+  "signals": [
+    {
+      "id": "SIG-001",
+      "caseId": "CASE-IRAN-001",
+      "mainlineId": "ML-001",
+      "priority": "P0",
+      "title": "IRGC 临检扩大与霍尔木兹通航风险升温",
+      "summary": "AIS 等待船舶增加、船东论坛讨论保险拒保、相邻港口报价波动同步出现。",
+      "source": "AIS / 船东论坛 / 保险报价",
+      "sourceType": "market-shipping",
+      "regionId": "hormuz",
+      "tags": ["通航受限", "保险风险", "能源溢价"],
+      "confidence": 0.91,
+      "status": "selected_for_mainline",
+      "time": "2026-04-26 22:15",
+      "geo": { "coordinates": [56.25, 26.55], "featureType": "event-point", "relatedRoute": "route-hormuz-eastbound", "impactRadiusKm": 160 },
+      "why": "该信号同时命中通航稳定性、保险风险和能源溢价三个关键支点，适合作为主线起点。",
+      "evidence": [
+        { "source": "AIS 船舶状态", "excerpt": "霍尔木兹东向等待船舶较前一时间窗增加 3 艘。", "credibility": "A" },
+        { "source": "船东论坛", "excerpt": "多名船东提到 War Risk Premium 重新报价。", "credibility": "B" },
+        { "source": "保险经纪摘要", "excerpt": "部分承保方要求重新确认航线风险。", "credibility": "B" }
+      ]
+    },
+    {
+      "id": "SIG-012",
+      "caseId": "CASE-IRAN-001",
+      "mainlineId": "ML-001",
+      "priority": "P1",
+      "title": "G7 护航机制讨论压低极端封锁预期",
+      "summary": "护航讨论降低长期封锁概率，但短期临检边界仍不清晰。",
+      "source": "G7 声明 / 海湾国家表态",
+      "sourceType": "diplomatic",
+      "regionId": "hormuz",
+      "tags": ["外交缓和", "护航机制", "通航规则"],
+      "confidence": 0.72,
+      "status": "selected_for_mainline",
+      "time": "2026-04-27 08:50",
+      "geo": { "coordinates": [55.35, 25.85], "featureType": "event-point", "relatedRoute": "route-hormuz-eastbound", "impactRadiusKm": 220 },
+      "why": "这是缓和支点，但必须和 AIS 实测通航率一起判断，不能单独证明风险解除。",
+      "evidence": [
+        { "source": "G7 声明", "excerpt": "各方讨论海峡护航与能源安全协调。", "credibility": "A" },
+        { "source": "海湾评论", "excerpt": "市场关注护航边界是否覆盖高风险水域。", "credibility": "B" }
+      ]
+    },
+    {
+      "id": "SIG-017",
+      "caseId": "CASE-IRAN-001",
+      "mainlineId": "ML-001",
+      "priority": "P1",
+      "title": "战争险附加费与 Brent 风险溢价同步上行",
+      "summary": "航运保险报价与能源价格在同一时间窗出现上行，说明风险已经进入资产定价。",
+      "source": "保险报价 / 市场数据 / 能源评论",
+      "sourceType": "market-energy",
+      "regionId": "hormuz",
+      "tags": ["能源市场", "战争险", "风险溢价"],
+      "confidence": 0.87,
+      "status": "selected_for_mainline",
+      "time": "2026-04-27 09:20",
+      "geo": { "coordinates": [55.9, 26.3], "featureType": "impact-point", "relatedRoute": "route-hormuz-eastbound", "impactRadiusKm": 260 },
+      "why": "它不是事实起点，但能证明通航不确定性已外溢到市场端，是进入推演的核心支撑。",
+      "evidence": [
+        { "source": "保险报价", "excerpt": "部分油轮航线报价加入额外风险附加项。", "credibility": "B" },
+        { "source": "能源评论", "excerpt": "Brent 风险溢价被重新讨论。", "credibility": "B" }
+      ]
+    }
+  ],
+  "mainlines": [
+    {
+      "id": "ML-001",
+      "caseId": "CASE-IRAN-001",
+      "title": "霍尔木兹通航受限与能源外溢主线",
+      "status": "pending_confirmation",
+      "signals": ["SIG-001", "SIG-012", "SIG-017"],
+      "triggerClusters": ["临检范围扩大", "保险重新报价", "护航机制边界不清"],
+      "supportPoints": ["通航稳定性", "能源风险溢价", "外交缓和窗口"],
+      "evidenceGaps": ["真实通航率", "护航执行边界", "IAEA 核查窗口"],
+      "confidence": 0.88
+    }
+  ],
+  "worldStates": [
+    {
+      "id": "WS-001",
+      "mainlineId": "ML-001",
+      "title": "霍尔木兹通航受限 World State",
+      "status": "world_state_ready",
+      "inputs": ["SIG-001", "SIG-012", "SIG-017"],
+      "confirmedBy": "analyst-demo",
+      "confirmedAt": "2026-04-27 10:12:00"
+    }
+  ],
+  "worldlineNodes": [
+    { "id": "NODE-S0", "title": "临检标准不明确讨论", "step": 0, "branch": "root", "probability": 52, "risk": 52 },
+    { "id": "NODE-B1", "title": "船东论坛讨论发酵", "step": 1, "branch": "B", "probability": 68, "risk": 61 },
+    { "id": "NODE-C3", "title": "通航限制升级风险", "step": 3, "branch": "C", "probability": 41, "risk": 82, "needsCouncil": true },
+    { "id": "NODE-A4", "title": "护航规则明确后缓和", "step": 4, "branch": "A", "probability": 28, "risk": 38 }
+  ],
+  "agents": [
+    { "id": "agent-iran", "name": "伊朗决策层", "stance": "以通航筹码换取压力回撤", "tone": "red" },
+    { "id": "agent-us", "name": "美国安全决策", "stance": "维持威慑并避免全面封锁", "tone": "blue" },
+    { "id": "agent-gulf", "name": "海湾国家", "stance": "优先维持能源设施与通道稳定", "tone": "amber" },
+    { "id": "agent-insurance", "name": "航运保险", "stance": "要求可验证护航边界与临检规则", "tone": "violet" },
+    { "id": "agent-energy", "name": "能源市场", "stance": "对不确定性快速计入风险溢价", "tone": "green" }
+  ],
+  "councilResults": [
+    {
+      "id": "COUNCIL-001",
+      "nodeId": "NODE-C3",
+      "status": "ready_to_inject",
+      "hypothesis": "如果 G7 只发布“正在协调护航”的模糊回应，会如何影响霍尔木兹后续路径？",
+      "pivotChanges": [
+        { "name": "通航稳定性", "delta": -0.08 },
+        { "name": "战争险风险", "delta": 0.10 },
+        { "name": "能源风险溢价", "delta": 0.11 }
+      ],
+      "branchChanges": [
+        { "branch": "C", "from": 32, "to": 41 },
+        { "branch": "A", "from": 28, "to": 24 }
+      ],
+      "summary": "模糊护航回应无法压低临检不确定性，保险与能源市场仍会把风险向上重估。"
+    }
+  ],
+  "reports": [
+    {
+      "id": "REPORT-001",
+      "caseId": "CASE-IRAN-001",
+      "mainlineId": "ML-001",
+      "finalJudgement": "当前主线未完全缓和，C 线“通航限制升级”仍为主要风险路径。",
+      "documents": ["世界线推演结果报告 PDF", "多方主体研判纪要 PDF", "霍尔木兹证据链分册 PDF", "行动建议清单 DOCX", "董事会简报 PPTX"]
+    }
+  ],
+  "tasks": [
+    { "id": "TASK-001", "title": "发布护航范围与临检规则说明", "owner": "安全研究组", "due": "24h 内", "status": "suggested" },
+    { "id": "TASK-002", "title": "补充 AIS 等待船舶与保险报价样本", "owner": "数据组", "due": "12h 内", "status": "in_progress" },
+    { "id": "TASK-003", "title": "建立 G7 / 海湾国家护航行动监测表", "owner": "政策组", "due": "6h 更新", "status": "suggested" }
+  ]
+}

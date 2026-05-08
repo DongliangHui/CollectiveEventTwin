@@ -1,0 +1,197 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 完整业务流程</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    button, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+    .app { height: 100dvh; min-height: 900px; display: grid; grid-template-rows: 56px 1fr; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 360px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark { width: 25px; height: 25px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #7bd0ff); position: relative; }
+    .brand-mark::after { content: ""; position: absolute; left: 7px; top: 3px; width: 4px; height: 20px; border-radius: 3px; background: white; transform: rotate(42deg); }
+    .mode-tabs { justify-self: center; display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 16px; background: #e8e1d6; }
+    .mode-tabs a { min-width: 64px; height: 34px; display: grid; place-items: center; padding: 0 14px; border-radius: 12px; color: var(--muted); font-weight: 800; }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+    .workspace { min-height: 0; display: grid; grid-template-columns: 1.22fr .78fr; gap: 12px; padding: 14px; }
+    .panel { min-width: 0; min-height: 0; border: 1px solid rgba(216,205,188,.92); border-radius: var(--r); background: var(--panel); box-shadow: var(--soft); overflow: hidden; }
+    .pad { padding: 18px; }
+    .hero { display: grid; grid-template-rows: auto 1fr auto; gap: 16px; }
+    h1 { margin: 0; font-size: 30px; line-height: 1.08; }
+    .lead { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; max-width: 860px; }
+    .flow-map { position: relative; min-height: 0; padding: 10px 0; }
+    .flow-line { position: absolute; left: 46px; right: 40px; top: 50%; height: 2px; background: var(--line); }
+    .stage-grid { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; height: 100%; align-items: center; }
+    .stage {
+      min-height: 280px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,253,247,.78);
+      text-align: left;
+      transition: transform .22s var(--ease), border-color .22s var(--ease), background .22s var(--ease);
+    }
+    .stage:hover, .stage.active { transform: translateY(-2px); border-color: var(--ink); background: var(--panel-solid); }
+    .stage i { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid)); color: var(--tone); font-style: normal; font-weight: 900; }
+    .stage b { font-size: 15px; line-height: 1.25; }
+    .stage p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.48; }
+    .stage a { min-height: 32px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-solid); font-size: 12px; font-weight: 900; }
+    .bottom-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .bottom-actions span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .primary-btn { min-height: 38px; display: inline-grid; place-items: center; padding: 0 14px; border-radius: 11px; background: var(--ink); color: white; font-size: 13px; font-weight: 900; }
+    .side { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 900; }
+    .title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .detail h2 { margin: 0; font-size: 22px; line-height: 1.15; }
+    .detail p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .detail-list { display: grid; gap: 8px; margin-top: 14px; }
+    .detail-list div { padding: 10px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,253,247,.68); color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .detail-list b { color: var(--ink); }
+    .checklist { display: grid; gap: 8px; }
+    .checklist div { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.68); font-size: 12px; color: var(--muted); font-weight: 800; }
+    .checklist i { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: rgba(24,168,115,.12); color: var(--green); font-style: normal; font-size: 11px; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs">
+        <a class="active" href="workflow-overview.html">流程</a>
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status"><span>完整闭环 <strong>6 个业务页面</strong></span><span>可点击路径已串联</span><i class="live-dot"></i></div>
+    </header>
+    <main class="workspace">
+      <section class="panel pad hero">
+        <div>
+          <h1>从城市风险发现到世界线推演，再到处置闭环</h1>
+          <p class="lead">这条 Demo 主线不是展示单点能力，而是展示系统如何把多源数据变成可解释主线，再通过平行世界推演和多主体研判生成行动方案，并把结果回流到数据、主线和案例库。</p>
+        </div>
+        <div class="flow-map">
+          <div class="flow-line"></div>
+          <div class="stage-grid" id="stageGrid"></div>
+        </div>
+        <div class="bottom-actions">
+          <span>建议路演顺序：驾驶舱 1 分钟，数据与主线 3 分钟，世界线与会议 4 分钟，汇报闭环 2 分钟。</span>
+          <a class="primary-btn" href="risk-dashboard.html">开始完整流程</a>
+        </div>
+      </section>
+      <aside class="side">
+        <section class="panel pad detail">
+          <div class="title">当前阶段说明 <span id="stageNo">01</span></div>
+          <h2 id="detailTitle"></h2>
+          <p id="detailDesc"></p>
+          <div class="detail-list" id="detailList"></div>
+        </section>
+        <section class="panel pad">
+          <div class="title">业务闭环校验 <span>必须成立</span></div>
+          <div class="checklist">
+            <div><i>✓</i><span>每个页面主题明确，不让一个页面承担过多业务语义。</span></div>
+            <div><i>✓</i><span>每个关键按钮都有反馈或跳转，避免静态展示。</span></div>
+            <div><i>✓</i><span>推演结果会回流到任务、监测、案例沉淀，不止生成报告。</span></div>
+            <div><i>✓</i><span>Agent Council 是结构化会议，不是泛聊天窗口。</span></div>
+          </div>
+        </section>
+        <section class="panel pad">
+          <div class="title">输出资产 <span>最终交付</span></div>
+          <div class="detail-list">
+            <div><b>页面：</b>驾驶舱、数据中枢、主线工作台、世界线推演、Agent Council、推演汇报。</div>
+            <div><b>状态：</b>World State 输入包、Agent Council 结果注入、处置任务与结果回流。</div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <script>
+    const stages = [
+      { id: "dash", no: "01", title: "风险主控台", href: "risk-dashboard.html", tone: "blue", desc: "从全城态势、热点区域、候选风险主线中发现需要下钻的问题。", points: ["城市空间态势图与热区提示", "候选风险主线队列", "高价值弱信号和人工复核入口"] },
+      { id: "data", no: "02", title: "数据中枢", href: "data-hub.html", tone: "green", desc: "管理数据源质量，并让用户主动检索、抓取相似数据。", points: ["数据源健康、覆盖、可信度", "同渠道/同标签/同区域检索", "加入主线草稿篮"] },
+      { id: "mainline", no: "03", title: "主线工作台", href: "mainline-builder.html", tone: "amber", desc: "把零散线索组织成可解释主线，并确认 World State 输入包。", points: ["问题线索识别", "主线结构图与支点解释", "证据缺口与人工确认"] },
+      { id: "world", no: "04", title: "世界线推演", href: "worldline-observer.html", tone: "violet", desc: "沿时间线观察多种未来可能，选择节点查看状态、证据和变化。", points: ["平行分支逐步呈现", "节点前后路径高亮", "自然语言假设继续推演"] },
+      { id: "council", no: "05", title: "Agent Council", href: "agent-council.html", tone: "red", desc: "围绕当前节点进行多主体研判，把会议结果注入世界线重跑。", points: ["多轮主体反应", "支点和概率变化面板", "假设压力测试"] },
+      { id: "brief", no: "06", title: "推演汇报", href: "decision-brief.html", tone: "green", desc: "输出决策摘要、行动方案、任务跟踪和结果回流。", points: ["最终分支概率和关键路径", "处置建议与责任任务", "监测回流和案例沉淀"] }
+    ];
+    stages[0].title = "风险驾驶舱";
+    stages[0].desc = "通过真实地图态势层观察中东主战区，识别霍尔木兹、红海、黎巴嫩南部等空间风险。";
+    stages[0].points = ["MapLibre + OSM 真实底图", "风险区域、事件点、航运路径和影响范围", "点击地图要素联动候选主线"];
+    const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+    let active = "dash";
+    function render() {
+      $("#stageGrid").innerHTML = stages.map(s => `
+        <button class="stage ${active === s.id ? "active" : ""}" data-stage="${s.id}" style="--tone:${colors[s.tone]}">
+          <i>${s.no}</i><b>${s.title}</b><p>${s.desc}</p><a href="${s.href}">进入页面</a>
+        </button>
+      `).join("");
+      const stage = stages.find(s => s.id === active);
+      $("#stageNo").textContent = stage.no;
+      $("#detailTitle").textContent = stage.title;
+      $("#detailDesc").textContent = stage.desc;
+      $("#detailList").innerHTML = stage.points.map(p => `<div><b>关键表达：</b>${p}</div>`).join("");
+      $$(".stage").forEach(btn => btn.addEventListener("click", event => {
+        if (event.target.tagName.toLowerCase() === "a") return;
+        active = btn.dataset.stage;
+        render();
+      }));
+    }
+    render();
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="iran-narrative-overrides.js?v=20260428-goldenpath1"></script>
+  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+</body>
+</html>

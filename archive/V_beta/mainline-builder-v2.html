@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WORLDLINE OBSERVER · 主线建模确认 v2</title>
+<style>
+:root{
+  --nav:#071526;--bg:#f5efe6;--paper:#fffdf8;--panel:rgba(255,253,248,.94);--paper2:#fbf8f1;
+  --ink:#111820;--muted:#66717d;--line:#d9cebd;
+  --blue:#2f6df6;--red:#df4b54;--green:#18a873;--amber:#d78925;--violet:#7f63c9;--cyan:#009fb7;
+  --shadow:0 10px 24px rgba(42,34,22,.075);--strong:0 18px 48px rgba(42,34,22,.13);--r:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;width:100vw;height:100vh;min-width:1480px;min-height:900px;overflow:hidden;color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;font-variant-numeric:tabular-nums;
+  background:radial-gradient(circle at 18% 8%,rgba(47,109,246,.08),transparent 30%),
+             radial-gradient(circle at 82% 6%,rgba(215,137,37,.10),transparent 28%),
+             linear-gradient(180deg,#fbf8f1 0%,var(--bg) 100%);
+}
+button,a,input,textarea,select{font:inherit;color:inherit;text-decoration:none}
+button{border:0;background:transparent;cursor:pointer}
+.app{height:100vh;display:grid;grid-template-rows:58px 66px 84px minmax(0,1fr) 178px 54px}
+
+/* top flow */
+.topbar{display:grid;grid-template-columns:330px 1fr 150px;align-items:center;gap:18px;padding:0 18px;background:var(--nav);color:#f2f7ff;box-shadow:0 10px 30px rgba(7,21,38,.20);z-index:10}
+.brand{display:flex;gap:12px;align-items:center;font-weight:950;letter-spacing:.08em;white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7bd0ff);position:relative;box-shadow:0 0 0 6px rgba(47,109,246,.10)}
+.mark:after{content:"";position:absolute;left:8px;top:4px;width:4px;height:22px;border-radius:3px;background:#fff;transform:rotate(42deg)}
+.brand small{display:block;margin-top:2px;color:rgba(242,247,255,.62);font-size:11px;letter-spacing:0}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.flow a{height:46px;display:grid;grid-template-columns:28px 1fr;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(255,255,255,.045);color:rgba(242,247,255,.78);font-size:12px;font-weight:900;text-align:left;min-width:0}
+.flow i{width:24px;height:24px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.24);font-style:normal}
+.flow span{display:block;margin-top:1px;color:rgba(242,247,255,.48);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow .active{background:#fffdf8;color:var(--blue);box-shadow:0 12px 26px rgba(0,0,0,.24)}
+.flow .active i{background:var(--blue);border-color:var(--blue);color:#fff}
+.flow .active span{color:#5d6774}
+.top-tools{display:flex;justify-content:flex-end;align-items:center;gap:14px;font-size:19px}
+.avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#071526}
+
+/* header */
+.context{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid rgba(217,206,189,.85);background:rgba(255,253,248,.84);backdrop-filter:blur(12px)}
+.btn,.select,.mini,.outline,.primary{min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--muted);font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(42,34,22,.04)}
+.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.context h1{margin:0;font-size:20px;line-height:1.18}
+.context p{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:800}
+.hot{padding:3px 8px;border-radius:999px;background:rgba(47,109,246,.10);color:var(--blue);font-size:11px;font-weight:950}
+.controls{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px;font-weight:900}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 6px rgba(24,168,115,.15)}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin:8px 18px;border:1px solid rgba(217,206,189,.88);border-radius:15px;background:var(--paper);box-shadow:var(--shadow);overflow:hidden}
+.metric{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-right:1px solid rgba(217,206,189,.70);min-width:0}
+.metric:last-child{border-right:0}
+.ico{width:38px;height:38px;display:grid;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--tone) 14%,white);color:var(--tone);font-size:18px;font-weight:950}
+.metric label{display:block;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
+.metric strong{display:inline-block;margin-top:6px;font-size:24px;line-height:1;letter-spacing:-.04em}
+.metric small{display:inline-block;margin-left:5px;color:var(--tone);font-size:12px;font-weight:900}
+.progressbar{width:78px;height:7px;border-radius:999px;background:#e8dfd4;overflow:hidden}
+.progressbar i{display:block;width:78%;height:100%;background:var(--green)}
+
+/* layout */
+.main{min-height:0;display:grid;grid-template-columns:304px minmax(760px,1fr) 380px;gap:10px;padding:0 18px 8px}
+.panel{min-width:0;min-height:0;background:var(--panel);border:1px solid rgba(217,206,189,.9);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-title{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;font-weight:950}
+.panel-title span{color:var(--muted);font-size:11px;font-weight:800}
+.more{min-height:24px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper2);font-size:11px;font-weight:900;color:var(--ink)}
+
+.left{display:grid;grid-template-rows:minmax(0,1fr) 238px;gap:10px}
+.left-card{padding:0 12px 12px;overflow:auto;scrollbar-width:none}.left-card::-webkit-scrollbar{display:none}
+.signal-pack{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;min-height:54px;padding:8px;border:1px solid var(--line);border-radius:12px;background:rgba(255,253,248,.75);margin-bottom:7px;font-size:12px;font-weight:900}
+.signal-pack.active{border-color:var(--blue);background:rgba(47,109,246,.06);box-shadow:inset 3px 0 0 var(--blue)}
+.signal-pack i{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--tone) 14%,white);color:var(--tone);font-style:normal;font-weight:950}
+.signal-pack small{display:block;margin-top:3px;color:var(--muted);font-size:10px;font-weight:800}
+.pack-score{text-align:right;color:var(--muted);font-size:10px}
+.pack-score b{display:block;color:var(--ink);font-size:12px}
+
+.candidate-list{padding:0 12px 12px;display:grid;gap:7px}
+.candidate-tab{display:flex;gap:5px;padding:0 12px 8px}
+.candidate-tab button{flex:1;height:25px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font-size:10px;font-weight:900}
+.candidate-tab .active{border-color:var(--ink);color:var(--ink)}
+.mainline-card{padding:9px;border:1px solid var(--line);border-radius:12px;background:rgba(255,253,248,.74);font-size:12px;font-weight:900}
+.mainline-card.active{border-color:var(--blue);background:rgba(47,109,246,.06)}
+.mainline-card b{display:block;line-height:1.3}
+.mainline-card small{display:block;margin-top:5px;color:var(--muted);font-size:10px}
+
+/* center graph */
+.center{display:grid;grid-template-rows:62px minmax(0,1fr);min-height:0}
+.canvas-head{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(217,206,189,.72)}
+.current{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px;font-weight:900;margin-top:4px}
+.current b{color:var(--ink);font-size:12px}.pill{padding:3px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--tone) 40%,var(--line));background:color-mix(in srgb,var(--tone) 10%,white);color:var(--tone);font-size:10px;font-weight:950}
+.view-tabs{display:flex;gap:6px}.view-tabs button{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--muted);font-size:11px;font-weight:900}.view-tabs .active{background:#4b5563;border-color:#4b5563;color:#fff}
+.graph{position:relative;overflow:hidden;padding:14px;background:linear-gradient(rgba(217,206,189,.24) 1px,transparent 1px),linear-gradient(90deg,rgba(217,206,189,.24) 1px,transparent 1px),rgba(255,253,248,.35);background-size:24px 24px}
+.connection{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.connection path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lanes{position:relative;z-index:1;height:100%;display:grid;grid-template-columns:.9fr 1fr 1fr 1fr 1fr 1fr 1fr;gap:12px}
+.lane{display:grid;grid-template-rows:36px minmax(0,1fr);gap:10px}
+.lane-head{display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tone) 28%,var(--line));border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--tone) 18%,#fffdf8),color-mix(in srgb,var(--tone) 8%,#fffdf8));color:var(--tone);font-size:12px;font-weight:950}
+.lane-body{display:flex;flex-direction:column;justify-content:center;gap:11px}
+.node{position:relative;min-height:56px;padding:9px 9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.94);box-shadow:0 8px 18px rgba(48,38,22,.055);font-size:11px;font-weight:900;text-align:left}
+.node.active{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,109,246,.12),var(--shadow)}
+.node b{display:block;line-height:1.28}
+.node small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.32}
+.node em{position:absolute;right:8px;top:8px;color:var(--tone);font-style:normal;font-size:10px}
+.confirm{min-height:150px;display:grid;align-content:center;text-align:center}
+.confirm h3{margin:0;font-size:13px}.confirm p{margin:8px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
+.add-node{min-height:30px;border:1px dashed color-mix(in srgb,var(--tone) 45%,var(--line));border-radius:10px;color:var(--tone);font-size:12px;font-weight:900;background:rgba(255,253,248,.6)}
+
+/* right */
+.right{display:grid;grid-template-rows:minmax(0,1fr) 178px 158px;gap:10px}
+.report{display:grid;grid-template-rows:42px minmax(0,1fr) auto}
+.report-body{padding:0 12px 12px;display:grid;gap:8px;overflow:auto;scrollbar-width:none}.report-body::-webkit-scrollbar{display:none}
+.report-block{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,253,248,.72);font-size:12px;line-height:1.48;font-weight:800}
+.report-block:first-child{border-color:rgba(47,109,246,.28);background:rgba(47,109,246,.055)}
+.report-block b{display:block;margin-bottom:5px;font-size:12px}
+.report-block p,.report-block ul{margin:0;color:var(--muted)}.report-block ul{padding-left:16px}
+.report-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.report-kpis div{padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--paper);font-size:10px;color:var(--muted);font-weight:900}.report-kpis b{display:block;margin-top:4px;font-size:14px;color:var(--ink)}
+.manual{padding:12px}.manual-grid{display:grid;gap:8px;margin-top:8px}.manual-grid label{display:grid;grid-template-columns:86px 1fr;gap:8px;align-items:center;font-size:11px;font-weight:900;color:var(--muted)}.manual-grid input{height:30px;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:0 8px;font-size:11px;color:var(--ink)}
+.check{padding:12px}.check-list{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;margin:8px 0}.check-item{font-size:11px;color:var(--muted);font-weight:900;display:flex;align-items:center;gap:6px}.check-item:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(24,168,115,.12)}.check-item.warn:before{background:var(--amber);box-shadow:0 0 0 3px rgba(215,137,37,.12)}
+
+/* bottom quality */
+.quality{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 18px 10px}
+.quality .panel{padding:12px}.quality-list{display:grid;gap:7px}.quality-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;font-size:11px;font-weight:800;color:var(--muted)}.quality-row b{display:block;color:var(--ink);font-size:12px}.quality-row small{display:block;margin-top:2px}.quality-row button{height:24px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:10px;font-weight:900}
+
+/* bottom flow */
+.bottom-flow{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;padding:8px 18px;border-top:1px solid rgba(217,206,189,.82);background:rgba(255,253,248,.76)}
+.bottom-flow a,.bottom-flow button{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.78);text-align:left;color:var(--muted);font-size:11px;font-weight:900}
+.bottom-flow b{display:block;color:var(--ink);font-size:12px}.bottom-flow .active{border-color:var(--green);background:rgba(24,168,115,.08);color:var(--green)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span><div><span>WORLDLINE OBSERVER</span><small>主线建模确认</small></div></div>
+    <nav class="flow">
+      <a href="#"><i>1</i><b>城市态势<span>发现城市正在发生的事</span></b></a>
+      <a href="#"><i>2</i><b>主题态势<span>聚合分析热点主题</span></b></a>
+      <a href="#"><i>3</i><b>数据 / 信号<span>汇集主线材料</span></b></a>
+      <a href="#"><i>4</i><b>证据复核<span>确认可用证据</span></b></a>
+      <a class="active" href="#"><i>5</i><b>主线建模<span>生成推演输入包</span></b></a>
+      <a href="#"><i>6</i><b>世界线推演<span>推演可能路径</span></b></a>
+    </nav>
+    <div class="top-tools"><button>♧</button><button>?</button><button class="avatar">●</button></div>
+  </header>
+
+  <section class="context">
+    <button class="btn">← 返回证据复核</button>
+    <div>
+      <h1>主线建模：武林商圈停车收费争议 <span class="hot">候选主线 ML-001</span></h1>
+      <p>把已复核信号组织为“情绪、诉求、扩散、破圈、不确定性”驱动的概率主线，并生成 World State 输入包。</p>
+    </div>
+    <div class="controls">
+      <span>建模批次：batch-20250515-001</span><span class="live-dot"></span><span>已保存</span><button class="btn">导出结构</button>
+    </div>
+  </section>
+
+  <section class="metrics" id="metrics"></section>
+
+  <main class="main">
+    <aside class="left">
+      <section class="panel">
+        <div class="panel-title">输入信号包 <span>来自证据复核</span></div>
+        <div class="left-card" id="signalPacks"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">候选主线池 <button class="more">+ 新建</button></div>
+        <div class="candidate-tab"><button class="active">系统建议</button><button>人工草稿</button><button>已确认</button></div>
+        <div class="candidate-list" id="candidatePool"></div>
+      </section>
+    </aside>
+
+    <section class="panel center">
+      <header class="canvas-head">
+        <div><div class="panel-title" style="height:auto;padding:0">主线结构图谱</div><div class="current">当前主线 <b>收费规则争议 → 同城情绪升温 → 视频扩散放大</b><span class="pill" style="--tone:var(--blue)">概率 65%</span></div></div>
+        <div class="view-tabs"><button class="active">结构图</button><button>证据链</button><button>时间线</button><button>全屏</button></div>
+      </header>
+      <div class="graph">
+        <svg class="connection" viewBox="0 0 1000 560" preserveAspectRatio="none">
+          <path d="M80 285 C190 210 220 210 300 228" stroke="rgba(47,109,246,.75)" stroke-width="3"/>
+          <path d="M80 285 C190 330 220 330 300 330" stroke="rgba(47,109,246,.55)" stroke-width="2"/>
+          <path d="M300 260 C410 220 430 220 505 240" stroke="rgba(127,99,201,.7)" stroke-width="3"/>
+          <path d="M505 260 C610 210 630 210 705 230" stroke="rgba(215,137,37,.75)" stroke-width="3"/>
+          <path d="M705 260 C805 230 830 230 920 250" stroke="rgba(24,168,115,.75)" stroke-width="3"/>
+          <path d="M705 320 C810 350 830 350 920 330" stroke="rgba(223,75,84,.55)" stroke-width="2" stroke-dasharray="6 6"/>
+        </svg>
+        <div class="lanes">
+          <div class="lane" style="--tone:var(--blue)"><div class="lane-head">信号簇</div><div class="lane-body"><div class="node active" style="--tone:var(--blue)"><b>短视频吐槽集中出现</b><small>视频18条 / 直播6场</small><em>18</em></div><div class="node" style="--tone:var(--blue)"><b>本地论坛讨论升温</b><small>同城讨论占比 78%</small><em>342</em></div><div class="node" style="--tone:var(--blue)"><b>评论中收费依据诉求集中</b><small>高频词：依据 / 透明 / 过高</small><em>1.2k</em></div></div></div>
+          <div class="lane" style="--tone:var(--violet)"><div class="lane-head">诉求 / 情绪聚合</div><div class="lane-body"><div class="node" style="--tone:var(--violet)"><b>收费依据透明</b><small>核心诉求 0.82</small></div><div class="node" style="--tone:var(--violet)"><b>价格合理性质疑</b><small>负向情绪 62%</small></div><div class="node" style="--tone:var(--violet)"><b>服务体验不满</b><small>周边商圈扩散中</small></div></div></div>
+          <div class="lane" style="--tone:var(--amber)"><div class="lane-head">主叙事形成</div><div class="lane-body"><div class="node" style="--tone:var(--amber)"><b>“商圈停车收费是否合理”</b><small>主叙事概率 0.65</small></div><div class="node" style="--tone:var(--amber)"><b>“公共服务回应是否及时”</b><small>回应缺口相关</small></div><button class="add-node" style="--tone:var(--amber)">添加叙事</button></div></div>
+          <div class="lane" style="--tone:var(--green)"><div class="lane-head">扩散路径</div><div class="lane-body"><div class="node" style="--tone:var(--green)"><b>短视频首发</b><small>11:15 出现首条高热视频</small></div><div class="node" style="--tone:var(--green)"><b>同城评论升温</b><small>30分钟 +128%</small></div><div class="node" style="--tone:var(--green)"><b>跨平台搬运</b><small>微博 / 小红书 / 论坛</small></div></div></div>
+          <div class="lane" style="--tone:var(--red)"><div class="lane-head">关键不确定性</div><div class="lane-body"><div class="node" style="--tone:var(--red)"><b>原始视频是否完整</b><small>影响内容真实性</small></div><div class="node" style="--tone:var(--red)"><b>收费依据是否可核验</b><small>影响诉求回应</small></div><div class="node" style="--tone:var(--red)"><b>同城情绪是否具代表性</b><small>影响破圈概率</small></div></div></div>
+          <div class="lane" style="--tone:var(--blue)"><div class="lane-head">候选主线</div><div class="lane-body"><div class="node confirm" style="--tone:var(--blue)"><h3>收费规则争议 → 市民不满集中表达 → 同城讨论升温 → 视频传播放大</h3><p>主线成立概率：65%<br>置信度：中高<br>破圈可能：中等偏高</p><button class="primary" style="margin-top:10px">确认为主线</button></div></div></div>
+          <div class="lane" style="--tone:var(--cyan)"><div class="lane-head">推演输入包</div><div class="lane-body"><div class="node confirm" style="--tone:var(--cyan)"><h3>World State 输入包</h3><p>核心诉求：收费依据透明<br>主要情绪：不满 / 质疑<br>扩散源：短视频 + 评论<br>不确定性：3项</p><button class="primary" style="margin-top:10px">生成输入包</button></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <section class="panel report">
+        <div class="panel-title">主线判定报告 <span>不是确定结论</span></div>
+        <div class="report-body">
+          <div class="report-block"><b>当前候选主线</b><p>收费规则争议 → 市民不满集中表达 → 同城讨论升温 → 视频传播放大。</p></div>
+          <div class="report-kpis"><div>成立概率<b>65%</b></div><div>置信度<b>中高</b></div><div>破圈可能<b>58%</b></div></div>
+          <div class="report-block"><b>主要情绪 / 诉求</b><ul><li>不满、质疑、要求解释</li><li>收费依据透明、价格是否合理、回应渠道</li></ul></div>
+          <div class="report-block"><b>主要扩散源</b><p>短视频 + 同城评论 + 本地论坛。视频内容作为最强传播载体，评论区诉求聚合明显。</p></div>
+          <div class="report-block"><b>关键证据缺口</b><ul><li>收费标准来源是否清楚</li><li>现场视频是否代表普遍情况</li><li>是否存在旧案被重新带入</li></ul></div>
+          <div class="report-block"><b>是否可带缺口进入推演</b><p>可以，但需将 3 个缺口标记为不确定性变量。</p></div>
+        </div>
+      </section>
+      <section class="panel manual">
+        <div class="panel-title">人工确认项 <span>待填写</span></div>
+        <div class="manual-grid">
+          <label><span>主线名称</span><input value="停车收费争议与同城情绪升温主线"></label>
+          <label><span>依据说明</span><input value="短视频与评论信号共同支撑"></label>
+          <label><span>备注</span><input placeholder="可选"></label>
+        </div>
+      </section>
+      <section class="panel check">
+        <div class="panel-title">进入推演前检查</div>
+        <div class="check-list"><span class="check-item">核心诉求已确认</span><span class="check-item">扩散源已确认</span><span class="check-item">主要情绪已确认</span><span class="check-item warn">证据缺口 3 项</span><span class="check-item">候选主线已生成</span><span class="check-item">可带缺口进入</span></div>
+        <button class="primary" style="width:100%;margin-top:8px">确认主线并生成推演输入包</button>
+        <button class="outline" style="width:100%;margin-top:8px">带缺口确认并生成输入包</button>
+      </section>
+    </aside>
+  </main>
+
+  <section class="quality">
+    <section class="panel"><div class="panel-title">建模质量控制 <span>优先补充</span></div><div class="quality-list"><div class="quality-row"><span><b>原始视频完整性待核验</b><small>影响内容真实性</small></span><button>补证</button></div><div class="quality-row"><span><b>收费依据文件待补充</b><small>影响回应缺口判断</small></span><button>补证</button></div><div class="quality-row"><span><b>同城评论代表性待判断</b><small>影响破圈概率</small></span><button>复核</button></div></div></section>
+    <section class="panel"><div class="panel-title">可补充数据 <span>系统推荐</span></div><div class="quality-list"><div class="quality-row"><span><b>收费公示文件</b><small>验证收费规则来源</small></span><button>加入</button></div><div class="quality-row"><span><b>原始视频完整片段</b><small>排除二次剪辑偏差</small></span><button>加入</button></div><div class="quality-row"><span><b>12345 / 热线反馈</b><small>验证线下反馈强度</small></span><button>加入</button></div></div></section>
+    <section class="panel"><div class="panel-title">合并 / 拆分 / 排除建议 <span>去重与降噪</span></div><div class="quality-list"><div class="quality-row"><span><b>合并重复搬运视频</b><small>同源重复，不作为独立证据</small></span><button>合并</button></div><div class="quality-row"><span><b>拆分服务体验不满旁支</b><small>避免主线过宽</small></span><button>拆分</button></div><div class="quality-row"><span><b>排除低可信二次剪辑</b><small>疑似强情绪标题带偏</small></span><button>排除</button></div></div></section>
+  </section>
+
+  <footer class="bottom-flow"><a href="#"><b>1 城市态势</b>发现热点与同城情绪</a><a href="#"><b>2 主题态势</b>聚合主题与传播阶段</a><a href="#"><b>3 数据 / 信号</b>汇集图文视频评论</a><a href="#"><b>4 证据复核</b>确认可用证据</a><button class="active"><b>5 主线建模</b>组织信号、诉求、扩散与缺口</button><a href="#"><b>6 世界线推演</b>生成多路径概率</a><a href="#"><b>7 汇报输出</b>输出阶段性判断</a></footer>
+</div>
+<script>
+const colors={blue:'#2f6df6',green:'#18a873',amber:'#d78925',red:'#df4b54',violet:'#7f63c9',cyan:'#009fb7'};
+const metrics=[['输入信号包','48','已复核 32','入','blue'],['已识别信号','86','待排除 12','识','green'],['候选主线','3','系统建议','线','violet'],['情绪/诉求聚合','5','核心诉求 3','情','amber'],['扩散路径','4','跨平台 3','扩','green'],['关键不确定性','3','需标记变量','缺','red'],['建模完成度','78%','建议补证','进','green','progress']];
+const packs=[['视频 / 直播信号','视频18条 / 直播6场','热度贡献 38%','视','blue'],['图文 / 帖子信号','帖子342条','同城占比 78%','图','violet'],['评论互动信号','评论1,286条','负向情绪 62%','评','red'],['官方 / 政务信息','公告2条 / 说明1条','覆盖不足','官','green'],['线下反馈点','热线32条 / 现场反馈11条','持续采样','现','amber'],['历史相似案例','相似案例3组','匹配度 0.58','史','cyan']];
+const candidates=[['收费规则争议 → 同城情绪升温','成立概率 65% · 缺口3'],['现场视频扩散 → 情绪共鸣','成立概率 58% · 缺口2'],['历史类似问题 → 公共服务议题化','成立概率 42% · 缺口4']];
+document.getElementById('metrics').innerHTML=metrics.map(m=>`<div class="metric" style="--tone:${colors[m[4]]}"><div class="ico">${m[3]}</div><div><label>${m[0]}</label><strong>${m[1]}</strong><small>${m[2]}</small></div>${m[5]?'<div class="progressbar"><i></i></div>':''}</div>`).join('');
+document.getElementById('signalPacks').innerHTML=packs.map((p,i)=>`<button class="signal-pack ${i===0?'active':''}"><i style="--tone:${colors[p[4]]}">${p[3]}</i><div><b>${p[0]}</b><small>${p[1]}｜${p[2]}</small></div><span class="pack-score"><b>${[0.82,0.78,0.75,0.61,0.58,0.52][i]}</b>相关</span></button>`).join('');
+document.getElementById('candidatePool').innerHTML=candidates.map((c,i)=>`<div class="mainline-card ${i===0?'active':''}"><b>${c[0]}</b><small>${c[1]}</small></div>`).join('');
+</script>
+</body>
+</html>

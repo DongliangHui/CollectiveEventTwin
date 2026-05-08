@@ -1,0 +1,167 @@
+{
+  "signals": [
+    {
+      "id": "SIG-P0-001",
+      "caseId": "CASE-P0-001",
+      "mainlineId": "ML-P0-001",
+      "priority": "P0",
+      "title": "school-accountability (3 records)",
+      "summary": "School incident response questioned by parents Local news reports family gathering near Qinglan School gate. Comments question hidden facts, school responsibility, and response timeline. School gate video spreads in s...",
+      "source": "Douyin Authorized Export / Local News Public Web / Manual Live Clip Upload",
+      "sourceType": "multi-source",
+      "regionId": "campus-core",
+      "tags": [
+        "trust_break",
+        "response_gap",
+        "evidence_gap",
+        "offline_gathering",
+        "offline_signal",
+        "school_responsibility",
+        "stakeholder_pressure"
+      ],
+      "narrativeFrames": [
+        "information_transparency",
+        "response_credibility",
+        "evidence_preservation",
+        "family_accountability",
+        "school_responsibility",
+        "offline_order"
+      ],
+      "confidence": 0.84,
+      "status": "selected_for_mainline",
+      "time": "2026-05-02T10:06:00+08:00",
+      "geo": {
+        "coordinates": [
+          120.1348,
+          30.2825
+        ],
+        "featureType": "event-point",
+        "impactRadiusKm": 6
+      },
+      "scores": {
+        "onlineHeat": 100,
+        "factCredibility": 84.4,
+        "mainlineRisk": 100
+      },
+      "why": "The signal is promoted because it combines trust_break, response_gap, evidence_gap, offline_gathering with narrative frames information_transparency, response_credibility, evidence_preservation, family_accountability.",
+      "evidence": [
+        {
+          "source": "Local News Public Web",
+          "rawId": "RAW-P0-001",
+          "excerpt": "School incident response questioned by parents Local news reports family gathering near Qinglan School gate. Comments question hidden fac...",
+          "credibility": "A"
+        },
+        {
+          "source": "Douyin Authorized Export",
+          "rawId": "RAW-P0-002",
+          "excerpt": "School gate video spreads in same-city feed Authorized short video export shows school gate, police car, crowd, family questions, and dem...",
+          "credibility": "B"
+        },
+        {
+          "source": "Manual Live Clip Upload",
+          "rawId": "RAW-P0-006",
+          "excerpt": "Manual live clip upload from scene observer Manual upload says a crowd remains near Qinglan School. Analyst note marks offline gathering...",
+          "credibility": "B"
+        }
+      ]
+    },
+    {
+      "id": "SIG-P0-002",
+      "caseId": "CASE-P0-001",
+      "mainlineId": "ML-P0-001",
+      "priority": "P0",
+      "title": "Weibo topic shifts to school responsibility",
+      "summary": "Weibo topic shifts to school responsibility Partner feed detects topic migration. The main narrative is changing from accident discussion to school response, hidden facts, and accountability.",
+      "source": "Weibo Partner Feed",
+      "sourceType": "multi-source",
+      "regionId": "online-spread",
+      "tags": [
+        "trust_break",
+        "response_gap",
+        "school_responsibility"
+      ],
+      "narrativeFrames": [
+        "information_transparency",
+        "response_credibility",
+        "school_responsibility"
+      ],
+      "confidence": 0.59,
+      "status": "selected_for_mainline",
+      "time": "2026-05-02T10:38:00+08:00",
+      "geo": {
+        "coordinates": [
+          120.1472,
+          30.2891
+        ],
+        "featureType": "event-point",
+        "impactRadiusKm": 5
+      },
+      "scores": {
+        "onlineHeat": 100,
+        "factCredibility": 59.4,
+        "mainlineRisk": 83.85
+      },
+      "why": "The signal is promoted because it combines trust_break, response_gap, school_responsibility with narrative frames information_transparency, response_credibility, school_responsibility.",
+      "evidence": [
+        {
+          "source": "Weibo Partner Feed",
+          "rawId": "RAW-P0-003",
+          "excerpt": "Weibo topic shifts to school responsibility Partner feed detects topic migration. The main narrative is changing from accident discussion...",
+          "credibility": "B"
+        }
+      ]
+    },
+    {
+      "id": "SIG-P0-003",
+      "caseId": "CASE-P0-001",
+      "mainlineId": "ML-P0-001",
+      "priority": "P1",
+      "title": "public-risk (2 records)",
+      "summary": "Education Bureau says verification is ongoing Education Bureau notice says response and verification are ongoing, but does not yet provide next update time, evidence scope, or family communication mechanism. Authorize...",
+      "source": "Government Notice Public Web / WeChat Official Account Authorized",
+      "sourceType": "multi-source",
+      "regionId": "authority-response",
+      "tags": [
+        "response_gap",
+        "evidence_gap",
+        "stakeholder_pressure"
+      ],
+      "narrativeFrames": [
+        "response_credibility",
+        "evidence_preservation",
+        "family_accountability"
+      ],
+      "confidence": 0.81,
+      "status": "selected_for_mainline",
+      "time": "2026-05-02T11:05:00+08:00",
+      "geo": {
+        "coordinates": [
+          120.1686,
+          30.2767
+        ],
+        "featureType": "event-point",
+        "impactRadiusKm": 4
+      },
+      "scores": {
+        "onlineHeat": 85.54,
+        "factCredibility": 81.0,
+        "mainlineRisk": 70.74
+      },
+      "why": "The signal is promoted because it combines response_gap, evidence_gap, stakeholder_pressure with narrative frames response_credibility, evidence_preservation, family_accountability.",
+      "evidence": [
+        {
+          "source": "Government Notice Public Web",
+          "rawId": "RAW-P0-004",
+          "excerpt": "Education Bureau says verification is ongoing Education Bureau notice says response and verification are ongoing, but does not yet provid...",
+          "credibility": "A"
+        },
+        {
+          "source": "WeChat Official Account Authorized",
+          "rawId": "RAW-P0-005",
+          "excerpt": "Authorized account summary highlights response gap Authorized article summary notes that the current response does not clearly state evid...",
+          "credibility": "B"
+        }
+      ]
+    }
+  ]
+}

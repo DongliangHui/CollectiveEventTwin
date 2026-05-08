@@ -1,0 +1,1521 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Worldline Observer 平行世界推演观察器</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .86);
+      --panel-solid: #fffdf7;
+      --panel-2: #ebe3d5;
+      --ink: #14181d;
+      --muted: #5b6470;
+      --faint: #8b9299;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --violet: #8f63e8;
+      --red: #ef4b5f;
+      --shadow: 0 22px 54px rgba(42, 34, 22, .10);
+      --soft: 0 10px 26px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(47,109,246,.08), transparent 28%),
+        radial-gradient(circle at 72% 18%, rgba(215,137,37,.10), transparent 30%),
+        linear-gradient(180deg, #faf7f0, var(--bg));
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans CN", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select { font: inherit; }
+    button {
+      border: 0;
+      color: inherit;
+      background: transparent;
+      cursor: pointer;
+    }
+    button:active { transform: translateY(1px) scale(.99); }
+
+    .app {
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: 58px 1fr;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 290px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 18px;
+      border-bottom: 1px solid rgba(216,205,188,.86);
+      background: rgba(255,253,247,.72);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs a, .mode-tabs button {
+      min-width: 68px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 16px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      transition: background .25s var(--ease), color .25s var(--ease);
+    }
+    .mode-tabs .active { background: var(--panel-solid); color: var(--ink); box-shadow: var(--soft); }
+
+    .status {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(24,168,115,.14);
+      animation: breathe 2.4s var(--ease) infinite;
+    }
+    @keyframes breathe { 50% { transform: scale(1.25); opacity: .68; } }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(780px, 7fr) minmax(420px, 3fr);
+      gap: 12px;
+      min-height: 0;
+      padding: 12px 14px 14px;
+    }
+
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.9);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(16px);
+    }
+    .panel.pad { padding: 16px; }
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .panel-title span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .case-name {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.12;
+      margin: 0;
+    }
+    .case-desc {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .case-meta {
+      display: grid;
+      margin-top: 14px;
+      gap: 9px;
+    }
+    .case-meta-row {
+      display: grid;
+      grid-template-columns: 68px 1fr;
+      gap: 10px;
+      padding: 9px 0;
+      border-top: 1px solid rgba(216,205,188,.74);
+      font-size: 12px;
+    }
+    .case-meta-row span:first-child {
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .case-meta-row span:last-child {
+      font-weight: 900;
+      line-height: 1.35;
+    }
+    .interventions {
+      display: grid;
+      gap: 8px;
+    }
+    .intervention {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.7);
+      text-align: left;
+      transition: border-color .25s var(--ease), background .25s var(--ease), transform .25s var(--ease);
+    }
+    .intervention:hover { border-color: var(--blue); transform: translateX(3px); }
+    .intervention b { display: block; font-size: 12px; }
+    .intervention span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.32; }
+
+    .minimap {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      z-index: 3;
+      width: 190px;
+      height: 112px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(20,24,29,.18) 1px, transparent 1.5px),
+        rgba(255,253,247,.86);
+      background-size: 15px 15px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(12px);
+    }
+    .minimap::before {
+      content: "minimap";
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+    .mini-node {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      opacity: .75;
+    }
+
+    .center {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .distribution {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+    .dist-card {
+      padding: 10px 12px;
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      transition: transform .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+    }
+    .dist-card.hot {
+      border-color: var(--tone);
+      background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid));
+    }
+    .dist-card:hover { transform: translateY(-3px); }
+    .dist-top {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .dist-value {
+      display: flex;
+      align-items: end;
+      gap: 7px;
+      margin-top: 8px;
+    }
+    .dist-value strong {
+      font-size: 23px;
+      line-height: .95;
+    }
+    .dist-value span {
+      color: var(--tone);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .trend-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid));
+      color: var(--tone);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .dist-card p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .control-row {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn, .primary-btn {
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+      font-weight: 900;
+      box-shadow: var(--soft);
+    }
+    .icon-btn { width: 42px; }
+    .primary-btn {
+      width: 100%;
+      background: var(--ink);
+      color: var(--panel-solid);
+      border-color: var(--ink);
+    }
+    .speed {
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+      font-weight: 900;
+    }
+
+    .canvas-panel {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(20,24,29,.16) 1px, transparent 1.5px),
+        linear-gradient(180deg, rgba(255,253,247,.94), rgba(244,239,231,.78));
+      background-size: 24px 24px, auto;
+    }
+    .canvas-heading {
+      position: absolute;
+      left: 18px;
+      top: 16px;
+      z-index: 2;
+      max-width: 360px;
+      padding: 10px 12px;
+      border: 1px solid rgba(216,205,188,.82);
+      border-radius: 12px;
+      background: rgba(255,253,247,.82);
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+    }
+    .canvas-heading b {
+      display: block;
+      font-size: 17px;
+      line-height: 1.15;
+    }
+    .canvas-heading span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .world-canvas {
+      position: relative;
+      height: 100%;
+      min-height: 620px;
+      transform-origin: 50% 50%;
+    }
+    .graph-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .graph-svg path {
+      fill: none;
+      stroke-linecap: round;
+      stroke-width: 2.4;
+      stroke-dasharray: 9 9;
+      opacity: .72;
+      animation: dash 1.4s linear infinite;
+      filter: drop-shadow(0 2px 1px rgba(42,34,22,.08));
+      transition: opacity .25s var(--ease), stroke-width .25s var(--ease);
+    }
+    .graph-svg path.dimmed { opacity: .12; animation: none; }
+    .graph-svg path.path-focus { opacity: .95; stroke-width: 3.2; }
+    @keyframes dash { to { stroke-dashoffset: -36; } }
+
+    .time-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .time-column {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(216,205,188,.72);
+    }
+    .time-label {
+      position: absolute;
+      top: 66px;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .now-line {
+      position: absolute;
+      top: 88px;
+      bottom: 42px;
+      width: 2px;
+      background: repeating-linear-gradient(180deg, var(--violet) 0 8px, transparent 8px 14px);
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      transition: left .55s var(--ease);
+    }
+    .now-line::before {
+      content: "当前时刻";
+      position: absolute;
+      top: -28px;
+      left: 10px;
+      width: 64px;
+      color: var(--violet);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .node {
+      position: absolute;
+      width: 154px;
+      min-height: 72px;
+      padding: 11px 12px 11px 44px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,253,247,.94);
+      box-shadow: 0 14px 28px rgba(42,34,22,.08);
+      color: var(--ink);
+      text-align: left;
+      opacity: 0;
+      transform: translateX(-22px) scale(.94);
+      pointer-events: none;
+      transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+    }
+    .node.visible {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+    .node.dimmed {
+      opacity: .18;
+      filter: grayscale(.6);
+    }
+    .node.selected {
+      border-color: var(--tone);
+      background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid));
+      outline: 4px solid color-mix(in srgb, var(--tone) 18%, transparent);
+    }
+    .node:hover { transform: translateY(-3px) scale(1.01); border-color: var(--tone); }
+    .node-symbol {
+      position: absolute;
+      left: 12px;
+      top: 13px;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--tone);
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .node b {
+      display: block;
+      font-size: 12px;
+      line-height: 1.22;
+    }
+    .node span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
+    }
+    .node-prob {
+      position: absolute;
+      right: -11px;
+      top: -11px;
+      min-width: 31px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      padding: 0 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-solid);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: var(--soft);
+    }
+    .ghost-node {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--tone);
+      opacity: 0;
+      transform: scale(.4);
+      animation: ghost 2.4s var(--ease) infinite;
+      animation-delay: var(--delay);
+      pointer-events: none;
+    }
+    @keyframes ghost {
+      0% { opacity: 0; transform: scale(.4) translateY(0); }
+      35% { opacity: .48; }
+      100% { opacity: 0; transform: scale(1.8) translateY(-16px); }
+    }
+
+    .bottom-timeline {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 14px;
+    }
+    .play-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--panel-solid);
+      font-weight: 900;
+      box-shadow: var(--soft);
+    }
+    .step-track {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .step {
+      position: relative;
+      height: 42px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: left;
+    }
+    .step::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 10px;
+      height: 2px;
+      background: var(--line);
+    }
+    .step::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #aab6c4;
+    }
+    .step.active::after {
+      background: var(--violet);
+      box-shadow: 0 0 0 8px rgba(143,99,232,.14);
+    }
+    .step span {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+
+    .right-panel {
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 12px;
+      min-height: 0;
+    }
+    .context-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .context-item {
+      padding: 10px;
+      border: 1px solid rgba(216,205,188,.82);
+      border-radius: 10px;
+      background: rgba(255,253,247,.64);
+    }
+    .context-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .03em;
+    }
+    .context-item b {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .risk-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .risk-chip {
+      min-height: 54px;
+      padding: 9px;
+      border: 1px solid rgba(216,205,188,.82);
+      border-radius: 10px;
+      background: rgba(255,253,247,.68);
+    }
+    .risk-chip span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .risk-chip b {
+      display: block;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+    .delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      vertical-align: 1px;
+    }
+    .delta.up {
+      color: var(--red);
+      background: rgba(239,75,95,.12);
+    }
+    .delta.down {
+      color: var(--green);
+      background: rgba(24,168,115,.12);
+    }
+    .delta.flat {
+      color: var(--amber);
+      background: rgba(215,137,37,.13);
+    }
+    .agent-panel textarea {
+      width: 100%;
+      min-height: 74px;
+      resize: vertical;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.78);
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.45;
+      outline: none;
+    }
+    .agent-panel textarea:focus { border-color: var(--blue); }
+    .agent-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .agent-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .side-interventions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .side-interventions .intervention {
+      min-height: 58px;
+    }
+    .current-state h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.18;
+    }
+    .current-state p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tabs button {
+      min-height: 32px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tabs button.active { background: var(--ink); color: var(--panel-solid); border-color: var(--ink); }
+
+    .detail {
+      overflow: hidden;
+      padding-right: 3px;
+    }
+    .detail-section {
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+    .detail-section b {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .detail-section p, .detail-section li {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .detail-section ul { margin: 0; padding-left: 18px; }
+    .recommendation {
+      padding: 11px 12px;
+      border: 1px solid rgba(47,109,246,.24);
+      border-radius: 12px;
+      background: rgba(47,109,246,.07);
+    }
+    .recommendation b {
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .recommendation p {
+      margin: 0;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 9px;
+      margin: 7px 0;
+      font-size: 12px;
+    }
+    .kv span:first-child { color: var(--muted); }
+    .kv span:last-child { font-weight: 800; }
+    .evidence {
+      display: grid;
+      gap: 8px;
+    }
+    .evidence-row {
+      display: grid;
+      grid-template-columns: 58px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.68);
+      font-size: 11px;
+    }
+    .evidence-row b { margin: 0; color: var(--blue); font-size: 11px; }
+    .evidence-row span { color: var(--muted); }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translate(-50%, 14px);
+      min-width: 280px;
+      max-width: 460px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,253,247,.94);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.45;
+      transition: opacity .3s var(--ease), transform .3s var(--ease);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 1180px) {
+      body { overflow: auto; }
+      .app { height: auto; min-height: 100dvh; }
+      .workspace { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; height: auto; padding: 12px; }
+      .mode-tabs, .status { justify-self: start; }
+      .world-canvas { min-height: 680px; }
+      .distribution { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <div class="mode-tabs" aria-label="Mode tabs">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="signal-factory.html">信号</a>
+        <a href="mainline-builder.html">主线</a>
+        <button class="active">推演</button>
+      </div>
+      <div class="status"><span>Step <b id="stepText">3/5</b></span><b>世界线推演</b><span class="live-dot"></span><span>Ready</span></div>
+    </header>
+
+    <section class="workspace">
+      <main class="center">
+        <div class="distribution" id="distribution"></div>
+        <div class="panel canvas-panel">
+          <div class="world-canvas" id="worldCanvas">
+            <div class="canvas-heading">
+              <b>主要表达：当前状态如何分裂成多条未来世界线</b>
+              <span>时间从左向右推进；点击节点查看证据、影响和下一跳。</span>
+            </div>
+            <div class="time-grid" id="timeGrid"></div>
+            <svg class="graph-svg" id="graphSvg" viewBox="0 0 1000 620" preserveAspectRatio="none"></svg>
+            <div class="now-line" id="nowLine"></div>
+            <div id="nodesLayer"></div>
+            <div id="ghostLayer"></div>
+            <div class="minimap" id="minimap"></div>
+          </div>
+        </div>
+        <div class="panel bottom-timeline">
+          <button class="play-btn" id="playBtn">▶</button>
+          <div class="step-track" id="stepTrack"></div>
+          <div class="control-row">
+            <button class="icon-btn" id="backBtn">◀</button>
+            <button class="primary-btn" id="advanceBtn" title="显现下一时间阶段的节点">下一阶段</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="right-panel">
+        <div class="panel pad current-state">
+          <div class="panel-title">当前选中 / Current node <button id="closeDetail">×</button></div>
+          <h2 id="detailTitle">群体不满升级，线下聚集风险</h2>
+          <p id="detailSummary">点击图谱节点，查看它从哪个父节点演化而来、下一步可能走向、证据链、指标变化与干预建议。</p>
+          <div class="risk-strip">
+            <div class="risk-chip"><span>风险概率</span><b id="riskScore">约 78% <i class="delta up" id="riskDelta">↑ 8%</i></b></div>
+            <div class="risk-chip"><span>倾向分支</span><b id="riskBranch">C 线 32%</b></div>
+            <div class="risk-chip"><span>复核概率</span><b id="reviewScore">82% <i class="delta flat" id="reviewDelta">→ 0%</i></b></div>
+          </div>
+        </div>
+        <div class="panel pad agent-panel">
+          <div class="panel-title">Agent 假设介入 <span>natural language</span></div>
+          <textarea id="agentInput" placeholder="输入一个假设，例如：如果官方在 2 小时内发布更具体补偿方案，并开放反馈渠道，会怎样？"></textarea>
+          <div class="agent-actions">
+            <span class="agent-note">输入假设后，画布会继续长出一条假设世界线。</span>
+            <button class="primary-btn" id="runAgent">继续推演</button>
+          </div>
+        </div>
+        <div class="panel pad">
+          <div class="tabs">
+            <button class="active" data-tab="overview">当前</button>
+            <button data-tab="evidence">证据</button>
+            <button data-tab="impact">变化</button>
+            <button data-tab="next">下一步</button>
+          </div>
+        </div>
+        <div class="panel pad detail" id="detailBody"></div>
+      </aside>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", violet: "#8f63e8", red: "#ef4b5f" };
+    const steps = [
+      ["起点", "04-15 09:00"],
+      ["舆情初发", "04-15 18:00"],
+      ["舆情扩散", "04-16 09:00"],
+      ["当前时刻", "04-17 10:00"],
+      ["后续发展", "04-17 13:00"],
+      ["未来走向", "04-17 16:00"]
+    ];
+
+    const distributions = [
+      { id: "A", name: "积极回应，逐步稳定", value: 28, trend: "+6%", tone: "green", risk: "38/100" },
+      { id: "B", name: "部分让步，持续拉锯", value: 26, trend: "-2%", tone: "amber", risk: "56/100" },
+      { id: "C", name: "持续发酵，风险聚集", value: 32, trend: "0%", tone: "violet", risk: "78/100", hot: true },
+      { id: "D", name: "外部事件叠加升级", value: 14, trend: "-4%", tone: "red", risk: "88/100" }
+    ];
+
+    const nodes = [
+      { id: "s", step: 0, x: 9, y: 55, label: "S", title: "地铁事件", sub: "起点", prob: "起", tone: "blue", parent: null, summary: "世界线的根节点。系统把当前案例聚合成一个可推演的世界状态，而不是简单资讯条目。", trigger: "多源信号首次聚合成风险事件。", evidence: [["E-001","热线/公开反馈出现异常增量","0.74"],["E-002","历史相似案例命中","0.61"]], impact: "综合风险 52/100，仍处于观察区间。", next: ["媒体报道增加","票价上涨争议发酵","网友情绪升温","学生群体讨论升温"] },
+      { id: "m", step: 1, x: 24, y: 22, label: "M", title: "媒体报道增加", sub: "舆论放大", prob: "32", tone: "green", parent: "地铁事件", summary: "风险信号被外部信息渠道放大，叙事开始影响更多相关方。", trigger: "同类报道频率上升。", evidence: [["E-011","媒体转述数量增加","0.71"],["E-012","话题曝光斜率上升","0.66"]], impact: "传播强度 +18%，但线下风险尚未同步增加。", next: ["官方回应开始"] },
+      { id: "p", step: 1, x: 25, y: 42, label: "P", title: "票价上涨争议发酵", sub: "利益敏感", prob: "68", tone: "amber", parent: "地铁事件", summary: "利益敏感议题成为讨论中心，开始牵引更多节点。", trigger: "价格或补偿相关关键词升温。", evidence: [["E-021","票价关键词热度增加","0.82"],["E-022","历史争议再次被引用","0.69"]], impact: "利益敏感度上升，综合风险 +12。", next: ["官方回应开始","相关话题冲上热搜"] },
+      { id: "n", step: 1, x: 25, y: 63, label: "N", title: "网友情绪升温", sub: "情绪支线", prob: "89", tone: "violet", parent: "地铁事件", summary: "线上情绪升温，但尚未等同于线下行动。", trigger: "负面情绪占比上升。", evidence: [["E-029","居民投诉问题引发大量关注","0.78"],["E-025","网友发起线下讨论活动","0.72"]], impact: "情绪倾向 -0.62，传播强度 0.68。", next: ["相关话题冲上热搜"] },
+      { id: "u", step: 1, x: 25, y: 82, label: "U", title: "学生群体讨论升温", sub: "群体支线", prob: "45", tone: "green", parent: "地铁事件", summary: "特定群体开始形成自己的解释框架。", trigger: "群体内部渠道出现集中讨论。", evidence: [["E-031","社群讨论上升","0.58"]], impact: "组织化风险仍低，但需观察。", next: ["交通拥堵反馈增加"] },
+      { id: "g", step: 2, x: 47, y: 49, label: "G", title: "官方回应开始", sub: "回应节点", prob: "36", tone: "blue", parent: "媒体/票价分支", summary: "处置方开始回应。后续世界线取决于回应是否解释核心矛盾。", trigger: "官方声明或处置动作出现。", evidence: [["E-041","公告发布","0.84"],["E-042","回应覆盖核心诉求不足","0.57"]], impact: "若回应充分可降险，若含糊会推动 C/D 分支。", next: ["群体不满升级，线下聚集风险"] },
+      { id: "t", step: 2, x: 50, y: 65, label: "T", title: "相关话题冲上热搜", sub: "传播加速", prob: "78", tone: "amber", parent: "票价/情绪分支", summary: "传播速度提高，外部观察者开始影响原始议题。", trigger: "话题进入跨圈层传播。", evidence: [["E-051","热榜进入前列","0.79"],["E-052","二次解读内容增加","0.65"]], impact: "扩散速度 +21%，误读风险升高。", next: ["群体不满升级，线下聚集风险","官方说明发布"] },
+      { id: "c", step: 2, x: 49, y: 84, label: "C", title: "交通拥堵反馈增加", sub: "现实反馈", prob: "41", tone: "green", parent: "学生群体分支", summary: "线上叙事开始对应现实反馈，风险从话题进入服务体验层。", trigger: "现场反馈或运营数据异常。", evidence: [["E-061","现场反馈增加","0.63"]], impact: "现实反馈使事件更难完全通过声明消解。", next: ["官方说明发布"] },
+      { id: "x", step: 3, x: 68, y: 48, label: "C", title: "群体不满升级，线下聚集风险", sub: "当前选中", prob: "32", tone: "violet", parent: "官方回应/热搜", summary: "回应未完全覆盖核心矛盾，部分群体从线上表达转向线下聚集讨论。", trigger: "回应被认为不充分，线下讨论出现组织化迹象。", evidence: [["E-032","某地工厂排放超标环保部门约谈","0.85"],["E-029","居民投诉问题引发大量关注","0.78"],["E-025","网友发起线下讨论活动","0.72"]], impact: "舆情热度 0.72 ↑，情绪倾向 -0.62 ↓，传播强度 0.68 ↑，综合风险 78/100 ↑。", next: ["舆情逐步降温恢复稳定","小规模抗议局部聚集","抗议扩大化持续发酵","外部事件叠加风险升级"] },
+      { id: "o", step: 3, x: 68, y: 70, label: "O", title: "官方说明发布", sub: "解释分支", prob: "52", tone: "amber", parent: "热搜/现实反馈", summary: "官方说明降低部分不确定性，但如果缺少具体承诺，仍会保留拉锯风险。", trigger: "说明发布但细节不足。", evidence: [["E-071","公告文本发布","0.81"],["E-072","反馈渠道不明确","0.55"]], impact: "风险短期回落，但存在二次质疑。", next: ["小规模抗议局部聚集","舆情逐步降温恢复稳定"] },
+      { id: "a", step: 4, x: 87, y: 23, label: "A", title: "舆情逐步降温恢复稳定", sub: "未来 A", prob: "A", tone: "green", parent: "当前风险节点", summary: "解释充分且反馈渠道有效，风险进入可管理状态。", trigger: "核心诉求被回应，反馈渠道有时限。", evidence: [["E-081","投诉量下降","0.74"],["E-082","正向反馈增加","0.62"]], impact: "综合风险下降到 38/100。", next: ["复盘入库"] },
+      { id: "b", step: 4, x: 87, y: 48, label: "B", title: "小规模抗议局部聚集", sub: "未来 B", prob: "B", tone: "amber", parent: "当前风险节点", summary: "部分人群仍不接受现有解释，形成局部聚集但未扩散。", trigger: "回应覆盖不足或线下沟通延迟。", evidence: [["E-091","局部聚集讨论","0.67"]], impact: "风险维持 56/100。", next: ["局部处置或继续拉锯"] },
+      { id: "d", step: 4, x: 87, y: 72, label: "C", title: "抗议扩大化持续发酵", sub: "未来 C", prob: "C", tone: "violet", parent: "当前风险节点", summary: "话题跨群体传播，原始矛盾和外部议题叠加。", trigger: "外部叙事介入，旧矛盾被重新激活。", evidence: [["E-101","跨社区讨论增加","0.73"]], impact: "综合风险维持 78/100。", next: ["跨部门协调"] },
+      { id: "r", step: 4, x: 86, y: 90, label: "D", title: "外部事件叠加风险升级", sub: "未来 D", prob: "D", tone: "red", parent: "当前风险节点", summary: "外部突发事件把原本可控的争议推入更高风险区间。", trigger: "新事件与当前议题形成情绪共振。", evidence: [["E-111","外部事件触发","0.70"],["E-112","风险叙事快速合流","0.76"]], impact: "综合风险上升到 88/100。", next: ["应急复核"] }
+    ];
+    const edges = [
+      ["s","m","green"],["s","p","amber"],["s","n","violet"],["s","u","green"],
+      ["m","g","green"],["p","g","amber"],["p","t","amber"],["n","t","amber"],["u","c","green"],
+      ["g","x","violet"],["t","x","red"],["t","o","amber"],["c","o","green"],
+      ["x","a","green"],["x","b","amber"],["x","d","violet"],["x","r","red"],["o","b","amber"],["o","a","green"]
+    ];
+
+    let currentStep = 3;
+    let selectedId = "x";
+    let agentNodeId = null;
+    let distributionModifier = null;
+    let playing = false;
+    let timer = null;
+    let activeTab = "overview";
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => [...document.querySelectorAll(sel)];
+
+    function toast(message) {
+      const t = $("#toast");
+      t.textContent = message;
+      t.classList.add("show");
+      clearTimeout(toast.t);
+      toast.t = setTimeout(() => t.classList.remove("show"), 2600);
+    }
+
+    function getDistributionData(modifier = distributionModifier) {
+      const data = distributions.map(d => ({ ...d }));
+      if (modifier === "step0") {
+        data[0].value = 22; data[1].value = 24; data[2].value = 20; data[3].value = 8;
+        data[0].trend = "+2%"; data[1].trend = "+1%"; data[2].trend = "+3%"; data[3].trend = "0%";
+        data.forEach(d => d.hot = d.id === "B");
+      }
+      if (modifier === "step1") {
+        data[0].value = 24; data[1].value = 28; data[2].value = 27; data[3].value = 10;
+        data[0].trend = "+3%"; data[1].trend = "+6%"; data[2].trend = "+7%"; data[3].trend = "+2%";
+        data.forEach(d => d.hot = d.id === "B" || d.id === "C");
+      }
+      if (modifier === "step2") {
+        data[0].value = 24; data[1].value = 27; data[2].value = 34; data[3].value = 13;
+        data[0].trend = "-1%"; data[1].trend = "+2%"; data[2].trend = "+9%"; data[3].trend = "+4%";
+        data.forEach(d => d.hot = d.id === "C");
+      }
+      if (modifier === "step3") {
+        data[0].value = 28; data[1].value = 26; data[2].value = 32; data[3].value = 14;
+        data[0].trend = "+6%"; data[1].trend = "-2%"; data[2].trend = "0%"; data[3].trend = "-4%";
+        data.forEach(d => d.hot = d.id === "C");
+      }
+      if (modifier === "step4") {
+        data[0].value = 30; data[1].value = 28; data[2].value = 29; data[3].value = 16;
+        data[0].trend = "+2%"; data[1].trend = "+2%"; data[2].trend = "-3%"; data[3].trend = "+2%";
+        data.forEach(d => d.hot = d.id === "A" || d.id === "B");
+      }
+      if (modifier === "relief") {
+        data[0].value += 12; data[2].value -= 8; data[3].value -= 4;
+        data[0].trend = "+12%"; data[2].trend = "-8%";
+        data.forEach(d => d.hot = d.id === "A");
+      }
+      if (modifier === "shock") {
+        data[0].value -= 10; data[2].value += 6; data[3].value += 7;
+        data[2].trend = "+6%"; data[3].trend = "+7%";
+        data.forEach(d => d.hot = d.id === "D" || d.id === "C");
+      }
+      if (modifier === "delay") {
+        data[1].value += 8; data[2].value += 5; data[0].value -= 8; data[3].value += 2;
+        data[1].trend = "+8%"; data[2].trend = "+5%"; data[0].trend = "-8%";
+        data.forEach(d => d.hot = d.id === "B" || d.id === "C");
+      }
+      return data;
+    }
+
+    function renderTopCards(cards) {
+      $("#distribution").innerHTML = cards.map(d => `
+        <button class="dist-card ${d.hot ? "hot" : ""}" style="--tone:${colors[d.tone]}">
+          <div class="dist-top"><span>${d.label}</span><span>${d.tag}</span></div>
+          <div class="dist-value"><strong>${d.value}${d.unit || ""}</strong><span class="trend-badge">${d.trend}</span></div>
+          <p>${d.desc}</p>
+        </button>
+      `).join("");
+    }
+
+    function renderDistribution(modifier = distributionModifier) {
+      const data = getDistributionData(modifier);
+      $("#distribution").innerHTML = data.map(d => `
+        <button class="dist-card ${d.hot ? "hot" : ""}" style="--tone:${colors[d.tone]}">
+          <div class="dist-top"><span>${d.id}</span><span>风险 ${d.risk}</span></div>
+          <div class="dist-value"><strong>${d.value}%</strong><span class="trend-badge">${formatTrend(d.trend)}</span></div>
+          <p>${d.name}</p>
+        </button>
+      `).join("");
+    }
+
+    function renderTopContext(node) {
+      if (!node) return;
+      const mode = getNodeMode(node);
+      if (mode === "root") {
+        renderTopCards([
+          { label: "事件基线", value: "52", unit: "/100", trend: "→ 0%", tone: "blue", tag: "baseline", desc: "多源信号首次聚合，进入观察池", hot: true },
+          { label: "信息完整度", value: "61", unit: "%", trend: "↑ 6%", tone: "green", tag: "baseline", desc: "已有热线反馈、历史相似案与公开讨论", hot: true },
+          { label: "传播初速", value: "0.38", trend: "↑ 3%", tone: "amber", tag: "baseline", desc: "尚未形成明确分支，需继续观察", hot: true },
+          { label: "不确定性", value: "0.47", trend: "↓ 2%", tone: "violet", tag: "baseline", desc: "原因链仍不完整，不生成未来判断", hot: true }
+        ]);
+        return;
+      }
+      if (mode === "support") {
+        renderTopCards([
+          { label: "组织化程度", value: node.id === "n" ? "0.41" : "0.34", trend: "↑ 6%", tone: "violet", tag: "variable", desc: "该支点是否正在从表达变成行动", hot: true },
+          { label: "诉求清晰度", value: node.id === "p" ? "0.76" : "0.58", trend: "↑ 9%", tone: "amber", tag: "variable", desc: "核心诉求是否已经被稳定复述" },
+          { label: "情绪强度", value: node.id === "n" ? "0.72" : "0.54", trend: "↑ 11%", tone: "red", tag: "variable", desc: "情绪是否可能外溢到其他支点" },
+          { label: "外溢概率", value: node.prob, unit: "%", trend: "↑ 4%", tone: node.tone, tag: "variable", desc: "该支点进入下一跳的概率" }
+        ]);
+        return;
+      }
+      if (mode === "process") {
+        renderTopCards([
+          { label: "传播速度", value: node.id === "t" ? "0.78" : "0.52", trend: "↑ 13%", tone: "amber", tag: "transition", desc: "状态从支点进入过程的速度", hot: true },
+          { label: "回应充分度", value: node.id === "g" ? "0.36" : "0.48", trend: "↓ 5%", tone: "blue", tag: "transition", desc: "回应是否覆盖核心矛盾" },
+          { label: "误读概率", value: "0.63", trend: "↑ 8%", tone: "red", tag: "transition", desc: "解释缺口造成二次传播的概率" },
+          { label: "现实反馈", value: node.id === "c" ? "0.67" : "0.39", trend: "↑ 4%", tone: "green", tag: "transition", desc: "线上叙事是否映射到现实反馈" }
+        ]);
+        return;
+      }
+      if (mode === "future") {
+        renderTopCards([
+          { label: "当前分支", value: node.prob, unit: node.prob.length === 1 ? " 线" : "%", trend: node.tone === "green" ? "↓ 12%" : "↑ 8%", tone: node.tone, tag: "branch", desc: node.title, hot: true },
+          { label: "替代分支", value: node.tone === "green" ? "B 28%" : "A 30%", trend: "→ 0%", tone: "amber", tag: "branch", desc: "仍需保留的相邻可能性" },
+          { label: "风险强度", value: node.tone === "red" ? "0.88" : node.tone === "green" ? "0.38" : "0.64", trend: node.tone === "green" ? "↓ 10%" : "↑ 6%", tone: node.tone, tag: "branch", desc: "该分支形成后的压力水平" },
+          { label: "可逆性", value: node.tone === "red" ? "0.31" : "0.62", trend: node.tone === "red" ? "↓ 9%" : "↑ 5%", tone: "blue", tag: "branch", desc: "通过处置回到较低风险的可能性" }
+        ]);
+        return;
+      }
+      if (mode === "main" || mode === "agent") {
+        renderDistribution(distributionModifier || "step3");
+      }
+    }
+
+    function formatTrend(trend) {
+      if (!trend || trend === "0%") return "→ 0%";
+      return `${trend.startsWith("-") ? "↓" : "↑"} ${trend.replace(/[+-]/, "")}`;
+    }
+
+    function renderTimeGrid() {
+      const positions = [9, 25, 47, 63, 81, 94];
+      $("#timeGrid").innerHTML = steps.map((s, i) => {
+        const left = positions[i] ?? 94;
+        return `<div class="time-column" style="left:${left}%"></div><div class="time-label" style="left:${left}%">${s[0]}<br>${s[1]}</div>`;
+      }).join("");
+    }
+
+    function renderGraph() {
+      const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+      $("#graphSvg").innerHTML = edges.map(([a, b, tone]) => {
+        const from = byId[a], to = byId[b];
+        const x1 = from.x + 7, y1 = from.y + 4;
+        const x2 = to.x + 7, y2 = to.y + 4;
+        const mx = (x1 + x2) / 2;
+        const d = `M ${x1 * 10} ${y1 * 6.2} C ${mx * 10} ${y1 * 6.2}, ${mx * 10} ${y2 * 6.2}, ${x2 * 10} ${y2 * 6.2}`;
+        return `<path data-edge="${a}-${b}" data-step="${Math.max(from.step, to.step)}" d="${d}" stroke="${colors[tone]}"></path>`;
+      }).join("");
+
+      $("#nodesLayer").innerHTML = nodes.map(n => `
+        <button class="node" data-id="${n.id}" data-step="${n.step}" style="left:${n.x}%;top:${n.y}%;--tone:${colors[n.tone]}">
+          <span class="node-symbol">${n.label}</span>
+          <b>${n.title}</b>
+          <span>${n.sub}</span>
+          <i class="node-prob">${n.prob}</i>
+        </button>
+      `).join("");
+
+      $("#ghostLayer").innerHTML = Array.from({ length: 28 }, (_, i) => {
+        const tone = [colors.blue, colors.green, colors.amber, colors.violet, colors.red][i % 5];
+        const x = 58 + (i * 7 % 34);
+        const y = 18 + (i * 13 % 72);
+        return `<i class="ghost-node" style="left:${x}%;top:${y}%;--tone:${tone};--delay:${(i % 9) * .18}s"></i>`;
+      }).join("");
+
+      $$("#nodesLayer .node").forEach(btn => {
+        btn.addEventListener("click", () => selectNode(btn.dataset.id));
+      });
+      renderMinimap();
+    }
+
+    function renderMinimap() {
+      $("#minimap").innerHTML = nodes.map(n => `<i class="mini-node" style="left:${n.x}%;top:${n.y}%;background:${colors[n.tone]}"></i>`).join("");
+    }
+
+    function renderSteps() {
+      $("#stepTrack").innerHTML = steps.slice(0, 5).map((s, i) => `<button class="step" data-step="${i}"><span>${s[0]}<br>${s[1].slice(6)}</span></button>`).join("");
+      $$("#stepTrack .step").forEach(btn => btn.addEventListener("click", () => setStep(Number(btn.dataset.step))));
+    }
+
+    function setStep(step) {
+      currentStep = Math.max(0, Math.min(4, step));
+      if (currentStep > 0 && !["relief", "shock", "delay"].includes(distributionModifier)) {
+        distributionModifier = `step${currentStep}`;
+      }
+      $("#stepText").textContent = `${currentStep + 1}/5`;
+      const nowPositions = [9, 25, 47, 63, 81];
+      const nowLeft = nowPositions[currentStep] ?? 81;
+      $("#nowLine").style.left = `${nowLeft}%`;
+      $$(".node").forEach(n => {
+        const visible = Number(n.dataset.step) <= currentStep;
+        n.classList.toggle("visible", visible);
+      });
+      $$("#graphSvg path").forEach(p => {
+        p.style.display = Number(p.dataset.step) <= currentStep ? "block" : "none";
+      });
+      $$("#stepTrack .step").forEach(s => s.classList.toggle("active", Number(s.dataset.step) <= currentStep));
+      const lastVisible = [...nodes].reverse().find(n => n.step <= currentStep);
+      if (lastVisible && !nodes.find(n => n.id === selectedId && n.step <= currentStep)) selectNode(lastVisible.id);
+      renderTopContext(nodes.find(n => n.id === selectedId) || lastVisible);
+      applyPathFocus(selectedId);
+    }
+
+    function getRelatedPath(id) {
+      const incoming = edges.reduce((acc, [a, b]) => {
+        (acc[b] ||= []).push(a);
+        return acc;
+      }, {});
+      const outgoing = edges.reduce((acc, [a, b]) => {
+        (acc[a] ||= []).push(b);
+        return acc;
+      }, {});
+      const related = new Set([id]);
+
+      const upstream = [...(incoming[id] || [])];
+      while (upstream.length) {
+        const prev = upstream.pop();
+        if (related.has(prev)) continue;
+        related.add(prev);
+        upstream.push(...(incoming[prev] || []));
+      }
+
+      const stack = [...(outgoing[id] || [])];
+      while (stack.length) {
+        const next = stack.pop();
+        if (related.has(next)) continue;
+        related.add(next);
+        stack.push(...(outgoing[next] || []));
+      }
+      return related;
+    }
+
+    function applyPathFocus(id) {
+      const related = getRelatedPath(id);
+      $$(".node").forEach(n => {
+        const visible = n.classList.contains("visible");
+        n.classList.toggle("dimmed", visible && !related.has(n.dataset.id));
+      });
+      $$("#graphSvg path").forEach(p => {
+        const [a, b] = p.dataset.edge.split("-");
+        const visible = p.style.display !== "none";
+        const focused = related.has(a) && related.has(b);
+        p.classList.toggle("dimmed", visible && !focused);
+        p.classList.toggle("path-focus", visible && focused);
+      });
+    }
+
+    function selectNode(id) {
+      const node = nodes.find(n => n.id === id);
+      if (!node || node.step > currentStep) return;
+      selectedId = id;
+      $$(".node").forEach(n => n.classList.toggle("selected", n.dataset.id === id));
+      applyPathFocus(id);
+      $("#detailTitle").textContent = node.title;
+      $("#detailSummary").textContent = node.summary;
+      const riskMeta = {
+        root: ["基线 52/100", "未生成路径", "flat", "→ 0%"],
+        green: ["约 38%", "A 线 28%", "down", "↓ 12%"],
+        blue: ["约 52%", "观测线 36%", "flat", "→ 0%"],
+        amber: ["约 56%", "B 线 26%", "up", "↑ 4%"],
+        violet: ["约 78%", "C 线 32%", "up", "↑ 8%"],
+        red: ["约 88%", "D 线 21%", "up", "↑ 16%"]
+      }[node.id === "s" ? "root" : node.tone] || ["约 52%", "观测线 36%", "flat", "→ 0%"];
+      setRiskIndicators(riskMeta[0], riskMeta[1], riskMeta[2], riskMeta[3]);
+      updateDistributionForNode(node);
+      renderTopContext(node);
+      renderDetail(node);
+    }
+
+    function setRiskIndicators(score, branch, direction = "flat", delta = "→ 0%") {
+      $("#riskScore").innerHTML = `${score} <i class="delta ${direction}" id="riskDelta">${delta}</i>`;
+      $("#riskBranch").textContent = branch;
+      const review = direction === "up" ? "82%" : direction === "down" ? "64%" : "72%";
+      const reviewDelta = direction === "up" ? "↑ 9%" : direction === "down" ? "↓ 6%" : "→ 0%";
+      $("#reviewScore").innerHTML = `${review} <i class="delta ${direction}" id="reviewDelta">${reviewDelta}</i>`;
+    }
+
+    function updateDistributionForNode(node) {
+      const mode = getNodeMode(node);
+      if (mode !== "main" && mode !== "agent") return;
+      const map = {
+        green: "relief",
+        amber: node.step >= 3 ? "delay" : `step${Math.min(node.step, 4)}`,
+        violet: `step${Math.min(Math.max(node.step, 2), 4)}`,
+        red: "shock",
+        blue: `step${Math.min(node.step, 4)}`
+      };
+      distributionModifier = map[node.tone] || `step${currentStep}`;
+    }
+
+    function getNodeMode(node) {
+      if (!node) return "root";
+      if (node.id === "s") return "root";
+      if (["m", "p", "n", "u", "t", "c"].includes(node.id)) return "support";
+      if (["g", "o"].includes(node.id)) return "process";
+      if (["a", "b", "d", "r"].includes(node.id)) return "future";
+      if (node.id?.startsWith("agent-")) return "agent";
+      return "main";
+    }
+
+    function renderDetail(node) {
+      const mode = getNodeMode(node);
+      if (mode === "root") {
+        renderRootDetail(node);
+        return;
+      }
+      if (mode === "support") {
+        renderSupportDetail(node);
+        return;
+      }
+      if (mode === "agent") {
+        renderAgentDetail(node);
+        return;
+      }
+      const sections = {
+        overview: `
+          <div class="detail-section"><b>当前状态</b>
+            <div class="kv"><span>阶段</span><span>${steps[node.step][0]}</span></div>
+            <div class="kv"><span>风险概率</span><span>${$("#riskScore").textContent}</span></div>
+            <div class="kv"><span>倾向分支</span><span>${$("#riskBranch").textContent}</span></div>
+          </div>
+          <div class="detail-section"><b>最大矛盾</b><p>回应覆盖度与核心诉求之间仍存在缺口，约 32% 概率把事件推入持续发酵分支。</p></div>
+          <div class="detail-section"><b>可能引发的风险</b><p>线下聚集、跨群体传播、外部事件叠加三类风险可能同时抬升，合计置信区间约 0.68 - 0.82。</p></div>
+          <div class="detail-section"><b>态度变化点</b><p>当反馈渠道、补偿方案或权威解释出现变化时，公众、媒体与组织者的态度概率会重新分配。</p></div>
+          <div class="detail-section recommendation"><b>处置建议</b><p>优先补足“解释 + 承诺 + 反馈时限”三件事。原因是当前最大不确定性来自回应覆盖不足，而不是单纯信息曝光；若 2 小时内给出可验证动作，A/B 分支可能上调约 8% - 15%。</p></div>`,
+        evidence: `
+          <div class="detail-section"><b>证据链</b>
+            <div class="evidence">${node.evidence.map(e => `<div class="evidence-row"><b>${e[0]}</b><span>${e[1]}</span><em>${e[2]}</em></div>`).join("")}</div>
+          </div>
+          <div class="detail-section"><b>可信度</b><p>公开源证据支持当前判断，但高风险节点仍需人工复核。Mock based on public sources.</p></div>`,
+        impact: `
+          <div class="detail-section"><b>变化指标</b>
+            <div class="kv"><span>舆情热度</span><span>0.72 ↑</span></div>
+            <div class="kv"><span>情绪倾向</span><span>-0.62 ↓</span></div>
+            <div class="kv"><span>传播强度</span><span>0.68 ↑</span></div>
+            <div class="kv"><span>线下动员</span><span>0.41 ↑</span></div>
+          </div>
+          <div class="detail-section"><b>引起的变化</b><p>${node.impact}</p></div>`,
+        next: `
+          <div class="detail-section"><b>后续可能性</b><ul>${node.next.slice(0, 4).map(n => `<li>${n}</li>`).join("")}</ul></div>
+          <div class="detail-section recommendation"><b>建议处置</b><p>先把高传播节点转化为可回应问题清单，再决定是否线下沟通。这样能降低误读继续扩散的概率，并为人工复核留下证据链。</p></div>
+          <div class="detail-section"><b>变量注入</b>
+            <div class="side-interventions">
+              <button class="intervention" data-intervention="response"><b>快速回应</b><span>解释说明</span></button>
+              <button class="intervention" data-intervention="dialogue"><b>沟通解释</b><span>面对面沟通</span></button>
+              <button class="intervention" data-intervention="delay"><b>让步调整</b><span>调整方案</span></button>
+              <button class="intervention" data-intervention="external"><b>外部事件</b><span>风险叠加</span></button>
+            </div>
+          </div>`,
+      };
+      $("#detailBody").innerHTML = sections[activeTab];
+      bindInterventions();
+    }
+
+    function renderRootDetail(node) {
+      const sections = {
+        overview: `
+          <div class="detail-section"><b>当前事情</b><p>这是一个由服务体验、价格敏感和线上反馈共同触发的公共事件起点。系统此时只建立事实基线，不提前生成 A/B/C/D 未来路径。</p></div>
+          <div class="detail-section"><b>前因</b><p>前期存在热线/公开反馈异常增量，并命中历史相似案例；部分群体已开始把个体体验解释成可讨论的公共议题。</p></div>
+          <div class="detail-section"><b>后果</b><p>如果信息继续累积，事件可能分化为媒体报道、票价争议、网友情绪和特定群体讨论四类支点；这些支点会决定后续是否进入风险推演。</p></div>
+          <div class="detail-section recommendation"><b>处置建议</b><p>先补事实底账：确认事件范围、受影响主体、历史反馈和可公开解释口径。原因是起点阶段最大风险不是某条未来路径，而是事实不完整导致后续分支被误判。</p></div>`,
+        evidence: `<div class="detail-section"><b>初始证据</b><div class="evidence">${node.evidence.map(e => `<div class="evidence-row"><b>${e[0]}</b><span>${e[1]}</span><em>${e[2]}</em></div>`).join("")}</div></div><div class="detail-section"><b>证据缺口</b><p>仍缺少明确时间线、受影响主体规模、官方初始回应和可核验证据源。</p></div>`,
+        impact: `<div class="detail-section"><b>当前影响</b><p>${node.impact}</p></div><div class="detail-section"><b>变化观察</b><p>现阶段只观察传播初速、信息完整度和不确定性，不给出未来路径概率。</p></div>`,
+        next: `<div class="detail-section"><b>下一步观察</b><ul>${node.next.map(n => `<li>${n}</li>`).join("")}</ul></div><div class="detail-section"><b>进入推演条件</b><p>当任一支点出现明确增量、跨圈层传播或组织化迹象时，系统才开始生成后续世界线概率。</p></div>`
+      };
+      $("#detailBody").innerHTML = sections[activeTab];
+    }
+
+    function renderSupportDetail(node) {
+      const sections = {
+        overview: `
+          <div class="detail-section"><b>组织情况</b><p>${node.title} 是当前路径里的支点，约 ${node.prob}% 概率影响后续分叉。</p></div>
+          <div class="detail-section"><b>利益立场</b><p>该支点更关注自身利益是否被承认，以及回应是否可验证、可执行。</p></div>
+          <div class="detail-section"><b>核心诉求</b><p>降低不确定性、获得明确解释、看到可执行的反馈或调整机制。</p></div>`,
+        evidence: `<div class="detail-section"><b>证据链</b><div class="evidence">${node.evidence.map(e => `<div class="evidence-row"><b>${e[0]}</b><span>${e[1]}</span><em>${e[2]}</em></div>`).join("")}</div></div>`,
+        impact: `
+          <div class="detail-section"><b>为什么变成当前状态</b><p>${node.trigger}</p></div>
+          <div class="detail-section"><b>态度变化概率</b><p>如果回应更具体，态度缓和概率约提升 8% - 15%；如果继续模糊，转向更强表达的概率约提升 6% - 12%。</p></div>`,
+        next: `
+          <div class="detail-section"><b>下一步能改变什么</b><p>提供明确时间表、补偿解释或线下沟通入口，可能降低该支点继续外溢的概率。</p></div>
+          <div class="detail-section"><b>如果不做</b><p>该组织或群体可能继续转发、聚集讨论，或与其他分支形成共振。</p></div>
+          <div class="detail-section recommendation"><b>处置建议</b><p>对该支点不要先做泛化宣传，先回应它的具体诉求。原因是支点节点更容易因“被忽视感”转向下一跳，具体回应比统一口径更能改变其态度概率。</p></div>`
+      };
+      $("#detailBody").innerHTML = sections[activeTab];
+      bindInterventions();
+    }
+
+    function renderAgentDetail(node) {
+      const sections = {
+        overview: `<div class="detail-section"><b>假设作用点</b><p>${node.parent}</p></div><div class="detail-section"><b>假设推演结果</b><p>${node.summary}</p></div><div class="detail-section"><b>概率叙事</b><p>${node.impact}</p></div><div class="detail-section recommendation"><b>处置建议</b><p>把该假设拆成可验证动作：谁发布、何时发布、回应哪些诉求、反馈入口在哪里。原因是 Agent 分支只改变概率，不等于事实发生，必须用可验证条件继续压缩不确定性。</p></div>`,
+        evidence: `<div class="detail-section"><b>输入假设</b><p>${node.trigger}</p></div><div class="detail-section"><b>置信度</b><p>该分支由自然语言假设生成，置信度约 0.66 - 0.72，必须回到证据链复核。</p></div>`,
+        impact: `<div class="detail-section"><b>引起的变化</b><p>系统把当前节点后续路径重新加权，并在画布生成一条临时世界线。其他分支被淡化，但没有被删除。</p></div>`,
+        next: `<div class="detail-section"><b>下一步</b><p>可以继续输入更具体的约束，例如时间、主体、渠道、资源投入，系统会沿当前假设分支继续生长。</p></div>`
+      };
+      $("#detailBody").innerHTML = sections[activeTab];
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      $$(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      renderDetail(nodes.find(n => n.id === selectedId));
+    }
+
+    function advance() { setStep(currentStep + 1); }
+    function back() { setStep(currentStep - 1); }
+
+    function play() {
+      if (playing) {
+        clearInterval(timer);
+        playing = false;
+        $("#playBtn").textContent = "▶";
+        return;
+      }
+      if (currentStep >= 4) setStep(0);
+      playing = true;
+      $("#playBtn").textContent = "Ⅱ";
+      const delay = 900;
+      timer = setInterval(() => {
+        if (currentStep >= 4) {
+          clearInterval(timer);
+          playing = false;
+          $("#playBtn").textContent = "▶";
+          return;
+        }
+        advance();
+      }, delay);
+    }
+
+    function applyIntervention(type) {
+      if (type === "external") {
+        distributionModifier = "shock";
+        renderDistribution();
+        setStep(Math.max(currentStep, 4));
+        selectNode("r");
+        setRiskIndicators("约 88%", "D 线 21%", "up", "↑ 16%");
+        toast("已注入外部事件：D 线概率上升，但仍保留其他分支。");
+        return;
+      }
+      distributionModifier = type === "delay" ? "delay" : "relief";
+      renderDistribution();
+      const target = type === "response" ? "a" : type === "dialogue" ? "b" : "o";
+      const targetNode = nodes.find(n => n.id === target);
+      setStep(Math.max(currentStep, targetNode ? targetNode.step : 3));
+      selectNode(target);
+      if (type === "response") setRiskIndicators("约 38%", "A 线 40%", "down", "↓ 12%");
+      if (type === "dialogue") setRiskIndicators("约 56%", "B 线 28%", "flat", "→ 0%");
+      if (type === "delay") setRiskIndicators("约 56%", "B 线 34%", "up", "↑ 4%");
+      toast("已注入处置干预：未来概率重新分配，缓和分支获得更高权重。");
+    }
+
+    function createAgentProjection(kind, probability, targetTone, title, summary, impact) {
+      if (agentNodeId) {
+        const oldIndex = nodes.findIndex(n => n.id === agentNodeId);
+        if (oldIndex >= 0) nodes.splice(oldIndex, 1);
+        for (let i = edges.length - 1; i >= 0; i--) {
+          if (edges[i][0] === agentNodeId || edges[i][1] === agentNodeId) edges.splice(i, 1);
+        }
+      }
+      const base = nodes.find(n => n.id === selectedId) || nodes.find(n => n.id === "x");
+      const yMap = { relief: 28, delay: 52, shock: 84 };
+      agentNodeId = `agent-${Date.now()}`;
+      nodes.push({
+        id: agentNodeId,
+        step: 4,
+        x: 82,
+        y: yMap[kind] || 52,
+        label: "H",
+        title,
+        sub: `假设分支 ${probability}%`,
+        prob: probability,
+        tone: targetTone,
+        parent: `作用于：${base.title}`,
+        summary,
+        trigger: $("#agentInput").value.trim(),
+        evidence: [["H-INPUT", "用户自然语言假设", "0.66"], ["H-CONTEXT", "当前选中节点上下文", "0.72"]],
+        impact,
+        next: ["继续约束主体与时间", "补充证据链", "再次运行假设"]
+      });
+      edges.push([base.id, agentNodeId, targetTone]);
+      renderGraph();
+      setStep(4);
+      selectNode(agentNodeId);
+    }
+
+    function runAgentHypothesis() {
+      const input = ($("#agentInput").value || "").trim();
+      if (!input) {
+        toast("先输入一个假设，Agent 会基于当前节点继续推演概率。");
+        return;
+      }
+      const text = input.toLowerCase();
+      const hasRelief = /回应|解释|补偿|沟通|公开|反馈|承诺|澄清/.test(text);
+      const hasShock = /外部|突发|冲突|事故|媒体曝光|热搜|升级|谣言/.test(text);
+      const hasDelay = /延迟|沉默|拖延|不回应|模糊|缺席/.test(text);
+
+      if (hasShock && !hasRelief) {
+        distributionModifier = "shock";
+        renderDistribution();
+        createAgentProjection(
+          "shock",
+          21,
+          "red",
+          "Agent 假设：外部冲击叠加",
+          "基于输入假设，D 线概率被上调，但仍保留 A/B/C 的尾部可能。",
+          "D 线约 21%，C 线约 38%，当前判断更像外部事件叠加而非自然降温。"
+        );
+        setRiskIndicators("约 88%", "D 线 21%", "up", "↑ 16%");
+        return;
+      }
+
+      if (hasDelay && !hasRelief) {
+        distributionModifier = "delay";
+        renderDistribution();
+        createAgentProjection(
+          "delay",
+          34,
+          "amber",
+          "Agent 假设：回应延迟拉锯",
+          "基于输入假设，B/C 分支概率上升，事件更可能进入拉锯与反复质疑。",
+          "B 线约 34%，C 线约 37%，置信度约 0.66。"
+        );
+        setRiskIndicators("约 56%", "B 线 34%", "up", "↑ 4%");
+        return;
+      }
+
+      distributionModifier = "relief";
+      renderDistribution();
+      createAgentProjection(
+        hasRelief ? "relief" : "delay",
+        hasRelief ? 40 : 30,
+        hasRelief ? "green" : "amber",
+        hasRelief ? "Agent 假设：缓和分支增强" : "Agent 假设：温和拉锯",
+        hasRelief ? "基于输入假设，A 线概率上调，风险更可能向可管理状态收敛。" : "输入假设信息不足，系统暂时把概率分配给 B 线和 C 线。",
+        hasRelief ? "A 线约 40%，B 线约 28%，仍保留 C/D 尾部风险。" : "B 线约 30%，C 线约 29%，置信度约 0.64。"
+      );
+      setRiskIndicators(hasRelief ? "约 38%" : "约 56%", hasRelief ? "A 线 40%" : "B 线 30%", hasRelief ? "down" : "flat", hasRelief ? "↓ 12%" : "→ 0%");
+    }
+
+    function bindInterventions() {
+      $$("[data-intervention]").forEach(b => {
+        b.onclick = () => applyIntervention(b.dataset.intervention);
+      });
+    }
+
+    function init() {
+      renderDistribution();
+      renderTimeGrid();
+      renderGraph();
+      renderSteps();
+      setStep(3);
+      selectNode("x");
+      $("#playBtn").addEventListener("click", play);
+      $("#advanceBtn").addEventListener("click", advance);
+      $("#backBtn").addEventListener("click", back);
+      $("#runAgent").addEventListener("click", runAgentHypothesis);
+      $("#closeDetail").addEventListener("click", () => toast("节点详情保持在右侧，方便边观察边干预。"));
+      $$(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+      bindInterventions();
+    }
+
+    init();
+  </script>
+</body>
+</html>

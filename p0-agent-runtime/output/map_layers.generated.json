@@ -1,0 +1,135 @@
+{
+  "eventPoints": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "SIG-P0-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            120.1348,
+            30.2825
+          ]
+        },
+        "properties": {
+          "featureId": "SIG-P0-001",
+          "regionId": "campus-core",
+          "featureType": "event-point",
+          "title": "school-accountability (3 records)",
+          "summary": "School incident response questioned by parents Local news reports family gathering near Qinglan School gate. Comments question hidden facts, school responsibility, and response timeline. School gate video spreads in s...",
+          "mainlineId": "ML-P0-001",
+          "riskScore": 100,
+          "signalCount": 3,
+          "source": "Douyin Authorized Export / Local News Public Web / Manual Live Clip Upload",
+          "time": "2026-05-02T10:06:00+08:00",
+          "confidence": 0.84
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "SIG-P0-002",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            120.1472,
+            30.2891
+          ]
+        },
+        "properties": {
+          "featureId": "SIG-P0-002",
+          "regionId": "online-spread",
+          "featureType": "event-point",
+          "title": "Weibo topic shifts to school responsibility",
+          "summary": "Weibo topic shifts to school responsibility Partner feed detects topic migration. The main narrative is changing from accident discussion to school response, hidden facts, and accountability.",
+          "mainlineId": "ML-P0-001",
+          "riskScore": 83.85,
+          "signalCount": 1,
+          "source": "Weibo Partner Feed",
+          "time": "2026-05-02T10:38:00+08:00",
+          "confidence": 0.59
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "SIG-P0-003",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            120.1686,
+            30.2767
+          ]
+        },
+        "properties": {
+          "featureId": "SIG-P0-003",
+          "regionId": "authority-response",
+          "featureType": "event-point",
+          "title": "public-risk (2 records)",
+          "summary": "Education Bureau says verification is ongoing Education Bureau notice says response and verification are ongoing, but does not yet provide next update time, evidence scope, or family communication mechanism. Authorize...",
+          "mainlineId": "ML-P0-001",
+          "riskScore": 70.74,
+          "signalCount": 2,
+          "source": "Government Notice Public Web / WeChat Official Account Authorized",
+          "time": "2026-05-02T11:05:00+08:00",
+          "confidence": 0.81
+        }
+      }
+    ]
+  },
+  "heatZones": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "HEAT-SIG-P0-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            120.1348,
+            30.2825
+          ]
+        },
+        "properties": {
+          "regionId": "campus-core",
+          "weight": 100,
+          "radiusKm": 6,
+          "sourceSignalId": "SIG-P0-001"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "HEAT-SIG-P0-002",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            120.1472,
+            30.2891
+          ]
+        },
+        "properties": {
+          "regionId": "online-spread",
+          "weight": 83.85,
+          "radiusKm": 5,
+          "sourceSignalId": "SIG-P0-002"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "HEAT-SIG-P0-003",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            120.1686,
+            30.2767
+          ]
+        },
+        "properties": {
+          "regionId": "authority-response",
+          "weight": 70.74,
+          "radiusKm": 4,
+          "sourceSignalId": "SIG-P0-003"
+        }
+      }
+    ]
+  }
+}

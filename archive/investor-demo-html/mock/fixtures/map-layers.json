@@ -1,0 +1,339 @@
+{
+  "caseId": "iran-war-escalation",
+  "config": {
+    "center": [47.8, 27.6],
+    "zoom": 4.15,
+    "minZoom": 3,
+    "maxZoom": 8,
+    "maxBounds": [[30, 10], [66, 42]],
+    "attribution": "© OpenStreetMap contributors"
+  },
+  "riskAreas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "area-hormuz",
+        "properties": {
+          "featureId": "area-hormuz",
+          "regionId": "hormuz",
+          "featureType": "risk-area",
+          "title": "霍尔木兹通航受限",
+          "summary": "IRGC 临检、AIS 等待船舶与战争险附加费同步上升，通航不确定性显著抬升。",
+          "mainlineId": "ML-001",
+          "riskScore": 88,
+          "signalCount": 42,
+          "eventCount": 8,
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [56.25, 26.55] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-red-sea",
+        "properties": {
+          "featureId": "area-red-sea",
+          "regionId": "red-sea",
+          "featureType": "risk-area",
+          "title": "红海航线扰动",
+          "summary": "商船袭击、绕航讨论和保险条款调整共同指向红海航线成本上升。",
+          "mainlineId": "red-sea-shipping",
+          "riskScore": 76,
+          "signalCount": 31,
+          "eventCount": 6,
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [39.9, 20.2] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-north-israel",
+        "properties": {
+          "featureId": "area-north-israel",
+          "regionId": "north-israel",
+          "featureType": "risk-area",
+          "title": "北部战线外溢",
+          "summary": "黎以边境火箭弹、以军北方部署与代理人组织表态升温。",
+          "mainlineId": "hezbollah-front",
+          "riskScore": 81,
+          "signalCount": 35,
+          "eventCount": 7,
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [35.55, 33.3] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-gulf-bases",
+        "properties": {
+          "featureId": "area-gulf-bases",
+          "regionId": "gulf-bases",
+          "featureType": "risk-area",
+          "title": "海湾基地与能源设施戒备",
+          "summary": "卡塔尔、巴林、阿联酋基地及能源设施进入高警戒，防空压力上升。",
+          "mainlineId": "gulf-base-pressure",
+          "riskScore": 72,
+          "signalCount": 24,
+          "eventCount": 5,
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [51.8, 26.2] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-iran-nuclear",
+        "properties": {
+          "featureId": "area-iran-nuclear",
+          "regionId": "iran-nuclear",
+          "featureType": "risk-area",
+          "title": "核设施与 IAEA 核查争议",
+          "summary": "Fordow、Yazd、Arak 等设施受损后，核查可达性和制裁合法性争议同步升温。",
+          "mainlineId": "iaea-nuclear-access",
+          "riskScore": 68,
+          "signalCount": 28,
+          "eventCount": 4,
+          "tone": "violet"
+        },
+        "geometry": { "type": "Point", "coordinates": [54.367, 31.897] }
+      }
+    ]
+  },
+  "eventPoints": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "evt-epic-fury",
+        "properties": {
+          "featureId": "evt-epic-fury",
+          "regionId": "iran-core",
+          "featureType": "event-point",
+          "title": "Epic Fury 空袭后果",
+          "time": "2026-04-25 04:10",
+          "source": "init_data / iran-events",
+          "mainlineId": "ML-001",
+          "riskScore": 91,
+          "summary": "美以空袭后，伊朗报复与海峡筹码被市场重新定价。",
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [51.389, 35.6892] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-hormuz-blockade",
+        "properties": {
+          "featureId": "evt-hormuz-blockade",
+          "regionId": "hormuz",
+          "featureType": "event-point",
+          "title": "IRGC 扩大临检范围",
+          "time": "2026-04-26 22:15",
+          "source": "IRGC / 航运 AIS",
+          "mainlineId": "ML-001",
+          "riskScore": 88,
+          "summary": "临检信号与等待船舶增加重合，推高通航风险。",
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [56.25, 26.55] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-red-sea-houthi",
+        "properties": {
+          "featureId": "evt-red-sea-houthi",
+          "regionId": "red-sea",
+          "featureType": "event-point",
+          "title": "红海商船袭击讨论",
+          "time": "2026-04-26 18:40",
+          "source": "yemen-houthi-events / 船东论坛",
+          "mainlineId": "red-sea-shipping",
+          "riskScore": 76,
+          "summary": "红海航线风险迫使部分船东评估绕行。",
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [39.9, 20.2] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-hezbollah-front",
+        "properties": {
+          "featureId": "evt-hezbollah-front",
+          "regionId": "north-israel",
+          "featureType": "event-point",
+          "title": "黎以边境火箭弹频率上升",
+          "time": "2026-04-26 20:10",
+          "source": "hezbollah-events / israel-events",
+          "mainlineId": "hezbollah-front",
+          "riskScore": 81,
+          "summary": "北方战线可能牵引以色列多线作战压力。",
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [35.55, 33.3] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-g7-hormuz",
+        "properties": {
+          "featureId": "evt-g7-hormuz",
+          "regionId": "hormuz",
+          "featureType": "event-point",
+          "title": "G7 护航机制讨论",
+          "time": "2026-04-27 08:50",
+          "source": "G7 foreign ministers",
+          "mainlineId": "diplomatic-deescalation",
+          "riskScore": 54,
+          "summary": "护航讨论降低长期封锁预期，但不能解除短期临检不确定性。",
+          "tone": "green"
+        },
+        "geometry": { "type": "Point", "coordinates": [55.35, 25.85] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-iaea-yazd",
+        "properties": {
+          "featureId": "evt-iaea-yazd",
+          "regionId": "iran-nuclear",
+          "featureType": "event-point",
+          "title": "Yazd 核查窗口推迟",
+          "time": "2026-04-27 06:30",
+          "source": "IAEA / key-trigger-nodes",
+          "mainlineId": "iaea-nuclear-access",
+          "riskScore": 68,
+          "summary": "核查可达性下降，成为制裁与合法性争议的关键缺口。",
+          "tone": "violet"
+        },
+        "geometry": { "type": "Point", "coordinates": [54.367, 31.897] }
+      }
+    ]
+  },
+  "shippingRoutes": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "route-hormuz-eastbound",
+        "properties": {
+          "featureId": "route-hormuz-eastbound",
+          "regionId": "hormuz",
+          "featureType": "shipping-route",
+          "title": "霍尔木兹东向油轮通道",
+          "summary": "日均关键油气通道，战争险和临检节奏直接影响能源风险溢价。",
+          "mainlineId": "ML-001",
+          "status": "5 艘等待",
+          "insurance": "+18%",
+          "rerouteCost": "高",
+          "relatedRoute": "Hormuz Eastbound",
+          "tone": "red"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[51.7, 27.3], [54.3, 26.5], [56.25, 26.55], [58.2, 25.7], [61.2, 24.8]] }
+      },
+      {
+        "type": "Feature",
+        "id": "route-red-sea",
+        "properties": {
+          "featureId": "route-red-sea",
+          "regionId": "red-sea",
+          "featureType": "shipping-route",
+          "title": "红海至苏伊士航线",
+          "summary": "红海安全事件会影响苏伊士通行与好望角绕行成本。",
+          "mainlineId": "red-sea-shipping",
+          "status": "部分船东评估绕行",
+          "insurance": "+11%",
+          "rerouteCost": "中高",
+          "relatedRoute": "Red Sea",
+          "tone": "amber"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[43.3, 12.6], [40.7, 17.5], [38.6, 23.3], [32.5, 29.9]] }
+      },
+      {
+        "type": "Feature",
+        "id": "route-cape",
+        "properties": {
+          "featureId": "route-cape",
+          "regionId": "red-sea",
+          "featureType": "shipping-route",
+          "title": "好望角绕行路径",
+          "summary": "绕行路径会拉长航程，影响班轮准点率与能源运输成本。",
+          "mainlineId": "red-sea-shipping",
+          "status": "备用路径",
+          "insurance": "+6%",
+          "rerouteCost": "中",
+          "relatedRoute": "Cape Reroute",
+          "tone": "blue"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[42.5, 12.2], [45.0, 8.5], [48.0, 2.5], [44.5, -4.0], [38.0, -10.0]] }
+      }
+    ]
+  },
+  "placeLabels": {
+    "type": "FeatureCollection",
+    "features": [
+      { "type": "Feature", "id": "label-iran", "properties": { "title": "伊朗" }, "geometry": { "type": "Point", "coordinates": [53.5, 32.2] } },
+      { "type": "Feature", "id": "label-iraq", "properties": { "title": "伊拉克" }, "geometry": { "type": "Point", "coordinates": [43.9, 33.2] } },
+      { "type": "Feature", "id": "label-saudi", "properties": { "title": "沙特阿拉伯" }, "geometry": { "type": "Point", "coordinates": [45.2, 24.5] } },
+      { "type": "Feature", "id": "label-oman", "properties": { "title": "阿曼" }, "geometry": { "type": "Point", "coordinates": [57.2, 21.5] } },
+      { "type": "Feature", "id": "label-uae", "properties": { "title": "阿联酋" }, "geometry": { "type": "Point", "coordinates": [54.4, 24.3] } },
+      { "type": "Feature", "id": "label-qatar", "properties": { "title": "卡塔尔" }, "geometry": { "type": "Point", "coordinates": [51.2, 25.3] } },
+      { "type": "Feature", "id": "label-kuwait", "properties": { "title": "科威特" }, "geometry": { "type": "Point", "coordinates": [47.6, 29.3] } },
+      { "type": "Feature", "id": "label-israel", "properties": { "title": "以色列" }, "geometry": { "type": "Point", "coordinates": [35.0, 31.7] } },
+      { "type": "Feature", "id": "label-lebanon", "properties": { "title": "黎巴嫩" }, "geometry": { "type": "Point", "coordinates": [35.8, 33.85] } },
+      { "type": "Feature", "id": "label-yemen", "properties": { "title": "也门" }, "geometry": { "type": "Point", "coordinates": [47.0, 15.6] } },
+      { "type": "Feature", "id": "label-hormuz", "properties": { "title": "霍尔木兹海峡" }, "geometry": { "type": "Point", "coordinates": [56.1, 26.25] } },
+      { "type": "Feature", "id": "label-gulf", "properties": { "title": "波斯湾" }, "geometry": { "type": "Point", "coordinates": [51.2, 27.2] } },
+      { "type": "Feature", "id": "label-red-sea", "properties": { "title": "红海" }, "geometry": { "type": "Point", "coordinates": [39.0, 21.8] } },
+      { "type": "Feature", "id": "label-arabian-sea", "properties": { "title": "阿拉伯海" }, "geometry": { "type": "Point", "coordinates": [59.0, 18.4] } }
+    ]
+  },
+  "impactAreas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "impact-energy",
+        "properties": {
+          "featureId": "impact-energy",
+          "regionId": "hormuz",
+          "featureType": "impact",
+          "title": "能源价格风险溢价",
+          "summary": "Brent 风险价上移至 105，LNG 现货询价加入中东贴水。",
+          "mainlineId": "sanctions-energy",
+          "riskScore": 74,
+          "signalCount": 18,
+          "tone": "amber"
+        },
+        "geometry": { "type": "Point", "coordinates": [50.8, 26.7] }
+      },
+      {
+        "type": "Feature",
+        "id": "impact-insurance",
+        "properties": {
+          "featureId": "impact-insurance",
+          "regionId": "hormuz",
+          "featureType": "impact",
+          "title": "航运保险收紧",
+          "summary": "战争险附加费和拒保讨论是进入世界线推演的关键支点。",
+          "mainlineId": "ML-001",
+          "riskScore": 82,
+          "signalCount": 21,
+          "tone": "red"
+        },
+        "geometry": { "type": "Point", "coordinates": [57.4, 25.4] }
+      },
+      {
+        "type": "Feature",
+        "id": "impact-diplomacy",
+        "properties": {
+          "featureId": "impact-diplomacy",
+          "regionId": "diplomacy",
+          "featureType": "impact",
+          "title": "外交降温窗口",
+          "summary": "阿曼、卡塔尔与联合国通道提供有限降温可能。",
+          "mainlineId": "diplomatic-deescalation",
+          "riskScore": 46,
+          "signalCount": 14,
+          "tone": "green"
+        },
+        "geometry": { "type": "Point", "coordinates": [46.7, 24.7] }
+      }
+    ]
+  }
+}

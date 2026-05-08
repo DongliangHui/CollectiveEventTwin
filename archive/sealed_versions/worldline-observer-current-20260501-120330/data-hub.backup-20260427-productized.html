@@ -1,0 +1,648 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 数据中枢</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    button, a, input { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app { height: 100dvh; min-height: 900px; display: grid; grid-template-rows: 56px 94px 1fr 70px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 430px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs a {
+      min-width: 68px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 14px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; padding: 10px 14px; }
+    .metric {
+      min-height: 74px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.78);
+      text-align: left;
+      transition: background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease);
+    }
+    .metric:hover, .metric.active { border-color: var(--ink); background: var(--panel-solid); transform: translateY(-1px); }
+    .metric label { display: block; color: var(--muted); font-size: 11px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .metric b { display: block; margin-top: 7px; color: var(--tone); font-size: 24px; line-height: 1; }
+    .metric p { margin: 5px 0 0; color: var(--muted); font-size: 11px; font-weight: 800; }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr) 410px;
+      gap: 10px;
+      padding: 0 14px 10px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .pad { padding: 14px; }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 900; }
+    .title span, .title a { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .title a { color: var(--ink); padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
+
+    .source-side { display: grid; grid-template-rows: 1fr 188px; gap: 10px; min-height: 0; }
+    .source-list { display: grid; gap: 8px; overflow: hidden; }
+    .source-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 62px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.66);
+      text-align: left;
+      transition: background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease);
+    }
+    .source-card:hover, .source-card.active { border-color: var(--ink); background: var(--panel-solid); transform: translateY(-1px); }
+    .source-card b { display: block; font-size: 13px; }
+    .source-card small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 800; line-height: 1.32; }
+    .source-card em { color: var(--tone); font-style: normal; font-weight: 900; }
+    .health-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .health {
+      min-height: 52px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.68);
+    }
+    .health span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .health b { display: block; margin-top: 5px; color: var(--tone); font-size: 16px; }
+
+    .center { display: grid; grid-template-rows: 132px 1fr 152px; gap: 10px; min-height: 0; }
+    .search-panel { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); gap: 12px; padding: 12px 14px; }
+    .search-box { display: grid; gap: 8px; }
+    .search-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-line input {
+      height: 38px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.72);
+      outline: none;
+      font-weight: 800;
+    }
+    .primary-btn, .outline-btn {
+      min-height: 34px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-solid);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .primary-btn { background: var(--ink); border-color: var(--ink); color: white; }
+    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .tag-row button, .pill {
+      min-height: 26px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,247,.72);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .tag-row button.active, .pill.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .strategy { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .strategy div { padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.66); font-size: 11px; font-weight: 800; color: var(--muted); }
+    .strategy b { display: block; color: var(--ink); margin-bottom: 4px; }
+
+    .table-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    .table-head, .signal-row {
+      display: grid;
+      grid-template-columns: 78px 1.55fr .62fr .58fr .72fr .72fr .9fr;
+      gap: 9px;
+      align-items: center;
+    }
+    .table-head {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .table-body { min-height: 0; overflow: hidden; padding: 0 14px; }
+    .signal-row {
+      width: 100%;
+      min-height: 56px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(216,205,188,.78);
+      text-align: left;
+      font-size: 12px;
+      transition: background .2s var(--ease);
+    }
+    .signal-row:hover, .signal-row.active { background: color-mix(in srgb, var(--tone) 8%, transparent); }
+    .signal-row b { display: block; font-size: 12px; line-height: 1.35; }
+    .signal-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .badge { display: inline-grid; place-items: center; min-height: 24px; padding: 0 8px; border: 1px solid color-mix(in srgb, var(--tone) 46%, var(--line)); border-radius: 8px; color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, var(--panel-solid)); font-size: 11px; font-weight: 900; }
+    .score { color: var(--tone); font-weight: 900; }
+
+    .bottom-panel { display: grid; grid-template-columns: .95fr 1.18fr .87fr; gap: 10px; }
+    .mini-card { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.68); }
+    .mini-card p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .mini-card b { font-size: 13px; }
+    .taxonomy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+    .taxonomy-grid span {
+      min-height: 25px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .draft-package { display: grid; gap: 8px; margin-top: 9px; }
+    .draft-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .draft-stats div {
+      min-height: 44px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.7);
+    }
+    .draft-stats span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .draft-stats b { display: block; margin-top: 5px; color: var(--ink); font-size: 17px; }
+    .draft-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .draft-chips span {
+      min-height: 24px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .mini-list { display: grid; gap: 7px; margin-top: 9px; }
+    .mini-list span { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .mini-list strong { color: var(--ink); }
+
+    .detail-panel { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
+    .selected-title h2 { margin: 0; font-size: 18px; line-height: 1.18; }
+    .selected-title p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .why {
+      padding: 12px;
+      border: 1px solid rgba(47,109,246,.24);
+      border-radius: 12px;
+      background: rgba(47,109,246,.07);
+    }
+    .why b { display: block; font-size: 13px; margin-bottom: 7px; }
+    .why p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .detail-section { padding-top: 10px; border-top: 1px solid var(--line); }
+    .detail-section b { display: block; margin-bottom: 8px; font-size: 13px; }
+    .evidence-row, .recommend-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 35px;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .evidence-row + .evidence-row, .recommend-row + .recommend-row { margin-top: 7px; }
+    .evidence-row span:first-child, .recommend-row span:first-child { color: var(--ink); }
+    .right-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr) 190px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 14px 14px;
+    }
+    .flow-step {
+      min-height: 48px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+    }
+    .flow-step.active { border-color: var(--ink); background: var(--panel-solid); }
+    .flow-step b { display: block; font-size: 12px; }
+    .flow-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .flow a { height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: white; font-size: 13px; font-weight: 900; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translate(-50%, 14px);
+      min-width: 280px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,253,247,.96);
+      box-shadow: var(--soft);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease), transform .25s var(--ease);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a class="active" href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a href="agent-council.html">会议</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status"><span>数据批次 batch-20260425-001</span><span>治理健康 <strong id="healthText">28/28 正常</strong></span><i class="live-dot"></i></div>
+    </header>
+
+    <section class="metrics" id="metrics"></section>
+
+    <main class="workspace">
+      <aside class="source-side">
+        <section class="panel pad">
+          <div class="title">数据源管理 <span id="sourceScope">全源接入</span></div>
+          <div class="source-list" id="sourceList"></div>
+        </section>
+        <section class="panel pad">
+          <div class="title">数据治理动作 <span>点击可执行</span></div>
+          <div class="health-grid">
+            <button class="health" data-action="resync" style="--tone:var(--blue)"><span>重新同步</span><b>3 源</b></button>
+            <button class="health" data-action="mapping" style="--tone:var(--green)"><span>字段映射</span><b>96%</b></button>
+            <button class="health" data-action="downgrade" style="--tone:var(--amber)"><span>可信度校正</span><b>12 条</b></button>
+            <button class="health" data-action="dedupe" style="--tone:var(--red)"><span>重复样本</span><b>7.4%</b></button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="center">
+        <section class="panel search-panel">
+          <div class="search-box">
+            <div class="title">数据 / 信号检索 <span>从可疑材料抓取相似数据</span></div>
+            <div class="search-line">
+              <input id="queryInput" value="补偿标准不一致 城市更新 近24小时" />
+              <button class="primary-btn" id="searchBtn">检索</button>
+            </div>
+            <div class="tag-row" id="tagRow"></div>
+          </div>
+          <div>
+            <div class="title">当前抓取策略 <span>自动推荐</span></div>
+            <div class="strategy" id="strategy"></div>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-head"><span>优先级</span><span>信号 / 原始数据</span><span>来源</span><span>区域</span><span>标签</span><span>相似度</span><span>建议动作</span></div>
+          <div class="table-body" id="signalTable"></div>
+        </section>
+
+        <section class="bottom-panel">
+          <div class="mini-card">
+            <b>自动标签体系</b>
+            <p>地点、组织、人群、事件类型、风险语义、情绪、时间窗口七类标签同步参与检索和主线建模。</p>
+            <div class="taxonomy-grid" id="taxonomy"></div>
+          </div>
+          <div class="mini-card">
+            <b>主线草稿包</b>
+            <p>这里不是“篮子”，而是进入主线工作台前的可追溯数据包。</p>
+            <div class="draft-package">
+              <div class="draft-stats">
+                <div><span>已选数据</span><b id="draftCount">7</b></div>
+                <div><span>支撑证据</span><b>5</b></div>
+                <div><span>待补缺口</span><b>3</b></div>
+              </div>
+              <div class="draft-chips" id="draftChips"></div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <b>质量校验结果</b>
+            <div class="mini-list" id="qualityList"></div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel pad detail-panel">
+        <section class="selected-title">
+          <div class="title">选中数据详情 <span id="selectedId">SIG-001</span></div>
+          <h2 id="detailTitle"></h2>
+          <p id="detailSub"></p>
+        </section>
+        <section class="why">
+          <b>为什么值得进入主线？</b>
+          <p id="detailWhy"></p>
+        </section>
+        <section class="detail-section">
+          <b>来源证据与原文片段</b>
+          <div id="evidenceRows"></div>
+        </section>
+        <section class="detail-section">
+          <b>系统推荐继续抓取</b>
+          <div id="recommendRows"></div>
+        </section>
+        <div class="right-actions">
+          <button class="primary-btn" id="addDraft">加入主线草稿</button>
+          <a class="outline-btn" href="mainline-builder.html">去主线工作台</a>
+        </div>
+      </aside>
+    </main>
+
+    <section class="flow">
+      <div class="flow-step active"><b>1 数据接入与治理</b><span>来源、质量、标签、校验</span></div>
+      <div class="flow-step active"><b>2 数据检索与抓取</b><span>同渠道、同区域、相似语义</span></div>
+      <div class="flow-step"><b>3 问题线索识别</b><span>进入主线工作台</span></div>
+      <div class="flow-step"><b>4 主线建模确认</b><span>生成 World State</span></div>
+      <div class="flow-step"><b>5 世界线推演</b><span>分支与 Agent Council</span></div>
+      <a href="mainline-builder.html">下一步：建模</a>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
+    const sources = [
+      { id: "hotline", name: "12345 热线工单", count: 2148, health: "A", coverage: "全市 82%", tone: "blue", desc: "结构化程度高，适合识别重复诉求" },
+      { id: "grid", name: "网格上报", count: 1672, health: "A", coverage: "街道 76%", tone: "green", desc: "现场反馈及时，可补事实底账" },
+      { id: "social", name: "社区群与论坛", count: 3516, health: "B", coverage: "社区 64%", tone: "amber", desc: "情绪信号丰富，重复率较高" },
+      { id: "video", name: "短视频 / 无人机", count: 486, health: "B", coverage: "重点点位", tone: "amber", desc: "适合验证地空关系和现场变化" },
+      { id: "media", name: "媒体与公开公告", count: 604, health: "A", coverage: "公开源", tone: "blue", desc: "用于补齐权威口径和时间线" },
+      { id: "third", name: "第三方历史库", count: 920, health: "B", coverage: "历史案例", tone: "violet", desc: "用于匹配相似前兆和复盘样本" }
+    ];
+    const tags = ["同渠道", "同标签", "同区域", "关键词", "近24小时", "高相似度", "需人工复核"];
+    const taxonomy = ["地点", "组织", "人群", "事件类型", "风险语义", "情绪", "时间窗口"];
+    const signals = [
+      { id: "SIG-001", p: "P0", tone: "red", title: "补偿标准不一致在两个社区群重复出现", sub: "热线与社区群同题聚合，过去 12 小时持续升温", source: "12345 / 社区群", area: "城东区", tag: "城市更新", sim: "0.86", action: "加入主线", why: "同时命中城市更新主线、补偿标准支点和施工扰民支点，并且跨热线与社区讨论两个渠道重复出现。它不是单条情绪，而是可被建模的线索起点。", excerpts: [["12345 工单", "同一小区三户反映补偿口径前后不一致", "A"], ["社区群摘要", "居民讨论“同楼不同标准”的截图被多次转发", "B"], ["历史投诉", "去年同街道旧改补偿争议曾出现相似前兆", "B"]], recs: [["同区域旧改咨询", "14 条"], ["补偿标准同标签", "23 条"], ["官方公告版本", "3 条"]] },
+      { id: "SIG-006", p: "P1", tone: "amber", title: "施工围挡附近短视频评论集中质疑", sub: "画面点位待校正，评论情绪上升", source: "短视频", area: "城中区", tag: "施工扰民", sim: "0.74", action: "补证后加入", why: "该信号能解释情绪扩散，但画面地点和发布时间仍需校验。适合作为辅助支点，不建议单独成主线。", excerpts: [["短视频评论", "评论集中提到夜间施工与通行不便", "C"], ["网格记录", "附近路段有围挡记录但未见异常上报", "B"]], recs: [["同点位视频", "5 条"], ["网格现场反馈", "2 条"], ["道路施工公告", "1 条"]] },
+      { id: "SIG-012", p: "P1", tone: "amber", title: "居民代表要求公开补偿测算规则", sub: "诉求从个体咨询转向公共解释", source: "社区群", area: "城东区", tag: "信息公开", sim: "0.81", action: "加入主线", why: "诉求已经从“我家补多少”转向“规则是否一致”，说明事件具备公共议题化倾向。", excerpts: [["社区群摘要", "多名居民要求公开测算规则和时间表", "B"], ["热线摘要", "咨询集中在补偿口径和申诉流程", "A"]], recs: [["信息公开同标签", "11 条"], ["街道回应记录", "4 条"], ["历史公告版本", "3 条"]] },
+      { id: "SIG-017", p: "P2", tone: "blue", title: "交通绕行导致早晚高峰拥堵反馈增加", sub: "与施工节点相关，但风险语义较低", source: "网格 / 热线", area: "城中区", tag: "交通出行", sim: "0.58", action: "观察", why: "它可以辅助解释现实反馈，但不直接支撑补偿争议。系统建议保留为外围信号。", excerpts: [["网格巡查", "围挡附近早高峰通行速度下降", "B"], ["热线咨询", "绕行路线咨询增加", "A"]], recs: [["同路段反馈", "6 条"], ["施工计划", "2 条"]] },
+      { id: "SIG-024", p: "P2", tone: "green", title: "街道公开咨询会时间表已发布", sub: "可能降低不确定性，但还需确认覆盖人群", source: "公告", area: "城东区", tag: "官方回应", sim: "0.69", action: "作为缓和证据", why: "该信号可能改变后续世界线概率，是后续推演的缓和条件，但需要验证居民是否实际知晓。", excerpts: [["街道公告", "下周二组织旧改补偿政策咨询会", "A"], ["媒体转载", "公告被本地媒体转发但评论较少", "B"]], recs: [["公告触达反馈", "8 条"], ["居民代表反馈", "5 条"]] }
+    ];
+
+    let activeSource = "hotline";
+    let activeMetric = "all";
+    let activeTag = "同渠道";
+    let selectedId = "SIG-001";
+    let draftCount = 7;
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+
+    function toast(text) {
+      $("#toast").textContent = text;
+      $("#toast").classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => $("#toast").classList.remove("show"), 1800);
+    }
+
+    function selected() {
+      return signals.find(s => s.id === selectedId) || signals[0];
+    }
+
+    function visibleSignals() {
+      if (activeMetric === "review") return signals.filter(s => s.action !== "加入主线");
+      if (activeMetric === "high") return signals.filter(s => Number(s.sim) >= .8);
+      if (activeMetric === "video") return signals.filter(s => /短视频|网格/.test(s.source));
+      return signals;
+    }
+
+    function renderMetrics() {
+      const data = [
+        { id: "all", label: "原始数据量", value: "12,486", sub: "已完成初始清洗", tone: "blue" },
+        { id: "high", label: "高价值线索", value: "76", sub: "相似度 0.80 以上", tone: "red" },
+        { id: "review", label: "待人工复核", value: "42", sub: "事实边界待确认", tone: "amber" },
+        { id: "video", label: "视频/现场源", value: "486", sub: "点位校正中", tone: "violet" },
+        { id: "draft", label: "主线草稿包", value: draftCount, sub: "可进入主线建模", tone: "green" },
+        { id: "quality", label: "字段完整度", value: "91%", sub: "地点/时间/主体可用", tone: "blue" }
+      ];
+      $("#metrics").innerHTML = data.map(m => `
+        <button class="metric ${activeMetric === m.id ? "active" : ""}" data-metric="${m.id}" style="--tone:${colors[m.tone]}">
+          <label>${m.label}</label><b>${m.value}</b><p>${m.sub}</p>
+        </button>
+      `).join("");
+      $$(".metric").forEach(btn => btn.addEventListener("click", () => {
+        activeMetric = btn.dataset.metric;
+        renderSignals();
+        renderMetrics();
+        toast(`已按“${btn.querySelector("label").textContent}”筛选中间列表`);
+      }));
+    }
+
+    function renderSources() {
+      $("#sourceList").innerHTML = sources.map(s => `
+        <button class="source-card ${activeSource === s.id ? "active" : ""}" data-source="${s.id}" style="--tone:${colors[s.tone]}">
+          <span><b>${s.name}</b><small>${s.desc}</small></span>
+          <span><em>${s.count.toLocaleString()}</em><small>${s.health} · ${s.coverage}</small></span>
+        </button>
+      `).join("");
+      $$(".source-card").forEach(btn => btn.addEventListener("click", () => {
+        activeSource = btn.dataset.source;
+        const src = sources.find(s => s.id === activeSource);
+        $("#sourceScope").textContent = `${src.name} · ${src.health}`;
+        $("#queryInput").value = `${src.name} ${activeTag} 近24小时`;
+        renderSources();
+        renderStrategy();
+        toast(`已切换数据源：${src.name}`);
+      }));
+    }
+
+    function renderSearch() {
+      $("#tagRow").innerHTML = tags.map(t => `<button class="${activeTag === t ? "active" : ""}" data-tag="${t}">${t}</button>`).join("");
+      $("#taxonomy").innerHTML = taxonomy.map(t => `<span>${t}</span>`).join("");
+      $("#draftChips").innerHTML = ["SIG-001", "SIG-012", "公告版本", "社区群摘要"].map(x => `<span>${x}</span>`).join("");
+      $$("#tagRow button").forEach(btn => btn.addEventListener("click", () => {
+        activeTag = btn.dataset.tag;
+        $("#queryInput").value = `${activeTag} 补偿标准 城市更新`;
+        renderSearch();
+        renderStrategy();
+        toast(`抓取策略切换为：${activeTag}`);
+      }));
+      $("#searchBtn").onclick = () => {
+        activeMetric = "all";
+        renderMetrics();
+        renderSignals();
+        toast("已按关键词重新检索，并刷新相似数据列表");
+      };
+    }
+
+    function renderStrategy() {
+      const src = sources.find(s => s.id === activeSource);
+      $("#strategy").innerHTML = [
+        ["主数据源", src.name],
+        ["抓取方式", activeTag],
+        ["相似阈值", "0.68 以上"],
+        ["去重规则", "同源转发降权"]
+      ].map(x => `<div><b>${x[0]}</b>${x[1]}</div>`).join("");
+      $("#qualityList").innerHTML = [
+        ["地点字段", "96%"],
+        ["时间字段", "94%"],
+        ["主体识别", "88%"],
+        ["异常率", "2.7%"]
+      ].map(x => `<span><strong>${x[0]}</strong><em>${x[1]}</em></span>`).join("");
+    }
+
+    function renderSignals() {
+      const rows = visibleSignals();
+      $("#signalTable").innerHTML = rows.map(s => `
+        <button class="signal-row ${s.id === selectedId ? "active" : ""}" data-id="${s.id}" style="--tone:${colors[s.tone]}">
+          <span class="badge">${s.p}</span>
+          <span><b>${s.title}</b><small>${s.sub}</small></span>
+          <span>${s.source}</span>
+          <span>${s.area}</span>
+          <span>${s.tag}</span>
+          <span class="score">${s.sim}</span>
+          <span>${s.action}</span>
+        </button>
+      `).join("");
+      $$(".signal-row").forEach(row => row.addEventListener("click", () => {
+        selectedId = row.dataset.id;
+        renderSignals();
+        renderDetail();
+      }));
+    }
+
+    function renderDetail() {
+      const s = selected();
+      $("#selectedId").textContent = s.id;
+      $("#detailTitle").textContent = s.title;
+      $("#detailSub").textContent = `${s.source} · ${s.area} · ${s.tag} · 相似度 ${s.sim}`;
+      $("#detailWhy").textContent = s.why;
+      $("#evidenceRows").innerHTML = s.excerpts.map(e => `<div class="evidence-row"><span>${e[0]}：${e[1]}</span><strong>可信度 ${e[2]}</strong></div>`).join("");
+      $("#recommendRows").innerHTML = s.recs.map(r => `<button class="recommend-row" data-rec="${r[0]}"><span>${r[0]}</span><strong>${r[1]}</strong></button>`).join("");
+      $$(".recommend-row").forEach(btn => btn.addEventListener("click", () => {
+        $("#queryInput").value = btn.dataset.rec;
+        toast(`已切换检索条件：${btn.dataset.rec}`);
+      }));
+    }
+
+    function bindActions() {
+      $("#addDraft").addEventListener("click", () => {
+        draftCount += 1;
+        $("#draftCount").textContent = draftCount;
+        renderMetrics();
+        toast(`${selected().id} 已加入主线草稿，进入主线工作台可继续成线`);
+      });
+      $$("[data-action]").forEach(btn => btn.addEventListener("click", () => {
+        btn.querySelector("b").textContent = "已处理";
+        toast(`已执行治理动作：${btn.querySelector("span").textContent}`);
+      }));
+    }
+
+    function init() {
+      renderMetrics();
+      renderSources();
+      renderSearch();
+      renderStrategy();
+      renderSignals();
+      renderDetail();
+      bindActions();
+    }
+    init();
+  </script>
+</body>
+</html>

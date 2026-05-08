@@ -1,0 +1,4502 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 城市态势感知</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css" />
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --bar: rgba(255, 253, 247, .92);
+      --bar-2: #fffdf7;
+      --panel: rgba(255, 253, 247, .94);
+      --panel-2: rgba(248, 244, 237, .96);
+      --panel-3: #efe7db;
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5d6673;
+      --dim: #897f73;
+      --line: rgba(207, 194, 174, .92);
+      --line-2: rgba(166, 151, 129, .55);
+      --green: #35f08a;
+      --cyan: #2ad7ff;
+      --blue: #4f8dff;
+      --amber: #ff9f2e;
+      --yellow: #f7dd4a;
+      --red: #ff4e5f;
+      --pink: #df65d8;
+      --purple: #9174ff;
+      --map: #e8dccb;
+      --r: 8px;
+      --shadow: 0 12px 30px rgba(53, 43, 28, .10);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(79, 141, 255, .08), transparent 30%),
+        linear-gradient(180deg, #f7f3eb, #eee7dc);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(20,24,29,.035) 1px, transparent 1px);
+      background-size: 100% 3px;
+      opacity: .18;
+    }
+    button, input, select, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px); }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 2px solid rgba(42, 215, 255, .66);
+      outline-offset: 2px;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+    .app {
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: 44px 30px minmax(320px, 46vh) minmax(300px, 1fr) 26px;
+      background:
+        radial-gradient(circle at 54% 36%, rgba(79, 141, 255, .07), transparent 34%),
+        linear-gradient(180deg, #f7f3eb, #ece4d8 55%, #e8dfd2);
+    }
+
+    .promo {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(53, 240, 138, .25);
+      background: #101613;
+      color: #d6ffe8;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .promo b {
+      display: inline-grid;
+      place-items: center;
+      min-width: 38px;
+      height: 20px;
+      margin-right: 8px;
+      border-radius: 4px;
+      background: rgba(53,240,138,.18);
+      color: var(--green);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .promo button {
+      min-height: 24px;
+      padding: 0 11px;
+      border-radius: 4px;
+      background: var(--green);
+      color: #07100c;
+      font-size: 11px;
+      font-weight: 1000;
+    }
+
+    .topnav {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto minmax(190px, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bar);
+    }
+    .domain-tabs {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .domain-tabs button {
+      height: 28px;
+      min-width: 46px;
+      padding: 0 8px;
+      border: 1px solid rgba(150,165,184,.18);
+      border-radius: 3px;
+      background: rgba(22, 29, 37, .92);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .domain-tabs button.active {
+      border-color: rgba(53,240,138,.28);
+      background: rgba(53,240,138,.15);
+      color: #e5fff0;
+    }
+    .brand {
+      justify-self: start;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .brand::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background:
+        linear-gradient(135deg, transparent 46%, rgba(255,255,255,.95) 48% 54%, transparent 56%),
+        linear-gradient(135deg, var(--blue), var(--cyan));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.18), 0 0 22px rgba(42,215,255,.2);
+    }
+    .brand strong {
+      color: #ffffff;
+      font-size: 15px;
+      letter-spacing: 0;
+      font-weight: 1000;
+    }
+    .brand small { color: var(--dim); font-size: 11px; font-weight: 900; }
+    .brand em { color: var(--muted); font-style: normal; font-size: 11px; font-weight: 900; }
+    .nav-links {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+    }
+    .nav-links a {
+      min-width: 54px;
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .nav-links a.active {
+      background: #f4efe6;
+      color: #0b0f14;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(53,240,138,.11);
+    }
+    .select, .search {
+      height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #0a0e13;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .select { min-width: 116px; padding: 0 8px; }
+    .search { width: 114px; padding: 0 9px; }
+    .icon-btn, .copy-btn, .risk-pill {
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #0c1016;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .icon-btn { width: 31px; }
+    .copy-btn { padding: 0 10px; }
+    .risk-pill {
+      grid-template-columns: auto auto;
+      gap: 6px;
+      min-width: 84px;
+      padding: 0 8px;
+      border-color: rgba(255,159,46,.45);
+      color: #fff0cd;
+    }
+    .risk-pill b {
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--amber);
+      color: #170e04;
+      font-size: 10px;
+    }
+
+    .contextbar {
+      display: grid;
+      grid-template-columns: 260px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      background: #0b0f14;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .contextbar b { color: var(--ink); }
+    .clock { justify-self: center; color: #d5e2f0; letter-spacing: .12em; }
+    .view-controls { display: flex; gap: 5px; align-items: center; }
+    .view-controls button {
+      height: 24px;
+      min-width: 34px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #111720;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .view-controls button.active { color: #06100b; background: var(--green); border-color: var(--green); }
+
+    .map-shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      min-height: 0;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+      background: #14191d;
+    }
+    .map-canvas {
+      position: relative;
+      grid-column: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(104, 122, 140, .20) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(104, 122, 140, .16) 1px, transparent 1px),
+        radial-gradient(circle at 47% 40%, rgba(42, 215, 255, .08), transparent 34%),
+        linear-gradient(135deg, #252a2c, #13181d 45%, #0c1115);
+      background-size: 74px 74px, 74px 74px, auto, auto;
+    }
+    .real-map,
+    .map-tint,
+    #zoneLayer,
+    #routeLayer,
+    #heatLayer,
+    #riskLayer,
+    #pathLayer,
+    #markerLayer {
+      position: absolute;
+      inset: 0;
+    }
+    .real-map {
+      z-index: 0;
+      opacity: .92;
+      filter: saturate(.72) brightness(.76) contrast(1.08);
+    }
+    .amap-fallback {
+      position: absolute;
+      inset: -7%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      opacity: .92;
+      filter: saturate(.98) brightness(1.04) contrast(.98);
+      transform: scale(1.02);
+      transform-origin: center;
+    }
+    .amap-fallback img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .map-tint {
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(104, 122, 140, .18) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(104, 122, 140, .14) 1px, transparent 1px),
+        radial-gradient(circle at 46% 41%, rgba(42, 215, 255, .09), transparent 34%);
+      background-size: 74px 74px, 74px 74px, auto;
+      mix-blend-mode: screen;
+    }
+    #zoneLayer { z-index: 4; pointer-events: none; }
+    #routeLayer,
+    #heatLayer,
+    #riskLayer,
+    #pathLayer { display: none; }
+    #markerLayer { z-index: 12; pointer-events: none; }
+    .maplibregl-canvas { outline: 0; }
+    .maplibregl-control-container { font-family: inherit; }
+    .maplibregl-ctrl-bottom-left,
+    .maplibregl-ctrl-bottom-right { display: none; }
+    .water {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      opacity: .62;
+      background:
+        radial-gradient(ellipse at 31% 73%, rgba(37, 75, 95, .62), transparent 30%),
+        radial-gradient(ellipse at 79% 31%, rgba(35, 62, 76, .58), transparent 24%),
+        linear-gradient(115deg, transparent 0 39%, rgba(38,67,81,.45) 39% 45%, transparent 45% 100%);
+      pointer-events: none;
+    }
+    .poi-label {
+      position: absolute;
+      display: grid;
+      gap: 2px;
+      transform: translate(-50%, -50%);
+      color: color-mix(in srgb, var(--tone) 72%, #ffffff);
+      font-size: 12px;
+      font-weight: 1000;
+      text-shadow: 0 1px 8px #05080c, 0 0 1px #05080c;
+      pointer-events: none;
+    }
+    .poi-label small {
+      width: max-content;
+      padding: 1px 5px;
+      border: 1px solid rgba(150,165,184,.16);
+      border-radius: 2px;
+      background: rgba(7, 11, 16, .62);
+      color: rgba(220, 232, 245, .78);
+      font-size: 9px;
+      font-weight: 900;
+    }
+    .marker {
+      position: absolute;
+      z-index: 8;
+      pointer-events: auto;
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 2px solid rgba(5, 8, 11, .92);
+      background: var(--tone);
+      color: #071016;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.20);
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      font-weight: 1000;
+      transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+    .marker.dim { opacity: .11; pointer-events: none; }
+    .marker.active {
+      width: 22px;
+      height: 22px;
+      transform: translate(-50%, -50%) scale(1.12);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.72);
+    }
+    .marker label {
+      position: absolute;
+      left: 25px;
+      top: -8px;
+      min-width: 160px;
+      max-width: 230px;
+      padding: 5px 7px;
+      border: 1px solid rgba(220, 232, 245, .22);
+      border-radius: 3px;
+      background: rgba(7, 10, 14, .92);
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 1000;
+      line-height: 1.24;
+      text-align: left;
+      pointer-events: none;
+    }
+    .marker label span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+    }
+    .marker label b {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 1px 5px;
+      border-radius: 2px;
+      background: color-mix(in srgb, var(--tone) 22%, rgba(255,255,255,.06));
+      color: color-mix(in srgb, var(--tone) 72%, #ffffff);
+      font-size: 9px;
+    }
+
+    .layer-panel {
+      position: absolute;
+      z-index: 18;
+      left: 10px;
+      top: 10px;
+      width: 190px;
+      max-height: calc(100% - 22px);
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(10, 14, 19, .92);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .lp-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 7px;
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .lp-head button {
+      width: 24px;
+      height: 22px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .layer-search {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .layer-search input {
+      width: 100%;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #151a20;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .layers {
+      min-height: 0;
+      overflow: auto;
+      padding: 7px 8px;
+    }
+    .layer-row {
+      width: 100%;
+      min-height: 30px;
+      display: grid;
+      grid-template-columns: 18px 20px 1fr auto;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 5px;
+      color: var(--muted);
+      text-align: left;
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .check {
+      width: 17px;
+      height: 17px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(150,165,184,.34);
+      border-radius: 3px;
+      color: transparent;
+      background: #0a0f14;
+      font-size: 10px;
+    }
+    .layer-row.active .check {
+      color: #06100b;
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .layer-icon {
+      color: var(--tone);
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .layer-count { color: var(--dim); font-size: 9px; }
+    .map-title {
+      position: absolute;
+      z-index: 11;
+      left: 12px;
+      top: 8px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 1000;
+      pointer-events: none;
+    }
+    .time-range {
+      position: absolute;
+      z-index: 16;
+      right: 432px;
+      top: 8px;
+      display: flex;
+      gap: 4px;
+    }
+    .time-range button {
+      min-width: 35px;
+      height: 24px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(9, 13, 18, .88);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .time-range button.active {
+      color: #06100b;
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .zoom-stack {
+      position: absolute;
+      right: 432px;
+      top: 44px;
+      z-index: 16;
+      display: grid;
+      border: 1px solid var(--line);
+      background: rgba(9, 13, 18, .9);
+    }
+    .zoom-stack button {
+      width: 30px;
+      height: 30px;
+      border-bottom: 1px solid var(--line);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .zoom-stack button:last-child { border-bottom: 0; }
+    .map-legend {
+      position: absolute;
+      z-index: 16;
+      left: calc((100% - 420px) / 2);
+      bottom: 9px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(8, 11, 15, .88);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .map-legend i {
+      width: 8px;
+      height: 8px;
+      display: inline-block;
+      margin-right: 4px;
+      border-radius: 50%;
+      background: var(--tone);
+    }
+
+    .city-detail {
+      position: absolute;
+      z-index: 30;
+      right: 434px;
+      bottom: 20px;
+      width: 340px;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      background: rgba(8, 12, 17, .94);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .city-detail.hidden { display: none; }
+    .detail-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+    }
+    .detail-head h2 { margin: 0 0 4px; font-size: 15px; line-height: 1.18; }
+    .detail-head p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .detail-head button {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .detail-body {
+      display: grid;
+      gap: 7px;
+      padding: 9px;
+    }
+    .kv-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+    .kv {
+      padding: 6px;
+      border: 1px solid rgba(150,165,184,.18);
+      border-radius: 3px;
+      background: rgba(20, 27, 34, .7);
+    }
+    .kv span { display: block; color: var(--dim); font-size: 9px; font-weight: 900; }
+    .kv b { display: block; margin-top: 3px; font-size: 12px; line-height: 1.1; }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 62px 1fr;
+      gap: 7px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(150,165,184,.14);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.38;
+    }
+    .detail-row b { color: var(--ink); font-size: 10px; }
+    .detail-actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      padding: 8px 9px;
+      border-top: 1px solid var(--line);
+      background: rgba(12, 17, 23, .9);
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 34% 36% 30%;
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      background: #080b0f;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      display: grid;
+      grid-template-rows: 34px 1fr;
+      overflow: hidden;
+    }
+    .panel > div {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .panel:last-child { border-right: 0; }
+    .panel-head {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 7px;
+      align-items: center;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: #10151b;
+      font-size: 11px;
+      font-weight: 1000;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .panel-head b { color: #fff; }
+    .panel-head .count { color: var(--red); }
+    .panel-icon {
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .panel-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-tabs button {
+      min-height: 25px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: #12171e;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+    .panel-tabs button.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+    .panel-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(42, 215, 255, .72) rgba(150,165,184,.10);
+    }
+    .news-feature {
+      position: relative;
+      min-height: 118px;
+      margin-bottom: 8px;
+      padding: 12px;
+      border: 1px solid rgba(150,165,184,.18);
+      background:
+        linear-gradient(135deg, rgba(42, 215, 255, .26), transparent 42%),
+        linear-gradient(90deg, #1a2530, #0d1116);
+      overflow: hidden;
+    }
+    .news-feature h3 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 14px;
+      line-height: 1.28;
+    }
+    .news-feature p {
+      margin: 7px 0 0;
+      max-width: 72ch;
+      color: #b9c9d9;
+      font-size: 10px;
+      line-height: 1.48;
+    }
+    .news-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .news-metric {
+      min-width: 0;
+      padding: 6px;
+      border: 1px solid rgba(150,165,184,.14);
+      border-radius: 3px;
+      background: rgba(7, 11, 16, .42);
+    }
+    .news-metric span {
+      display: block;
+      color: var(--dim);
+      font-size: 9px;
+      font-weight: 900;
+    }
+    .news-metric b {
+      display: block;
+      margin-top: 3px;
+      color: var(--green);
+      font-size: 13px;
+      line-height: 1.1;
+    }
+    .news-row, .signal-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 66px 1fr auto;
+      gap: 7px;
+      align-items: start;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(150,165,184,.13);
+      text-align: left;
+    }
+    .news-row:last-child, .signal-row:last-child { border-bottom: 0; }
+    .source {
+      color: var(--tone);
+      font-size: 10px;
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+    .news-row b, .signal-row b {
+      display: block;
+      color: #fff;
+      font-size: 11px;
+      line-height: 1.32;
+    }
+    .news-row span, .signal-row span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.3;
+      font-weight: 800;
+    }
+    .badge {
+      min-width: 31px;
+      min-height: 20px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--tone) 45%, rgba(150,165,184,.25));
+      border-radius: 999px;
+      color: var(--tone);
+      background: color-mix(in srgb, var(--tone) 11%, transparent);
+      font-size: 10px;
+      font-weight: 1000;
+      font-style: normal;
+    }
+    .webcam-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .cam {
+      min-height: 112px;
+      border: 1px solid rgba(150,165,184,.18);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--tone) 22%, transparent), transparent 34%),
+        linear-gradient(0deg, rgba(42,215,255,.12), rgba(255,255,255,.02)),
+        #171d23;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .cam.focused {
+      grid-column: 1 / -1;
+      border-color: rgba(53, 240, 138, .48);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--green) 20%, transparent), transparent 36%),
+        linear-gradient(0deg, rgba(42,215,255,.13), rgba(255,255,255,.02)),
+        #16221f;
+    }
+    .cam-head {
+      padding: 6px 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .cam-body {
+      display: grid;
+      align-content: center;
+      gap: 5px;
+      padding: 8px;
+      color: #e6f2ff;
+      font-size: 12px;
+      font-weight: 1000;
+      text-align: left;
+    }
+    .cam-body b {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+    .cam-body span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.38;
+      font-weight: 800;
+    }
+    .cam-foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 8px 8px;
+      color: var(--dim);
+      font-size: 9px;
+      font-weight: 900;
+    }
+    .right-stack {
+      position: relative;
+      z-index: 22;
+      grid-column: 2;
+      width: auto;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: auto;
+      padding: 8px;
+      border-left: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(11, 17, 24, .96), rgba(6, 9, 13, .98)),
+        #080b0f;
+      pointer-events: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(42, 215, 255, .65) rgba(150,165,184,.10);
+    }
+    .float-panel {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: rgba(9, 13, 18, .92);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      pointer-events: auto;
+    }
+    .float-panel.collapsed .float-body { display: none; }
+    .float-head {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 6px;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 8px;
+      border-bottom: 1px solid var(--line);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+    .float-head button {
+      width: 20px;
+      height: 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .float-body {
+      max-height: 220px;
+      overflow: auto;
+      padding: 8px;
+    }
+    .selected-event-card {
+      border-color: rgba(42, 215, 255, .45);
+      background:
+        linear-gradient(180deg, rgba(42, 215, 255, .12), rgba(9, 13, 18, .94) 32%),
+        rgba(9, 13, 18, .94);
+    }
+    .selected-intel-body { max-height: 318px; }
+    .selected-summary {
+      padding: 8px;
+      border: 1px solid rgba(150,165,184,.18);
+      border-radius: 3px;
+      background: rgba(19, 27, 36, .72);
+    }
+    .selected-summary b {
+      display: block;
+      color: #fff;
+      font-size: 13px;
+      line-height: 1.28;
+    }
+    .selected-summary span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .selected-summary p {
+      margin: 7px 0 0;
+      color: #c5d6e7;
+      font-size: 10px;
+      line-height: 1.48;
+    }
+    .source-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 8px 0;
+    }
+    .source-chip {
+      min-height: 22px;
+      padding: 0 7px;
+      border: 1px solid rgba(150,165,184,.18);
+      border-radius: 999px;
+      background: rgba(16, 22, 29, .78);
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 1000;
+    }
+    .material-list {
+      display: grid;
+      gap: 6px;
+    }
+    .material-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 7px;
+      align-items: start;
+      padding: 7px;
+      border: 1px solid rgba(150,165,184,.15);
+      border-radius: 3px;
+      background: rgba(7, 11, 16, .58);
+      text-align: left;
+    }
+    .material-row:hover { border-color: rgba(42, 215, 255, .44); }
+    .material-row.active {
+      border-color: rgba(53, 240, 138, .55);
+      background: rgba(21, 39, 31, .68);
+    }
+    .material-thumb {
+      width: 42px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(150,165,184,.20);
+      border-radius: 3px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--tone) 30%, transparent), transparent),
+        #121820;
+      color: var(--tone);
+      font-size: 9px;
+      font-weight: 1000;
+    }
+    .material-copy b {
+      display: block;
+      color: #fff;
+      font-size: 10px;
+      line-height: 1.32;
+    }
+    .material-copy span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.36;
+      font-weight: 800;
+    }
+    .material-meta {
+      display: grid;
+      justify-items: end;
+      gap: 4px;
+      color: var(--dim);
+      font-size: 9px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .selected-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .selected-actions .copy-btn {
+      width: 100%;
+      min-height: 27px;
+      color: #d9e9f7;
+    }
+    .brief {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.42;
+    }
+    .focus-row, .forecast-row, .cii-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 7px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(150,165,184,.13);
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.32;
+    }
+    .focus-row:last-child, .forecast-row:last-child, .cii-row:last-child { border-bottom: 0; }
+    .focus-row b, .forecast-row b, .cii-row b { color: #fff; font-size: 11px; }
+    .bar {
+      height: 5px;
+      margin-top: 4px;
+      border-radius: 999px;
+      background: rgba(150,165,184,.18);
+      overflow: hidden;
+    }
+    .bar i {
+      display: block;
+      width: var(--w);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--tone);
+    }
+
+    .timeline-footer {
+      display: grid;
+      grid-template-columns: 320px 1fr 320px;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,.04);
+      background: #06090c;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 12px;
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+    .timeline {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .tl-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(150,165,184,.27);
+    }
+    .tl-dot {
+      position: absolute;
+      left: var(--x);
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      border: 2px solid #06090c;
+      background: var(--tone);
+    }
+    .footer-links {
+      display: flex;
+      gap: 14px;
+      justify-content: flex-end;
+      padding: 0 12px;
+    }
+    .toast {
+      position: fixed;
+      z-index: 150;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%) translateY(14px);
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: rgba(8, 12, 17, .96);
+      color: var(--ink);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Dashboard-aligned monitor surface */
+    .topnav,
+    .contextbar,
+    .timeline-footer {
+      background: var(--bar);
+      border-color: var(--line);
+      color: var(--muted);
+      box-shadow: none;
+    }
+    .contextbar b,
+    .clock,
+    .brand strong,
+    .panel-head b,
+    .float-head span {
+      color: var(--ink);
+    }
+    .brand small,
+    .actions,
+    .footer-links {
+      color: var(--muted);
+    }
+    .nav-links {
+      background: rgba(232, 225, 214, .84);
+      border-color: var(--line);
+      border-radius: 999px;
+      padding: 3px;
+    }
+    .nav-links a {
+      color: #3e4853;
+      border-radius: 999px;
+    }
+    .nav-links a.active {
+      background: #14181d;
+      color: #fffdf7;
+      box-shadow: 0 4px 14px rgba(20, 24, 29, .12);
+    }
+    .select,
+    .copy-btn,
+    .icon-btn,
+    .view-controls button,
+    .time-range button,
+    .zoom-stack button,
+    .panel-tabs button,
+    .layer-search input,
+    .source-chip {
+      color: var(--ink);
+      background: var(--panel-solid);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+    .copy-btn:hover,
+    .icon-btn:hover,
+    .panel-tabs button:hover,
+    .time-range button:hover {
+      border-color: #9d8f79;
+      background: #f7f1e8;
+    }
+    .copy-btn.primary,
+    .view-controls button.active,
+    .time-range button.active,
+    .panel-tabs button.active {
+      background: #14181d;
+      border-color: #14181d;
+      color: #fffdf7;
+    }
+    .map-shell {
+      background: var(--bg);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .real-map {
+      opacity: 1;
+      filter: saturate(.92) brightness(.98) contrast(.98);
+    }
+    .map-tint {
+      background:
+        linear-gradient(90deg, rgba(20, 24, 29, .10) 0 1px, transparent 1px 84px),
+        linear-gradient(0deg, rgba(20, 24, 29, .08) 0 1px, transparent 1px 72px),
+        linear-gradient(110deg, rgba(79, 141, 255, .08), transparent 42%),
+        linear-gradient(180deg, rgba(243, 239, 231, .20), rgba(243, 239, 231, .04));
+      opacity: .78;
+      mix-blend-mode: multiply;
+    }
+    .water {
+      opacity: .05;
+    }
+    .layer-panel,
+    .float-panel,
+    .panel,
+    .city-detail,
+    .map-title,
+    .map-legend,
+    .zoom-stack {
+      background: var(--panel);
+      border-color: var(--line);
+      box-shadow: var(--shadow);
+    }
+    .layer-panel {
+      backdrop-filter: blur(12px);
+    }
+    .lp-head,
+    .float-head,
+    .panel-head {
+      color: var(--ink);
+      background: rgba(255, 253, 247, .72);
+      border-color: var(--line);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .panel-head {
+      grid-template-columns: 1fr auto auto;
+      min-height: 34px;
+      padding: 8px 10px;
+    }
+    .sort-note {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .panel-head .count {
+      color: #d94a58;
+      font-weight: 1000;
+    }
+    .layer-row,
+    .news-row,
+    .signal-row,
+    .chain-card,
+    .material-row,
+    .detail-row {
+      background: transparent;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+    .layer-row:hover,
+    .news-row:hover,
+    .chain-card:hover,
+    .material-row:hover {
+      background: rgba(79, 141, 255, .08);
+    }
+    .layer-icon,
+    .check,
+    .source,
+    .material-thumb {
+      background: color-mix(in srgb, var(--tone), #fff 84%);
+      color: color-mix(in srgb, var(--tone), #111 42%);
+      border-color: color-mix(in srgb, var(--tone), #fff 55%);
+    }
+    .news-feature,
+    .cam,
+    .selected-summary,
+    .news-metric,
+    .kv,
+    .selected-event-card {
+      background: rgba(255, 253, 247, .82);
+      border-color: var(--line);
+      color: var(--ink);
+    }
+    .selected-event-card {
+      flex: 1 1 auto;
+      min-height: 0;
+      background:
+        linear-gradient(180deg, rgba(240, 248, 255, .92), rgba(255, 253, 247, .94));
+    }
+    .selected-intel-body {
+      max-height: none;
+      height: calc(100% - 36px);
+    }
+    .selected-summary p,
+    .news-feature p,
+    .news-row span span,
+    .signal-row span span,
+    .chain-card span span,
+    .cam-body span,
+    .material-copy span,
+    .brief,
+    .detail-row span {
+      color: var(--muted);
+    }
+    .news-row b,
+    .signal-row b,
+    .chain-card b,
+    .cam-body b,
+    .selected-summary b,
+    .news-feature h3,
+    .detail-row b {
+      color: var(--ink);
+    }
+    .chain-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 76px 1fr auto;
+      gap: 8px;
+      align-items: start;
+      padding: 11px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+    .chain-card.active {
+      background: rgba(42, 215, 255, .10);
+    }
+    .badge {
+      background: color-mix(in srgb, var(--tone), #fff 82%);
+      color: color-mix(in srgb, var(--tone), #111 38%);
+      border-color: color-mix(in srgb, var(--tone), #fff 48%);
+    }
+    .marker label {
+      color: #edf4fc;
+      background: rgba(20, 24, 29, .92);
+      border-color: rgba(237, 244, 252, .18);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .22);
+    }
+    .marker label span {
+      color: #b8c5d4;
+    }
+    .marker label b {
+      color: #fff;
+      background: color-mix(in srgb, var(--tone), transparent 70%);
+    }
+    .maplibregl-popup-content {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 253, 247, .96);
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .map-popup-card { display: grid; gap: 7px; min-width: 230px; }
+    .map-popup-card b { font-size: 13px; }
+    .map-popup-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .map-popup-meta { display: flex; flex-wrap: wrap; gap: 5px; }
+    .map-popup-meta span { min-height: 20px; display: inline-grid; place-items: center; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-solid); color: var(--muted); font-size: 10px; font-weight: 900; }
+    .map-popup-card a { min-height: 28px; display: grid; place-items: center; border-radius: 9px; background: var(--ink); color: #fffdf7; font-size: 11px; font-weight: 900; }
+    .bottom-grid {
+      background: rgba(255, 253, 247, .74);
+      border-color: var(--line);
+    }
+    .panel {
+      border-right-color: var(--line);
+    }
+    .panel-body::-webkit-scrollbar-thumb,
+    .float-body::-webkit-scrollbar-thumb,
+    .layers::-webkit-scrollbar-thumb {
+      background: rgba(109, 94, 72, .36);
+    }
+
+    /* City situation surface aligned with city_event_heat_radar_html */
+    .app {
+      height: 100dvh;
+      grid-template-rows: 44px 42px 84px minmax(0, 1fr) 202px;
+      gap: 0;
+      padding: 0;
+      background: #f4f0e8;
+    }
+    .topnav {
+      background: #0d131c;
+      color: #edf4fb;
+      border-bottom-color: rgba(255,255,255,.10);
+    }
+    .topnav .brand strong,
+    .topnav .brand small { color: #f7fbff; }
+    .topnav .nav-links {
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.12);
+    }
+    .topnav .nav-links a { color: #c8d2df; }
+    .topnav .nav-links a.active {
+      background: #fffdf7;
+      color: #111820;
+    }
+    .topnav .actions { color: #d5e0eb; }
+    .topnav .select {
+      min-width: 104px;
+      height: 28px;
+      border-radius: 6px;
+      border-color: rgba(255,255,255,.14);
+      background: rgba(255,255,255,.94);
+      color: #121820;
+    }
+    .monitor-toolbar {
+      display: grid;
+      grid-template-columns: minmax(250px, 1.15fr) auto minmax(260px, 1fr) auto auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,253,247,.96);
+    }
+    .scope-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .scope-pill b {
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .monitor-toolbar .time-range {
+      position: static;
+      z-index: auto;
+      display: inline-flex;
+      gap: 4px;
+    }
+    .monitor-toolbar .time-range button {
+      min-width: 64px;
+      height: 28px;
+      border-radius: 7px;
+      background: #f2eadf;
+      color: #364351;
+      border-color: var(--line);
+    }
+    .monitor-toolbar .time-range button.active {
+      background: #14181d;
+      border-color: #14181d;
+      color: #fffdf7;
+    }
+    .search-box {
+      height: 30px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 7px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdf7;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      min-width: 0;
+    }
+    .search-box input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .observe-btn,
+    .toolbar-status {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdf7;
+      font-size: 11px;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .observe-btn span {
+      color: var(--purple);
+      font-size: 10px;
+    }
+    .toolbar-status b { color: #149264; }
+    .monitor-toolbar .clock {
+      justify-self: end;
+      color: var(--ink);
+      letter-spacing: 0;
+      font-size: 11px;
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fffaf1;
+    }
+    .kpi {
+      position: relative;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 0 14px;
+      border-right: 1px solid var(--line);
+    }
+    .kpi:last-child { border-right: 0; }
+    .kpi-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--tone) 18%, #fff 82%);
+      color: color-mix(in srgb, var(--tone) 78%, #14181d 22%);
+      font-weight: 1000;
+      font-size: 13px;
+    }
+    .kpi-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+    .kpi label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .kpi-value {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      margin-top: 2px;
+    }
+    .kpi strong {
+      display: inline-block;
+      color: var(--ink);
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .kpi-delta {
+      display: inline-flex;
+      align-items: center;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .kpi-delta.up {
+      color: #df4b54;
+      background: rgba(223, 75, 84, .10);
+    }
+    .kpi-delta.down {
+      color: #149264;
+      background: rgba(20, 146, 100, .11);
+    }
+    .kpi-delta.flat {
+      color: #2f6df6;
+      background: rgba(47, 109, 246, .10);
+    }
+    .kpi small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .map-shell {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 236px minmax(520px, 1fr) minmax(300px, .48fr) minmax(300px, .50fr);
+      grid-template-rows: 38px minmax(0, 1fr) minmax(160px, .62fr) 154px;
+      gap: 8px;
+      padding: 8px 10px;
+      overflow: hidden;
+      background: #f4f0e8;
+      border-bottom: 1px solid var(--line);
+    }
+    .layer-panel {
+      position: relative;
+      left: auto;
+      top: auto;
+      z-index: 1;
+      grid-column: 1;
+      grid-row: 1 / 5;
+      width: auto;
+      max-height: none;
+      height: 100%;
+      border-radius: 8px;
+      background: rgba(255,253,247,.96);
+    }
+    .lp-head {
+      min-height: 36px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+    .lp-head button {
+      width: auto;
+      min-width: 34px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 6px;
+      background: #f4eee5;
+      color: var(--muted);
+    }
+    .layer-search input {
+      border-radius: 7px;
+      background: #f8f3ea;
+      color: var(--ink);
+    }
+    .layer-row {
+      min-height: 27px;
+      grid-template-columns: 18px 18px 1fr auto;
+      margin-bottom: 2px;
+      color: #26313d;
+      font-size: 10.5px;
+    }
+    .layer-section {
+      display: grid;
+      gap: 3px;
+      padding-bottom: 9px;
+      margin-bottom: 9px;
+      border-bottom: 1px solid rgba(216,205,188,.64);
+    }
+    .layer-section:last-child {
+      margin-bottom: 0;
+      border-bottom: 0;
+    }
+    .layer-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 24px;
+      padding: 0 2px;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .layer-section-title small {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+    }
+    .layer-event-items {
+      display: grid;
+      gap: 3px;
+      max-height: 160px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .layer-row.source-only,
+    .map-layer-row {
+      min-height: 28px;
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      gap: 7px;
+      align-items: center;
+      width: 100%;
+      color: #26313d;
+      text-align: left;
+      font-size: 10.5px;
+      font-weight: 1000;
+    }
+    .layer-row.source-only .check,
+    .map-layer-row .check {
+      color: #fff;
+      background: var(--tone);
+      border-color: var(--tone);
+    }
+    .map-layer-row input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: #df4b54;
+    }
+    .map-layer-row.heat-opacity-row {
+      grid-template-columns: 18px minmax(0, 1fr) 62px 36px;
+    }
+    .map-layer-row.heat-opacity-row input[type="range"] {
+      grid-column: auto;
+      width: 62px;
+      min-width: 62px;
+    }
+    .layer-note {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .check {
+      border-radius: 4px;
+      background: #f3eadf;
+    }
+    .layer-row.active .check {
+      background: #3f73f4;
+      border-color: #3f73f4;
+      color: #fff;
+    }
+    .heat-key {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 5px 8px;
+      align-items: center;
+      padding: 9px 10px 10px;
+      border-top: 1px solid var(--line);
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .layer-panel > .heat-key {
+      display: none;
+    }
+    .heat-key b { grid-column: 1 / -1; color: var(--ink); font-size: 11px; }
+    .heat-key i {
+      grid-column: 1 / -1;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #db4054, #f36b46, #f3d35d, #38b477);
+    }
+    .map-panel {
+      min-width: 0;
+      min-height: 0;
+      display: contents;
+    }
+    .map-tabs {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .map-canvas {
+      grid-column: 2;
+      grid-row: 2 / 4;
+    }
+    .map-tabs {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,253,247,.96);
+      overflow: hidden;
+    }
+    .map-tabs button {
+      height: 28px;
+      padding: 0 12px;
+      border-radius: 15px;
+      color: #3f4b58;
+      font-size: 11px;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .map-tabs button.active {
+      background: #14181d;
+      color: #fffdf7;
+    }
+    .map-canvas {
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #dfe9e2;
+    }
+    .real-map { filter: saturate(.88) brightness(1.03) contrast(.96); }
+    .map-tint {
+      opacity: .55;
+      background:
+        radial-gradient(circle at 34% 44%, rgba(255,78,95,.12), transparent 18%),
+        radial-gradient(circle at 55% 68%, rgba(255,78,95,.10), transparent 18%),
+        radial-gradient(circle at 62% 40%, rgba(79,141,255,.08), transparent 20%),
+        linear-gradient(90deg, rgba(255,255,255,.18), rgba(255,255,255,.05));
+      mix-blend-mode: normal;
+    }
+    #routeLayer,
+    #heatLayer,
+    #riskLayer,
+    #pathLayer {
+      display: block;
+      pointer-events: none;
+    }
+    #heatLayer { z-index: 5; }
+    #pathLayer { z-index: 6; }
+    #routeLayer { z-index: 7; }
+    #zoneLayer { z-index: 8; }
+    #markerLayer { z-index: 12; }
+    .heat-blob {
+      position: absolute;
+      width: var(--size);
+      height: var(--size);
+      left: var(--x);
+      top: var(--y);
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, color-mix(in srgb, var(--tone) 58%, transparent) 0 14%, color-mix(in srgb, var(--tone) 24%, transparent) 34%, transparent 72%);
+      filter: blur(.3px);
+      opacity: var(--alpha);
+    }
+    .heat-blob::after {
+      content: "";
+      position: absolute;
+      inset: 30%;
+      border-radius: inherit;
+      border: 1px solid color-mix(in srgb, var(--tone) 54%, #fff 20%);
+      animation: heatPulse 2.4s ease infinite;
+    }
+    .flow-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .flow-svg path {
+      fill: none;
+      stroke: rgba(223, 75, 84, .45);
+      stroke-width: 2;
+      stroke-dasharray: 6 6;
+      vector-effect: non-scaling-stroke;
+    }
+    .flow-svg path.secondary {
+      stroke: rgba(47, 109, 246, .34);
+      stroke-width: 1.5;
+    }
+    .marker {
+      width: 22px;
+      height: 22px;
+      border: 3px solid #fffdf7;
+      box-shadow: 0 6px 16px rgba(31,42,54,.18), 0 0 0 1px rgba(20,24,29,.12);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,.24);
+    }
+    .marker.active {
+      width: 36px;
+      height: 36px;
+      color: #fff;
+      box-shadow: 0 0 0 5px rgba(255,78,95,.16), 0 10px 28px rgba(223,75,84,.24);
+      font-size: 12px;
+    }
+    .marker.active::after {
+      content: "";
+      position: absolute;
+      inset: -11px;
+      border-radius: 50%;
+      border: 1px solid color-mix(in srgb, var(--tone) 58%, transparent);
+      animation: heatPulse 2.1s ease infinite;
+    }
+    .marker label {
+      left: 32px;
+      top: -11px;
+      border-radius: 8px;
+    }
+    .map-title {
+      left: 14px;
+      top: 12px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(255,253,247,.88);
+      color: var(--ink);
+      box-shadow: 0 8px 22px rgba(31,42,54,.08);
+    }
+    .zoom-stack {
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fffdf7;
+    }
+    .zoom-stack button {
+      color: var(--ink);
+      background: #fffdf7;
+    }
+    .map-mode {
+      position: absolute;
+      right: 12px;
+      bottom: 14px;
+      z-index: 18;
+      display: flex;
+      gap: 6px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.92);
+      box-shadow: var(--shadow);
+    }
+    .map-mode button {
+      width: 60px;
+      min-width: 60px;
+      min-height: 48px;
+      display: grid;
+      grid-template-rows: 26px auto;
+      gap: 3px;
+      place-items: center;
+      padding: 4px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 1000;
+      color: var(--muted);
+    }
+    .map-mode button.active {
+      background: #edf2ff;
+      color: #2f6df6;
+    }
+    .mode-thumb {
+      width: 48px;
+      height: 24px;
+      border: 1px solid rgba(20,24,29,.15);
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.4);
+    }
+    .thumb-map {
+      background:
+        linear-gradient(25deg, transparent 0 42%, rgba(108,150,106,.55) 43% 47%, transparent 48%),
+        linear-gradient(115deg, transparent 0 54%, rgba(220,137,96,.58) 55% 60%, transparent 61%),
+        repeating-linear-gradient(90deg, rgba(115,129,141,.22) 0 1px, transparent 1px 12px),
+        repeating-linear-gradient(0deg, rgba(115,129,141,.20) 0 1px, #eef1e7 1px 11px);
+    }
+    .thumb-satellite {
+      background:
+        radial-gradient(circle at 70% 20%, rgba(235,222,154,.42), transparent 20%),
+        radial-gradient(circle at 26% 62%, rgba(76,126,89,.62), transparent 30%),
+        radial-gradient(circle at 58% 68%, rgba(50,85,69,.52), transparent 32%),
+        linear-gradient(135deg, #576452, #9a876a);
+    }
+    .thumb-heat {
+      background:
+        radial-gradient(circle at 34% 54%, rgba(223,75,84,.92), rgba(223,75,84,.36) 26%, transparent 44%),
+        radial-gradient(circle at 67% 38%, rgba(255,159,46,.76), rgba(255,159,46,.34) 24%, transparent 48%),
+        linear-gradient(135deg, #d9e6df, #eef3ed);
+    }
+    .map-legend {
+      left: auto;
+      right: 12px;
+      top: 12px;
+      bottom: auto;
+      transform: none;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      border-radius: 8px;
+      background: rgba(255,253,247,.92);
+      color: var(--ink);
+    }
+    .map-legend.heat-legend {
+      width: 222px;
+      padding: 10px 11px;
+      font-size: 10px;
+      font-weight: 900;
+      box-shadow: 0 12px 26px rgba(31,42,54,.14);
+    }
+    .map-legend.heat-legend b {
+      color: var(--ink);
+      font-size: 11px;
+    }
+    .legend-gradient {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      color: var(--muted);
+    }
+    .legend-gradient i {
+      display: block;
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #db4054 0%, #f36b46 34%, #f3d35d 66%, #38b477 100%);
+      box-shadow: inset 0 0 0 1px rgba(20,24,29,.12);
+    }
+    .legend-scale-labels {
+      display: flex;
+      justify-content: space-between;
+      color: #596574;
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .legend-explain {
+      display: grid;
+      gap: 3px;
+      margin: 0;
+      color: #596574;
+      line-height: 1.35;
+    }
+    .legend-explain strong {
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .mainline-prompt {
+      position: absolute;
+      z-index: 18;
+      left: 50%;
+      top: 50%;
+      width: min(320px, calc(100% - 32px));
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid rgba(20,24,29,.16);
+      border-radius: 10px;
+      background: rgba(255,253,247,.96);
+      box-shadow: 0 18px 42px rgba(31,42,54,.22);
+      color: var(--ink);
+      transform: translate(-50%, -50%);
+    }
+    .mainline-prompt.hidden {
+      display: none;
+    }
+    .mainline-prompt-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: start;
+    }
+    .mainline-prompt b {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+    .mainline-prompt span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+    .prompt-close {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 1000;
+    }
+    .prompt-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .prompt-actions small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .prompt-enter {
+      min-height: 28px;
+      padding: 0 12px;
+      border-radius: 7px;
+      background: #14181d;
+      color: #fffdf7;
+      font-size: 11px;
+      font-weight: 1000;
+    }
+    .city-detail {
+      right: 12px;
+      bottom: 108px;
+      border-radius: 10px;
+      background: rgba(255,253,247,.96);
+      color: var(--ink);
+    }
+    .timeline-panel {
+      grid-column: 2 / 4;
+      grid-row: 4;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: 24px 30px minmax(0, 1fr);
+      gap: 5px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,253,247,.96);
+    }
+    .timeline-panel header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 1000;
+    }
+    .timeline-panel header span,
+    .timeline-panel header small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .timeline-panel .timeline {
+      grid-column: 1;
+      height: 30px;
+    }
+    .timeline-panel .tl-line {
+      background: #c9d0dc;
+    }
+    .timeline-panel .tl-dot {
+      top: 58%;
+      min-width: 0;
+      min-height: 0;
+      width: var(--s);
+      height: var(--s);
+      padding: 0;
+      box-sizing: border-box;
+      border: 1px solid #fffdf7;
+      box-shadow: 0 0 0 1px rgba(20,24,29,.34);
+      transform: translate(-50%, -50%);
+    }
+    .tl-dot-time {
+      position: absolute;
+      left: 50%;
+      top: -16px;
+      transform: translateX(-50%);
+      color: #596574;
+      font-size: 9px;
+      font-weight: 1000;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .timeline-panel .tl-dot.active {
+      box-shadow: 0 0 0 3px rgba(47,109,246,.16), 0 0 0 1px rgba(20,24,29,.38);
+    }
+    .timeline-cards {
+      grid-column: 1;
+      min-width: 0;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(210px, 1fr);
+      gap: 8px;
+      overflow: hidden;
+    }
+    .formula-weights {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .formula-weights i {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+      padding: 5px 4px;
+      border-radius: 6px;
+      background: #f3eee5;
+      color: var(--muted);
+      font-style: normal;
+      text-align: center;
+    }
+    .formula-weights strong {
+      color: var(--ink);
+      font-size: 11px;
+      line-height: 1;
+    }
+    .formula-weights span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 9px;
+    }
+    .tl-card {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto auto auto auto auto;
+      gap: 3px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf7;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 900;
+      text-align: left;
+    }
+    .tl-card.active {
+      border-color: rgba(223,75,84,.36);
+      background: #fff6f3;
+    }
+    .tl-time {
+      color: #14181d;
+      font-size: 11px;
+      font-weight: 1000;
+      line-height: 1;
+    }
+    .tl-title {
+      display: block;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 1000;
+      line-height: 1.24;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tl-place,
+    .tl-media {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tl-metrics {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .tl-metrics b {
+      color: #df4b54;
+      font-size: 11px;
+    }
+    .tl-metrics strong {
+      color: #149264;
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .tl-spark {
+      width: 100%;
+      height: 18px;
+      filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--tone) 26%, transparent));
+    }
+    .tl-spark .spark-glow {
+      stroke: var(--tone);
+      stroke-width: 6;
+      opacity: .18;
+      filter: blur(.1px);
+    }
+    .tl-spark path {
+      fill: none;
+      stroke: var(--tone);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .right-stack {
+      display: contents;
+    }
+    .rank-panel {
+      grid-column: 3;
+      grid-row: 1 / 4;
+      order: 1;
+    }
+    .video-panel {
+      grid-column: 4;
+      grid-row: 1 / 3;
+      order: 2;
+    }
+    .emotion-panel {
+      grid-column: 4;
+      grid-row: 3 / 5;
+      order: 3;
+    }
+    .selected-event-card {
+      grid-column: 2;
+      grid-row: 3;
+      order: 4;
+      display: none;
+    }
+    .float-panel {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 34px minmax(0, 1fr);
+      border-radius: 8px;
+      background: rgba(255,253,247,.96);
+    }
+    .right-stack > .selected-event-card {
+      display: none !important;
+    }
+    .float-head {
+      min-height: 34px;
+      border-bottom-color: var(--line);
+      background: rgba(255,253,247,.72);
+    }
+    .float-head i {
+      color: var(--muted);
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 900;
+    }
+    .float-head button {
+      width: auto;
+      min-width: 34px;
+      padding: 0 7px;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .selected-event-card .float-head {
+      min-height: 30px;
+    }
+    .selected-intel-body {
+      max-height: none;
+      overflow: hidden;
+      padding: 7px;
+    }
+    .selected-event-card .source-chips,
+    .selected-event-card .selected-actions {
+      display: none;
+    }
+    .selected-event-card .selected-summary {
+      padding: 7px;
+    }
+    .selected-event-card .selected-summary b,
+    .selected-event-card .selected-summary span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .selected-event-card .selected-summary b {
+      font-size: 12px;
+    }
+    .selected-event-card .selected-summary p {
+      display: none;
+    }
+    .material-list,
+    #selectedMaterials {
+      display: none;
+    }
+    .rank-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 7px 8px 0;
+    }
+    .rank-tabs button {
+      flex: 1;
+      min-height: 24px;
+      border-radius: 7px;
+      background: #f3eee5;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .rank-tabs button.active {
+      background: #eef3ff;
+      color: #2f6df6;
+    }
+    .rank-panel {
+      grid-template-rows: 34px auto minmax(0, 1fr);
+    }
+    .rank-list {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+      padding: 6px 8px 8px;
+    }
+    .rank-row,
+    .compact-row,
+    .source-row {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(216,205,188,.72);
+      font-size: 11px;
+      text-align: left;
+    }
+    .rank-row {
+      grid-template-columns: 22px minmax(0, 1fr) 76px;
+      align-items: start;
+      min-height: 54px;
+      padding: 8px 0;
+    }
+    .rank-row:last-child,
+    .compact-row:last-child,
+    .source-row:last-child { border-bottom: 0; }
+    .rank-no {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: var(--tone);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .rank-title b,
+    .compact-row b,
+    .source-row b {
+      display: block;
+      color: var(--ink);
+      font-size: 11px;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rank-title {
+      min-width: 0;
+      text-align: left;
+    }
+    .rank-title span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 2px;
+    }
+    .rank-title .rank-meta {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow: hidden;
+      text-align: left;
+    }
+    .rank-meta .meta-text {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-style: normal;
+    }
+    .live-tag {
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      height: 16px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: rgba(223, 75, 84, .12);
+      color: #df4b54;
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 1000;
+    }
+    .rank-score {
+      display: grid;
+      justify-items: end;
+      text-align: right;
+      color: var(--tone);
+      font-size: 12px;
+      font-weight: 1000;
+      line-height: 1.15;
+    }
+    .rank-score small {
+      color: #df4b54;
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .rank-formula {
+      margin-top: auto;
+      display: grid;
+      gap: 7px;
+      padding: 9px 0 0;
+      border-top: 1px solid rgba(216,205,188,.72);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.45;
+      text-align: left;
+    }
+    .rank-formula b {
+      display: block;
+      color: var(--ink);
+      font-size: 11px;
+      margin-bottom: 0;
+    }
+    .rank-formula > span {
+      display: block;
+    }
+    .rank-formula .formula-weights {
+      gap: 5px;
+    }
+    .rank-formula .formula-weights i {
+      padding: 6px 4px;
+      background: #f3eee5;
+    }
+    .video-panel {
+      grid-template-rows: 34px minmax(0, 1fr);
+    }
+    .video-panel .webcam-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      overflow: auto;
+      padding: 8px;
+    }
+    .video-panel .cam {
+      min-height: 86px;
+      display: grid;
+      grid-template-columns: 106px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      column-gap: 8px;
+      padding: 7px;
+      border-radius: 8px;
+      background: #fffdf7;
+      overflow: hidden;
+    }
+    .video-panel .cam::before {
+      content: "LIVE";
+      grid-row: 1 / 3;
+      display: grid;
+      place-items: start end;
+      padding: 6px;
+      border-radius: 7px;
+      background:
+        linear-gradient(135deg, rgba(20,24,29,.16), rgba(20,24,29,.58)),
+        linear-gradient(135deg, color-mix(in srgb, var(--tone) 28%, #d7dfd7), #aebbb4);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .video-panel .cam-head {
+      grid-column: 2;
+      padding: 0;
+      align-self: start;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .video-panel .cam-body {
+      grid-column: 2;
+      min-width: 0;
+      padding: 0;
+      align-content: start;
+      overflow: hidden;
+    }
+    .video-panel .cam-body b,
+    .video-panel .cam-body span {
+      min-width: 0;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      text-overflow: ellipsis;
+    }
+    .video-panel .cam-body b {
+      -webkit-line-clamp: 2;
+    }
+    .video-panel .cam-body span {
+      -webkit-line-clamp: 2;
+      line-height: 1.35;
+    }
+    .video-panel .cam-foot {
+      display: none;
+    }
+    .emotion-panel {
+      grid-template-rows: 34px minmax(0, 1fr);
+    }
+    .emotion-card {
+      display: grid;
+      grid-template-columns: 126px minmax(0, 1fr);
+      grid-template-rows: minmax(118px, auto) minmax(0, 1fr);
+      gap: 9px 11px;
+      align-items: stretch;
+      height: 100%;
+      padding: 10px;
+      border-bottom: 0;
+    }
+    .sentiment-summary {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+      align-content: center;
+      padding: 6px;
+      border: 1px solid rgba(216,205,188,.74);
+      border-radius: 8px;
+      background: #fff9f1;
+    }
+    .donut {
+      width: 90px;
+      height: 90px;
+      place-self: center;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--red) 0 62%, var(--amber) 62% 88%, var(--green) 88% 97%, var(--blue) 97% 100%);
+    }
+    .donut-inner {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #fffdf7;
+      color: var(--ink);
+      font-weight: 1000;
+      line-height: 1;
+      text-align: center;
+    }
+    .donut-inner b {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1;
+    }
+    .donut-inner span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .sentiment-note {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+      text-align: center;
+    }
+    .sentiment-note b {
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.1;
+    }
+    .sentiment-note span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+    .stance-list {
+      display: grid;
+      align-content: stretch;
+      gap: 9px;
+      padding: 10px 11px;
+      border: 1px solid rgba(216,205,188,.74);
+      border-radius: 8px;
+      background: #fffdf7;
+    }
+    .stance-row {
+      display: grid;
+      grid-template-columns: 54px 1fr 38px;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-align: right;
+    }
+    .stance-row span:first-child {
+      text-align: right;
+    }
+    .mini-bar {
+      height: 7px;
+      border-radius: 999px;
+      background: #ece2d4;
+      overflow: hidden;
+    }
+    .mini-bar i {
+      display: block;
+      width: var(--v);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--tone);
+    }
+    .monitor-list {
+      grid-column: 1 / -1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-content: stretch;
+    }
+    .monitor-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 5px 8px;
+      align-items: start;
+      padding: 9px 10px;
+      border: 1px solid rgba(216,205,188,.74);
+      border-radius: 8px;
+      background: #fbf5eb;
+      font-size: 11px;
+    }
+    .monitor-row b { color: var(--ink); font-size: 11px; line-height: 1.2; }
+    .monitor-row span { grid-column: 1 / -1; color: var(--muted); line-height: 1.35; }
+    .monitor-row strong {
+      justify-self: end;
+      color: var(--tone);
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      min-height: 0;
+      padding: 0 10px 8px;
+      background: #f4f0e8;
+      border-bottom: 0;
+    }
+    .bottom-grid .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,253,247,.96);
+    }
+    .bottom-grid .panel-head {
+      grid-template-columns: 1fr auto auto auto;
+    }
+    .more-link {
+      min-height: 22px;
+      padding: 0 7px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f4eee5;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 1000;
+    }
+    .mini-panel .panel-body {
+      padding: 8px 10px;
+    }
+    .compact-row {
+      grid-template-columns: 22px minmax(0, 1fr) auto;
+      min-height: 25px;
+      padding: 4px 0;
+      text-align: left;
+    }
+    .compact-row strong {
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .breakout-row,
+    .platform-row {
+      grid-template-columns: 22px minmax(0, 1fr) auto;
+      min-height: 36px;
+      align-items: start;
+    }
+    .breakout-copy,
+    .platform-copy {
+      min-width: 0;
+      display: grid;
+      gap: 3px;
+    }
+    .breakout-copy b,
+    .platform-copy b {
+      display: block;
+      color: var(--ink);
+      font-size: 11px;
+      line-height: 1.18;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .breakout-copy span,
+    .platform-copy span {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .probability-score {
+      display: grid;
+      justify-items: end;
+      gap: 2px;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 1000;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .probability-score span {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+    }
+    .platform-dots {
+      display: flex;
+      gap: 3px;
+    }
+    .platform-logo {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 6px;
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.24);
+    }
+    .platform-logo svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    .platform-logo.douyin { background: #101217; }
+    .platform-logo.kuaishou { background: #ff6a00; }
+    .platform-logo.toutiao { background: #e84040; }
+    .platform-logo.weibo { background: #df4b54; }
+    .platform-logo.wechat { background: #18a873; }
+    .platform-logo.forum { background: #2f6df6; }
+    .platform-logo.news { background: #39465a; }
+    .platform-logo.group { background: #0ea67a; }
+    .source-row {
+      grid-template-columns: 18px 1fr auto auto;
+      min-height: 19px;
+      gap: 6px;
+      padding: 2px 0;
+    }
+    .source-row .platform-logo {
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+    }
+    .source-row .platform-logo svg {
+      width: 16px;
+      height: 16px;
+    }
+    .tiny-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .hidden-render-targets {
+      display: none;
+    }
+    .timeline-footer {
+      display: none;
+    }
+
+    /* Browser review polish: keep the city console type scale and list rhythm consistent. */
+    .app,
+    .float-panel,
+    .panel,
+    .timeline-panel,
+    .map-title,
+    .map-legend,
+    .city-detail {
+      font-size: 13px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .panel-head b,
+    .float-head span,
+    .timeline-panel header,
+    .rank-title b,
+    .compact-row b,
+    .source-row b,
+    .video-panel .cam-body b,
+    .sentiment-note b,
+    .monitor-row b {
+      font-size: 12px;
+    }
+    .float-panel {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: stretch;
+    }
+    .float-head {
+      min-width: 0;
+    }
+    .float-head span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .panel-head .sort-note,
+    .float-head i,
+    .rank-title span,
+    .compact-row span,
+    .compact-row strong,
+    .source-row span,
+    .video-panel .cam-head,
+    .video-panel .cam-body span,
+    .timeline-panel header span,
+    .timeline-panel header small,
+    .tl-place,
+    .tl-media,
+    .monitor-row span {
+      font-size: 11px;
+    }
+    #newHot,
+    #speedList,
+    #breakoutList,
+    #platformList {
+      display: grid;
+      gap: 5px;
+      align-content: start;
+      overflow: hidden;
+    }
+    #newHot .compact-row,
+    #speedList .compact-row,
+    #breakoutList .compact-row,
+    #platformList .compact-row {
+      height: 49px;
+      min-height: 49px;
+      padding: 4px 0;
+      gap: 8px;
+      border-bottom: 1px solid rgba(216,205,188,.72);
+      align-items: center;
+      overflow: hidden;
+    }
+    #newHot .compact-row,
+    #speedList .compact-row {
+      grid-template-columns: 22px minmax(0, 1fr) auto;
+    }
+    #breakoutList .compact-row,
+    #platformList .compact-row {
+      grid-template-columns: 22px minmax(0, 1fr) minmax(72px, auto);
+    }
+    #newHot .compact-row b,
+    #speedList .compact-row b,
+    #breakoutList .compact-row b,
+    #platformList .compact-row b {
+      white-space: normal;
+      line-height: 1.32;
+    }
+    .breakout-copy span,
+    .platform-copy span {
+      display: block;
+      margin-top: 3px;
+      line-height: 1.25;
+      color: var(--muted);
+    }
+    .platform-dots {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+      min-width: 0;
+    }
+    #sourceStatus {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 10px;
+      align-content: start;
+      overflow: hidden;
+    }
+    #sourceStatus .source-row {
+      min-height: 34px;
+      grid-template-columns: 18px minmax(0, 1fr) auto auto;
+      gap: 7px;
+      padding: 6px 7px;
+      border: 1px solid rgba(216,205,188,.72);
+      border-radius: 7px;
+      background: rgba(255,253,247,.58);
+    }
+    #sourceStatus .source-row:last-child {
+      border-bottom: 1px solid rgba(216,205,188,.72);
+    }
+    #sourceStatus .source-row b,
+    #sourceStatus .source-row span {
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .rank-list,
+    #hotRankList,
+    .right-stack,
+    .video-panel .webcam-grid {
+      scrollbar-width: none;
+    }
+    .rank-list::-webkit-scrollbar,
+    #hotRankList::-webkit-scrollbar,
+    .right-stack::-webkit-scrollbar,
+    .video-panel .webcam-grid::-webkit-scrollbar {
+      display: none;
+    }
+    .timeline-panel {
+      min-height: 152px;
+      grid-template-rows: 26px 32px minmax(82px, 1fr);
+      gap: 6px;
+    }
+    .timeline-cards {
+      min-height: 82px;
+      overflow: hidden;
+    }
+    .tl-card {
+      min-height: 82px;
+      gap: 4px;
+      padding: 8px 9px;
+      align-content: start;
+    }
+    .tl-title {
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.28;
+    }
+    .tl-place,
+    .tl-media {
+      line-height: 1.24;
+    }
+    .emotion-panel {
+      grid-row: 3 / 5;
+    }
+    .emotion-card {
+      grid-template-columns: 118px minmax(0, 1fr);
+      grid-template-rows: 132px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .sentiment-summary,
+    .stance-list {
+      min-height: 0;
+    }
+    .monitor-list {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      min-height: 0;
+      align-items: start;
+    }
+    .monitor-row {
+      min-height: 78px;
+      padding: 8px;
+      align-content: start;
+      align-self: start;
+    }
+    .monitor-row span {
+      line-height: 1.35;
+      white-space: normal;
+    }
+    .video-panel .cam .hot-mark {
+      margin-left: 4px;
+      color: #df4b54;
+    }
+    .map-canvas .real-map {
+      opacity: 1;
+      filter: saturate(1.05) brightness(1.06) contrast(1.02);
+    }
+    .map-canvas .map-tint {
+      opacity: .18;
+      mix-blend-mode: multiply;
+    }
+    .map-canvas .water {
+      opacity: .02;
+    }
+
+    @media (max-width: 1100px) {
+      body { overflow: auto; }
+      .app { min-height: 100dvh; height: auto; grid-template-rows: auto auto 620px auto auto; }
+      .topnav, .contextbar { grid-template-columns: 1fr; padding: 8px; }
+      .actions, .clock { justify-self: start; }
+      .map-shell { grid-template-columns: 1fr; grid-template-rows: auto; }
+      .layer-panel { grid-column: 1; grid-row: auto; }
+      .map-panel { display: grid; grid-template-rows: 38px 420px auto; }
+      .map-tabs,
+      .map-canvas,
+      .timeline-panel { grid-column: 1; grid-row: auto; }
+      .timeline-panel { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      .panel { min-height: 300px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .right-stack { display: grid; grid-template-columns: 1fr; grid-column: 1; width: auto; padding: 8px; background: var(--bg); }
+      .rank-panel,
+      .video-panel,
+      .emotion-panel { grid-column: 1; grid-row: auto; }
+      .time-range, .zoom-stack, .city-detail { right: 12px; }
+      .map-legend { left: 50%; }
+      .timeline-footer { grid-template-columns: 1fr; min-height: 86px; }
+    }
+    @media (max-width: 640px) {
+      .app { grid-template-rows: auto auto 640px auto auto; }
+      .nav-links, .actions, .view-controls, .time-range { flex-wrap: wrap; justify-self: start; }
+      .layer-panel { width: 178px; max-height: 360px; }
+      .city-detail { left: 8px; right: 8px; width: auto; bottom: 8px; }
+      .marker label, .map-legend { display: none; }
+      .webcam-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topnav">
+      <a class="brand" href="risk-dashboard.html?caseId=campus-death-high-intensity&regionId=campus-core&mainlineId=ML-001&signalId=SIG-001">
+        <strong>WORLDLINE OBSERVER</strong>
+        <small>城市态势感知</small>
+      </a>
+      <nav class="nav-links" aria-label="主导航">
+        <a class="active" href="city-monitor.html?caseId=campus-death-high-intensity&mainlineId=ML-001&eventId=EV-021">城市动态</a>
+        <a href="risk-dashboard.html?caseId=campus-death-high-intensity&regionId=campus-core&mainlineId=ML-001&signalId=SIG-001">主题态势</a>
+        <a href="data-hub.html?caseId=campus-death-high-intensity&regionId=campus-core&mainlineId=ML-001&signalId=SIG-001">数据</a>
+        <a href="mainline-builder.html?caseId=campus-death-high-intensity&mainlineId=ML-001&signalId=SIG-001">主线</a>
+        <a href="worldline-observer.html?caseId=campus-death-high-intensity&mainlineId=ML-001&worldStateId=WS-001&nodeId=NODE-C3">推演</a>
+        <a href="agent-council.html?caseId=campus-death-high-intensity&mainlineId=ML-001&nodeId=NODE-C3&councilId=COUNCIL-001">研判</a>
+        <a href="decision-brief.html?caseId=campus-death-high-intensity&reportId=REPORT-001&mainlineId=ML-001">汇报</a>
+      </nav>
+      <div class="actions">
+        <span>城市</span>
+        <select class="select" id="citySelect" aria-label="城市">
+          <option value="hangzhou" selected>杭州</option>
+          <option value="beijing">北京</option>
+          <option value="shenzhen">深圳</option>
+          <option value="guangzhou">广州</option>
+        </select>
+        <span class="live-dot"></span><span>接口正常</span>
+      </div>
+    </header>
+
+    <section class="monitor-toolbar">
+      <div class="scope-pill"><span>城市</span><b id="scopeTitle">杭州青澜中学同城情绪态势</b></div>
+      <div class="time-range" id="rangeButtons">
+        <button data-range="1h">近1小时</button>
+        <button data-range="6h">近6小时</button>
+        <button data-range="24h">近24小时</button>
+        <button data-range="48h">近48小时</button>
+        <button class="active" data-range="7d">近7天</button>
+      </div>
+      <label class="search-box">
+        <span>搜索</span>
+        <input id="searchInput" placeholder="搜索事件、地点、话题、关键词..." />
+      </label>
+      <button class="observe-btn">AI 趋势观察 <span>Beta</span></button>
+      <div class="toolbar-status"><span class="live-dot"></span> 数据源在线 <b>36/38</b></div>
+      <div class="clock mono" id="clockText">WED, 06 MAY 2026 10:31:38 CST</div>
+    </section>
+
+    <section class="kpi-row" id="kpiRow"></section>
+
+    <main class="map-shell">
+      <aside class="layer-panel">
+        <div class="lp-head">
+          <span>图层控制</span>
+          <button id="collapseLayers">收起</button>
+        </div>
+        <div class="layer-search"><input id="layerSearch" placeholder="搜索图层..." /></div>
+        <div class="layers" id="layerList"></div>
+        <div class="heat-key">
+          <b>热度强度</b>
+          <i></i>
+          <span>高</span><span>低</span>
+        </div>
+      </aside>
+
+      <section class="map-panel">
+        <div class="map-tabs">
+          <button class="active">全部事件</button>
+          <button>热点事件</button>
+          <button>升温事件</button>
+          <button>视频/直播事件</button>
+          <button>我关注的</button>
+        </div>
+        <div class="map-canvas">
+          <div id="realMap" class="real-map"></div>
+          <div class="map-tint"></div>
+          <div class="water"></div>
+          <div id="heatLayer"></div>
+          <div id="pathLayer"></div>
+          <div id="zoneLayer"></div>
+          <div id="routeLayer"></div>
+          <div id="riskLayer"></div>
+          <div id="markerLayer"></div>
+          <div class="map-title">城市事件热力雷达 / 真实地图</div>
+          <div class="zoom-stack">
+            <button id="zoomIn">+</button>
+            <button id="zoomOut">-</button>
+            <button id="homeBtn">⌂</button>
+          </div>
+          <div class="map-mode" aria-label="地图模式">
+            <button class="active" type="button"><i class="mode-thumb thumb-map"></i><span>地图</span></button>
+            <button type="button"><i class="mode-thumb thumb-satellite"></i><span>卫星</span></button>
+            <button type="button"><i class="mode-thumb thumb-heat"></i><span>热力</span></button>
+          </div>
+          <div class="map-legend" id="mapLegend"></div>
+          <div class="mainline-prompt hidden" id="mainlinePrompt">
+            <div class="mainline-prompt-head">
+              <div>
+                <b id="promptTitle">已选中事件</b>
+                <span id="promptMeta">进入主线后继续做证据组织、推演和协同处置。</span>
+              </div>
+              <button class="prompt-close" id="promptClose" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="prompt-actions">
+              <small id="promptHint">主线：校园死亡事件事实责任与线下风险</small>
+              <button class="prompt-enter" id="promptEnterMainline" type="button">进入主线</button>
+            </div>
+          </div>
+          <article class="city-detail hidden" id="detailPanel">
+            <div class="detail-head">
+              <div>
+                <h2 id="detailTitle"></h2>
+                <p id="detailSummary"></p>
+              </div>
+              <button id="closeDetail">×</button>
+            </div>
+            <div class="detail-body">
+              <div class="kv-grid" id="detailMetrics"></div>
+              <div id="detailRows"></div>
+            </div>
+            <div class="detail-actions">
+              <button class="copy-btn" id="addMainline">加入主线</button>
+              <button class="copy-btn" id="markConfirmed">已确认</button>
+              <button class="copy-btn" id="markReview">待核验</button>
+              <button class="copy-btn" id="markNoise">噪声</button>
+            </div>
+          </article>
+        </div>
+        <section class="timeline-panel">
+          <header><b>城市事件时间线 <span>（近24小时）</span></b><small>只展示高热、升温、视频/直播与破圈苗头</small></header>
+          <div class="timeline" id="timeline">
+            <div class="tl-line"></div>
+            <div id="timelineDots"></div>
+          </div>
+          <div class="timeline-cards" id="timelineCards"></div>
+        </section>
+      </section>
+
+      <aside class="right-stack">
+        <section class="float-panel selected-event-card" data-panel="selected">
+          <header class="float-head"><span>当前点情报</span><i class="badge" id="selectedRiskBadge" style="--tone:var(--cyan)">R--</i><button data-collapse>−</button></header>
+          <div class="float-body selected-intel-body">
+            <div class="selected-summary">
+              <b id="selectedEventTitle"></b>
+              <span id="selectedEventMeta"></span>
+              <p id="selectedEventBrief"></p>
+            </div>
+            <div class="source-chips" id="selectedSourceChips"></div>
+            <div class="selected-actions">
+              <button class="copy-btn" id="selectedJoinMainline">加入主线</button>
+              <button class="copy-btn" id="selectedOpenData">查看数据包</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="float-panel rank-panel">
+          <header class="float-head"><span>当前热度榜（实时）</span><i></i><button>更多</button></header>
+          <div class="rank-tabs"><button class="active">综合热度</button><button>同城讨论</button><button>传播速度</button><button>视频/直播</button></div>
+          <div class="rank-list" id="hotRankList"></div>
+        </section>
+
+        <section class="float-panel video-panel">
+          <header class="float-head"><span>视频/直播热点（实时）</span><i id="liveCount">0</i><button>更多</button></header>
+          <div class="webcam-grid" id="webcamGrid"></div>
+        </section>
+
+        <section class="float-panel emotion-panel">
+          <header class="float-head"><span>同城情绪与立场</span><i>近24小时</i><button>更多</button></header>
+          <div class="emotion-card">
+            <div class="sentiment-summary">
+              <div class="donut"><div class="donut-inner"><b>-62%</b><span>负向</span></div></div>
+              <div class="sentiment-note"><b>负向主导</b><span>家属问责 / 监控保全 / 压事质疑</span></div>
+            </div>
+            <div class="stance-list" id="stanceList"></div>
+            <div class="monitor-list" id="monitorList"></div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <section class="bottom-grid">
+      <section class="panel mini-panel">
+        <header class="panel-head"><b>新增高热事件</b><span class="sort-note">近1小时</span><span class="count" id="newsCount">0</span><button class="more-link" type="button">更多</button></header>
+        <div class="panel-body" id="newHot"></div>
+      </section>
+      <section class="panel mini-panel">
+        <header class="panel-head"><b>传播速度榜</b><span class="sort-note">近1小时</span><span class="count">TOP3</span><button class="more-link" type="button">更多</button></header>
+        <div class="panel-body" id="speedList"></div>
+      </section>
+      <section class="panel mini-panel">
+        <header class="panel-head"><b>破圈苗头</b><span class="sort-note">近24小时</span><span class="count">TOP3</span><button class="more-link" type="button">更多</button></header>
+        <div class="panel-body" id="breakoutList"></div>
+      </section>
+      <section class="panel mini-panel">
+        <header class="panel-head"><b>多平台传播事件</b><span class="sort-note">近24小时</span><span class="count" id="chainCount">0</span><button class="more-link" type="button">更多</button></header>
+        <div class="panel-body" id="platformList"></div>
+      </section>
+      <section class="panel mini-panel">
+        <header class="panel-head"><b>数据源状态</b><span class="sort-note">在线</span><span class="count">36/38</span><button class="more-link" type="button">更多</button></header>
+        <div class="panel-body" id="sourceStatus"></div>
+      </section>
+    </section>
+
+    <div class="hidden-render-targets" aria-hidden="true">
+      <div id="newsTabs"><button class="active" data-source="all">全部</button><button data-source="shortvideo">短视频</button><button data-source="social">社媒</button><button data-source="localnews">本地新闻</button><button data-source="gov">政务</button><button data-source="community">社区</button></div>
+      <div id="newsFeature"></div>
+      <div id="newsList"></div>
+      <div id="chainList"></div>
+      <div id="selectedMaterials"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
+  <script>
+    const layerDefs = [
+      { id: "incident", name: "突发事件", group: "event", code: "突", color: "var(--red)" },
+      { id: "traffic", name: "交通事故", group: "mobility", code: "事", color: "var(--amber)" },
+      { id: "congestion", name: "拥堵", group: "mobility", code: "堵", color: "var(--amber)" },
+      { id: "metro", name: "地铁 / 公交异常", group: "mobility", code: "轨", color: "var(--blue)" },
+      { id: "fire", name: "火警 / 救援", group: "safety", code: "火", color: "var(--red)" },
+      { id: "security", name: "治安事件", group: "safety", code: "安", color: "var(--pink)" },
+      { id: "weather", name: "天气灾害", group: "weather", code: "天", color: "var(--green)" },
+      { id: "outage", name: "停电 / 停水 / 通信", group: "infra", code: "断", color: "var(--red)" },
+      { id: "construction", name: "施工 / 封路", group: "infra", code: "施", color: "var(--amber)" },
+      { id: "medical", name: "医疗急救", group: "safety", code: "医", color: "var(--cyan)" },
+      { id: "school", name: "学校相关事件", group: "public", code: "校", color: "var(--purple)" },
+      { id: "business", name: "商圈活动", group: "public", code: "商", color: "var(--cyan)" },
+      { id: "crowd", name: "人群聚集", group: "public", code: "聚", color: "var(--red)" },
+      { id: "opinion", name: "舆情热点", group: "media", code: "舆", color: "var(--purple)" },
+      { id: "shortvideo", name: "短视频热点", group: "media", code: "短", color: "var(--pink)" },
+      { id: "localnews", name: "本地新闻", group: "media", code: "新", color: "var(--blue)" },
+      { id: "gov", name: "政务公告", group: "media", code: "政", color: "var(--green)" },
+      { id: "community", name: "社区爆料", group: "public", code: "社", color: "var(--amber)" },
+      { id: "price", name: "价格 / 物资 / 服务", group: "public", code: "价", color: "var(--cyan)" },
+      { id: "infrastructure", name: "城市基础设施异常", group: "infra", code: "基", color: "var(--red)" }
+    ];
+
+    const layerPalette = {
+      incident: "#ff4e5f",
+      traffic: "#ff9f2e",
+      congestion: "#ff9f2e",
+      metro: "#4f8dff",
+      fire: "#ff4e5f",
+      security: "#df65d8",
+      weather: "#35f08a",
+      outage: "#ff4e5f",
+      construction: "#ff9f2e",
+      medical: "#2ad7ff",
+      school: "#9174ff",
+      business: "#2ad7ff",
+      crowd: "#ff4e5f",
+      opinion: "#9174ff",
+      shortvideo: "#df65d8",
+      localnews: "#4f8dff",
+      gov: "#35f08a",
+      community: "#ff9f2e",
+      price: "#2ad7ff",
+      infrastructure: "#ff4e5f"
+    };
+
+    const cityCenter = [120.1551, 30.2741];
+    const cityBounds = [[119.95, 30.12], [120.42, 30.43]];
+
+    const zones = [];
+    const events = [];
+    const geoById = {};
+    const eventMaterials = {};
+    const chains = [];
+
+    const campusZones = [
+      { name: "青澜中学", type: "事件核心区", x: 34, y: 64, geo: [120.1348, 30.2825], color: "var(--red)" },
+      { name: "学校门口", type: "家属沟通点", x: 32, y: 69, geo: [120.1329, 30.2809], color: "var(--amber)" },
+      { name: "西湖西湖区教育局", type: "主管部门", x: 41, y: 51, geo: [120.1686, 30.2767], color: "var(--green)" },
+      { name: "属地街道", type: "现场协调", x: 28, y: 58, geo: [120.1284, 30.2872], color: "var(--cyan)" },
+      { name: "区医院", type: "急救记录", x: 45, y: 70, geo: [120.1422, 30.2764], color: "var(--blue)" },
+      { name: "同城话题区", type: "线上扩散", x: 57, y: 38, geo: [120.1551, 30.2741], color: "var(--purple)" },
+      { name: "媒体驻点", type: "采访与直播", x: 39, y: 73, geo: [120.1450, 30.2724], color: "var(--pink)" }
+    ];
+
+    const campusEvents = [
+      { id: "EV-021", title: "青澜中学学生坠楼事件同城爆发", layer: "incident", x: 34, y: 64, risk: 94, heat: 96, confidence: .82, time: "09:12", district: "西湖区", place: "青澜中学教学楼与校门口", source: "抖音 / 家长群 / 现场回传", sourceType: "shortvideo", chain: "ML-001", status: "持续", spread: "高烈度扩散", summary: "学生坠楼死亡事实、家属知情、到校问责和同城短视频扩散已经合并成同一事中主线，系统进入接管研判。", raw: "短视频出现校门外人群聚集和家属质问画面，评论集中追问事发时间线、监控是否保全、校方是否提前知情。" },
+      { id: "EV-022", title: "家属与亲友到校要求公开监控和时间线", layer: "crowd", x: 32, y: 69, risk: 91, heat: 90, confidence: .78, time: "09:48", district: "西湖区", place: "青澜中学校门口", source: "现场视频 / 社区反馈 / 家属群", sourceType: "shortvideo", chain: "ML-001", status: "持续", spread: "线下聚集", summary: "线下诉求不是普通咨询，而是围绕死亡原因、欺凌线索、证据保全和责任认定的强问责。", raw: "现场片段显示家属要求见校方负责人并提出查看监控，属地工作人员开始引导家属代表进入固定沟通空间。" },
+      { id: "EV-023", title: "学生群聊天截图指向疑似长期欺凌", layer: "school", x: 36, y: 61, risk: 88, heat: 93, confidence: .58, time: "10:04", district: "西湖区", place: "学生群与班级社交圈", source: "学生群 / 微博 / 论坛截图", sourceType: "social", chain: "ML-EVIDENCE", status: "待核验", spread: "证据争议", summary: "截图将事件从单一死亡事实推向校园欺凌责任争议，但来源链不完整，必须进入证据链复核。", raw: "多张聊天截图被搬运，部分称事发前存在持续排挤和威胁，也有学生提醒截图缺少上下文。" },
+      { id: "EV-024", title: "家长群追问校方是否事前知情", layer: "community", x: 30, y: 62, risk: 86, heat: 84, confidence: .71, time: "10:12", district: "西湖区", place: "家长群与社区群", source: "家长群摘要 / 社区群", sourceType: "community", chain: "ML-EVIDENCE", status: "待核验", spread: "责任归因", summary: "家长群讨论从同情转向责任追问，核心是学校是否收到过求助、是否及时干预。", raw: "群内反复出现“老师知不知道”“为什么没有提前通知家属”“孩子之前有没有求助”等问题。" },
+      { id: "EV-025", title: "校方首轮说明过短，未回应证据保全", layer: "gov", x: 35, y: 58, risk: 82, heat: 87, confidence: .86, time: "10:20", district: "西湖区", place: "校方公众号", source: "校方说明 / 公众号 / 头条", sourceType: "gov", chain: "ML-RESPONSE", status: "已确认", spread: "回应不足", summary: "回应确认事件但缺少监控、报警、急救、通知家属和调查机制，容易形成“压事”叙事。", raw: "校方发布“正在配合调查”的简短说明，未给出证据清单、家属沟通人和下一次更新时间。" },
+      { id: "EV-026", title: "教育部门称已成立联合调查组", layer: "gov", x: 41, y: 51, risk: 67, heat: 74, confidence: .92, time: "10:42", district: "西湖区", place: "西湖区教育局", source: "教育部门公告 / 本地新闻", sourceType: "gov", chain: "ML-RESPONSE", status: "已确认", spread: "处置回应", summary: "主管部门介入有缓释作用，但若不公开证据保全范围和家属核验机制，信任仍难恢复。", raw: "公告称将依法依规调查并保护未成年人隐私，暂未披露证据保全清单和调查更新时间。" },
+      { id: "EV-027", title: "同城话题出现“学校隐瞒”叙事", layer: "opinion", x: 57, y: 38, risk: 90, heat: 95, confidence: .69, time: "10:35", district: "杭州市线上", place: "微博同城与短视频评论区", source: "微博 / 抖音 / 头条评论", sourceType: "social", chain: "ML-NARRATIVE", status: "升温", spread: "叙事固化", summary: "线上核心矛盾从事实关注转为校方责任与透明度质疑，开始反向推动线下聚集。", raw: "关键词“监控在哪里”“学校压下去”“给孩子说法”快速上升，部分账号开始征集线索。" },
+      { id: "EV-028", title: "本地媒体跟进家属诉求与调查进展", layer: "localnews", x: 39, y: 73, risk: 81, heat: 88, confidence: .77, time: "10:50", district: "西湖区", place: "学校周边媒体驻点", source: "本地新闻 / 公众号 / 直播切片", sourceType: "localnews", chain: "ML-NARRATIVE", status: "持续", spread: "媒体扩散", summary: "媒体进入后，事件节奏不再由校方公告单独决定，家属诉求和现场处置会被并列传播。", raw: "本地号发布家属诉求摘要，强调希望公开关键时间线、监控保全和第三方调查。" },
+      { id: "EV-029", title: "校门口围观导致周边交通和秩序承压", layer: "traffic", x: 31, y: 72, risk: 74, heat: 76, confidence: .73, time: "10:27", district: "西湖区", place: "学校门口道路", source: "现场回传 / 导航热力 / 社区反馈", sourceType: "community", chain: "ML-001", status: "持续", spread: "现实反馈", summary: "线下围观、拍摄和道路停留把线上争议转成现实秩序压力，需要现场侧任务接管。", raw: "学校门口短暂停留车辆增加，围观人群拍摄现场，社区提醒绕行并避免传播未成年人影像。" },
+      { id: "EV-030", title: "未成年人姓名照片外泄风险上升", layer: "security", x: 53, y: 44, risk: 89, heat: 83, confidence: .64, time: "10:38", district: "杭州市线上", place: "社媒转发链路", source: "微博 / 群聊截图 / 论坛", sourceType: "social", chain: "ML-PRIVACY", status: "待处置", spread: "二次伤害", summary: "隐私扩散会造成二次伤害，也会降低后续公开沟通的可信度，需要独立主线跟踪。", raw: "部分账号转发疑似学生照片、班级信息和家庭线索，系统标记为隐私高风险并建议降权处理。" },
+      { id: "EV-031", title: "网传欺凌视频疑似旧内容被错误关联", layer: "shortvideo", x: 50, y: 48, risk: 79, heat: 86, confidence: .46, time: "10:55", district: "杭州市线上", place: "短视频平台", source: "抖音 / 快手 / 搬运号", sourceType: "shortvideo", chain: "ML-EVIDENCE", status: "待核验", spread: "信息污染", summary: "旧视频被套入当前事件会污染事实判断，必须与时间、地点和当事对象脱钩核验。", raw: "多个搬运号使用“同校欺凌流出”标题，画面缺少时间地点，评论区已出现质疑。" },
+      { id: "EV-032", title: "心理援助与学生安抚信息开始转发", layer: "medical", x: 43, y: 66, risk: 55, heat: 62, confidence: .82, time: "11:03", district: "西湖区", place: "学校与周边社区", source: "教育局 / 社区公众号 / 家长群", sourceType: "gov", chain: "ML-RESPONSE", status: "已确认", spread: "缓释动作", summary: "心理援助是必要缓释动作，但不能替代事实说明和证据保全，否则会被解读为转移焦点。", raw: "社区和学校转发心理热线、学生安抚安排和不传播隐私倡议。" },
+      { id: "EV-033", title: "校门周边商户直播围观被推流", layer: "business", x: 37, y: 76, risk: 69, heat: 78, confidence: .6, time: "11:10", district: "西湖区", place: "学校周边商铺", source: "本地直播 / 同城短视频", sourceType: "shortvideo", chain: "ML-NARRATIVE", status: "待处置", spread: "围观放大", summary: "直播围观会把现场秩序转化为新内容供给，增加家属和未成年人隐私暴露风险。", raw: "个别本地直播账号在校门附近开播，标题含“现场最新进展”，画面中可见围观人群。" },
+      { id: "EV-034", title: "社区群出现次日再到校表达的动员语句", layer: "crowd", x: 29, y: 75, risk: 84, heat: 79, confidence: .57, time: "11:18", district: "西湖区", place: "社区群与家属外延群", source: "社区群 / 家长群摘要", sourceType: "community", chain: "ML-001", status: "待核验", spread: "线下升级", summary: "若动员语句持续扩散，线下聚集会从自发到有组织倾向转变，需进入任务中心。", raw: "群聊摘要出现“明天继续去问清楚”的表述，但尚不清楚是否来自核心家属。" },
+      { id: "EV-035", title: "相似校园事件复盘被搬运对比", layer: "localnews", x: 61, y: 42, risk: 77, heat: 81, confidence: .67, time: "11:24", district: "杭州市线上", place: "本地新闻与论坛", source: "历史案例 / 自媒体 / 公众号", sourceType: "localnews", chain: "ML-NARRATIVE", status: "持续", spread: "历史类比", summary: "历史类比会强化公众对校方迟缓回应的预期，推动责任叙事固化。", raw: "文章对比近年校园欺凌和坠楼事件，强调早期回应不足导致风险升级。" },
+      { id: "EV-036", title: "二次说明准备中但缺少家属核验安排", layer: "gov", x: 40, y: 55, risk: 63, heat: 68, confidence: .74, time: "11:32", district: "西湖区", place: "联合处置组", source: "内部草稿摘要 / 政务沟通", sourceType: "gov", chain: "ML-RESPONSE", status: "待发布", spread: "处置窗口", summary: "二次说明是改变世界线的关键支点，必须包含证据清单、家属沟通窗口和下一次更新时间。", raw: "草稿准备回应调查组、隐私保护和心理援助，但证据保全清单与家属核验机制仍未写清。" }
+    ];
+
+    const campusGeoById = {
+      "EV-021": [120.1348, 30.2825],
+      "EV-022": [120.1329, 30.2809],
+      "EV-023": [120.1365, 30.2855],
+      "EV-024": [120.1295, 30.2840],
+      "EV-025": [120.1382, 30.2790],
+      "EV-026": [120.1686, 30.2767],
+      "EV-027": [120.1551, 30.2741],
+      "EV-028": [120.1450, 30.2724],
+      "EV-029": [120.1318, 30.2788],
+      "EV-030": [120.1624, 30.2912],
+      "EV-031": [120.1584, 30.2894],
+      "EV-032": [120.1422, 30.2764],
+      "EV-033": [120.1390, 30.2760],
+      "EV-034": [120.1280, 30.2790],
+      "EV-035": [120.1710, 30.2695],
+      "EV-036": [120.1686, 30.2767]
+    };
+
+    const campusMaterials = {
+      "EV-021": [
+        { source: "抖音", kind: "视频", title: "校门口沟通片段被同城账号二次剪辑", text: "10:22 发布，42 秒，播放 18.6w，评论 4,280；情绪标签为追问/焦虑，画面需继续遮挡未成年人面部。", time: "10:22", metric: "播放 18.6w / 评论 4,280", trust: "0.82" },
+        { source: "微博", kind: "推文", title: "同城话题追问事发时间线", text: "高频问题集中在“什么时候发生”“监控是否保全”“家属何时接到通知”。", time: "09:28", metric: "转评 4,280", trust: "0.74" },
+        { source: "头条", kind: "本地资讯", title: "学校周边出现家属问责", text: "本地号把现场视频、校方简短回应和家属诉求合并报道，评论区情绪快速上升。", time: "09:47", metric: "阅读 12.4w", trust: "0.69" },
+        { source: "公众号", kind: "说明", title: "校方首轮情况说明", text: "确认事件发生并称配合调查，但没有公开证据保全范围和下一次更新时间。", time: "10:20", metric: "官方", trust: "0.86" },
+        { source: "现场", kind: "回传", title: "属地协调家属代表沟通", text: "现场工作人员尝试引导家属代表进入固定沟通空间，门口仍有围观拍摄。", time: "10:33", metric: "3 段", trust: "0.71" }
+      ],
+      "EV-022": [
+        { source: "现场", kind: "视频", title: "家属提出三项核心诉求", text: "公开监控、说明报警急救时间线、明确谁负责调查成为现场重复诉求。", time: "09:51", metric: "2 段", trust: "0.78" },
+        { source: "微博", kind: "推文", title: "到校问责相关帖子升温", text: "围观账号转述现场对话，存在断章取义风险，需要与家属代表口径分离。", time: "10:02", metric: "讨论 2,930", trust: "0.63" },
+        { source: "公众号", kind: "社区提醒", title: "避免围观和传播学生信息", text: "属地社区提醒不要进入学校周边围观，不转发未成年人影像与个人信息。", time: "10:40", metric: "转发 640", trust: "0.8" }
+      ],
+      "EV-025": [
+        { source: "公众号", kind: "说明", title: "校方首轮说明原文", text: "说明称正在配合有关部门调查，未列出证据保全、家属沟通和更新时间。", time: "10:20", metric: "官方", trust: "0.86" },
+        { source: "微博", kind: "推文", title: "评论区质疑说明过短", text: "用户集中质疑“只有正在调查，不说监控和时间线”，回应可信度被快速消耗。", time: "10:24", metric: "评论 3,410", trust: "0.67" },
+        { source: "头条", kind: "本地资讯", title: "首轮说明未能降温", text: "本地资讯号将简短说明与家属聚集并列呈现，进一步放大信任真空。", time: "10:32", metric: "阅读 7.8w", trust: "0.7" }
+      ],
+      "EV-027": [
+        { source: "微博", kind: "话题", title: "学校隐瞒叙事上升", text: "相关词频 30 分钟内上升 41%，与现场视频发布时间高度重合。", time: "10:35", metric: "热度 21.7w", trust: "0.69" },
+        { source: "抖音", kind: "评论", title: "短视频评论追问证据", text: "评论区把监控、欺凌截图和家属问责连接成同一故事线，情绪强度升高。", time: "10:37", metric: "评论 8,930", trust: "0.61" },
+        { source: "头条", kind: "本地资讯", title: "媒体征集线索风险", text: "个别账号开始征集学生和校内线索，可能诱发隐私外泄与不实信息。", time: "10:46", metric: "阅读 5.2w", trust: "0.58" }
+      ],
+      "EV-030": [
+        { source: "微博", kind: "截图", title: "疑似学生身份信息外泄", text: "截图包含姓名、班级和家庭线索，系统建议降权、打码并进入隐私处置任务。", time: "10:38", metric: "转发 1,120", trust: "0.64" },
+        { source: "公众号", kind: "倡议", title: "未成年人隐私保护提醒", text: "教育部门提醒不得传播学生个人信息和未经核验截图。", time: "10:45", metric: "官方", trust: "0.91" },
+        { source: "现场", kind: "任务", title: "隐私风险巡查待派单", text: "建议生成平台巡查任务，关联删除、辟谣和证据留存三类动作。", time: "10:48", metric: "待派单", trust: "0.76" }
+      ]
+    };
+
+    zones.splice(0, zones.length, ...campusZones);
+    events.splice(0, events.length, ...campusEvents);
+    Object.keys(geoById).forEach((key) => delete geoById[key]);
+    Object.assign(geoById, campusGeoById);
+    Object.keys(eventMaterials).forEach((key) => delete eventMaterials[key]);
+    Object.assign(eventMaterials, campusMaterials);
+    chains.splice(0, chains.length,
+      { id: "ML-001", title: "学生坠楼死亡事实、家属到校与线下聚集主线", nodes: ["EV-021", "EV-022", "EV-029", "EV-034"] },
+      { id: "ML-EVIDENCE", title: "校园欺凌指控与证据保全争议主线", nodes: ["EV-023", "EV-024", "EV-031"] },
+      { id: "ML-RESPONSE", title: "校方和主管部门回应可信度主线", nodes: ["EV-025", "EV-026", "EV-032", "EV-036"] },
+      { id: "ML-NARRATIVE", title: "同城舆情、媒体扩散与责任叙事主线", nodes: ["EV-027", "EV-028", "EV-033", "EV-035"] },
+      { id: "ML-PRIVACY", title: "未成年人隐私外泄与二次伤害主线", nodes: ["EV-030"] }
+    );
+
+    const state = {
+      activeLayers: new Set(layerDefs.map((layer) => layer.id)),
+      selected: "EV-021",
+      range: "7d",
+      source: "all",
+      query: "",
+      chain: "ML-001",
+      detailOpen: false,
+      materialIndex: 0,
+      heatOpacity: 82
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+    const layer = (id) => layerDefs.find((item) => item.id === id) || layerDefs[0];
+    const eventById = (id) => events.find((item) => item.id === id) || events[0];
+    const chainById = (id) => chains.find((item) => item.id === id) || chains[0];
+    let realMap = null;
+    let realMapReady = false;
+    let activeMapPopup = null;
+
+    function materialsFor(event) {
+      if (eventMaterials[event.id]) return eventMaterials[event.id];
+      return [
+        { source: "抖音", kind: "视频", title: `${event.place}现场短视频`, text: event.raw, time: event.time, metric: `热度 ${event.heat}k`, trust: event.confidence.toFixed(2) },
+        { source: "微博", kind: "推文", title: `同城讨论：${event.title}`, text: `关键词集中在${layer(event.layer).name}、${event.district}和${event.status}，需要与原始证据交叉核验。`, time: event.time, metric: `讨论 ${Math.round(event.heat * 18)}`, trust: Math.max(.48, event.confidence - .08).toFixed(2) },
+        { source: "头条", kind: "本地资讯", title: `${event.district}${layer(event.layer).name}跟进`, text: `本地资讯号引用现场内容并关联周边影响，系统保留为传播侧证据。`, time: event.time, metric: `阅读 ${Math.round(event.heat / 8)}k`, trust: Math.max(.52, event.confidence - .03).toFixed(2) },
+        { source: "公众号", kind: "文章", title: `${event.district}相关提醒与说明`, text: `公众号内容用于观察机构口径、社区提醒和后续处置动作。`, time: event.time, metric: event.source.includes("公告") ? "官方" : "待核验", trust: Math.min(.94, event.confidence + .04).toFixed(2) }
+      ];
+    }
+
+    function materialTone(source) {
+      const tones = {
+        "抖音": "var(--pink)",
+        "微博": "var(--purple)",
+        "头条": "var(--blue)",
+        "公众号": "var(--green)",
+        "导航": "var(--amber)",
+        "现场": "var(--cyan)",
+        "快手": "var(--purple)",
+        "家长群": "var(--amber)"
+      };
+      return tones[source] || "var(--cyan)";
+    }
+
+    const platformCatalog = {
+      "抖音": { cls: "douyin", short: "抖" },
+      "快手": { cls: "kuaishou", short: "快" },
+      "头条": { cls: "toutiao", short: "头" },
+      "微博": { cls: "weibo", short: "微" },
+      "公众号": { cls: "wechat", short: "公" },
+      "微信公众号": { cls: "wechat", short: "公" },
+      "本地论坛": { cls: "forum", short: "坛" },
+      "新闻媒体": { cls: "news", short: "闻" },
+      "家长群": { cls: "group", short: "群" },
+      "社区群": { cls: "group", short: "群" }
+    };
+
+    function platformLogo(name) {
+      const meta = platformCatalog[name] || { cls: "news", short: name.slice(0, 1) || "源" };
+      const wordmark = `<text x="12" y="16" text-anchor="middle" font-size="10" font-weight="900" fill="currentColor">${meta.short}</text>`;
+      const marks = {
+        douyin: `<path d="M13.5 4.2v8.1a4.1 4.1 0 1 1-4.1-4.1" fill="none" stroke="#16d8ff" stroke-width="2.2" stroke-linecap="round"/><path d="M15.2 5.7c1.1 1.5 2.4 2.3 4.1 2.4" fill="none" stroke="#ff3d62" stroke-width="2.2" stroke-linecap="round"/><path d="M12.2 4.2v8.1a2.8 2.8 0 1 1-2.8-2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
+        kuaishou: `<rect x="5" y="8" width="14" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="5.8" r="2" fill="currentColor"/><circle cx="16" cy="5.8" r="2" fill="currentColor"/>`,
+        weibo: `<path d="M6 14.2c0-2.5 2.8-4.5 6.1-4.5 3.1 0 5.6 1.8 5.6 4.2 0 2.5-2.8 4.4-6.2 4.4S6 16.6 6 14.2Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.7 6.2c2 .2 3.5 1.3 4.2 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10.4" cy="14.2" r="1.2" fill="currentColor"/>`,
+        wechat: `<path d="M5 12.2c0-3 3-5.2 6.6-5.2s6.6 2.2 6.6 5.2-3 5.2-6.6 5.2c-.8 0-1.6-.1-2.3-.3L6.8 18l.8-2.1A5 5 0 0 1 5 12.2Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9.8" cy="11.5" r=".7" fill="currentColor"/><circle cx="13.6" cy="11.5" r=".7" fill="currentColor"/>`
+      };
+      return `<span class="platform-logo ${meta.cls}" title="${name}" aria-label="${name}"><svg viewBox="0 0 24 24" aria-hidden="true">${marks[meta.cls] || wordmark}</svg></span>`;
+    }
+
+    function eventPlatforms(event) {
+      const names = ["抖音", "微博", "头条", "公众号"];
+      if (event.source.includes("快手") || event.sourceType === "shortvideo") names.splice(1, 0, "快手");
+      if (event.sourceType === "localnews") names.push("新闻媒体");
+      if (event.sourceType === "community" || event.layer === "crowd") names.push("家长群");
+      if (event.sourceType === "social" || event.source.includes("论坛")) names.push("本地论坛");
+      return Array.from(new Set(names)).slice(0, 6);
+    }
+
+    function breakoutRoute(event) {
+      if (event.sourceType === "community" || event.layer === "crowd") return "家长圈层 -> 城市讨论";
+      if (event.sourceType === "shortvideo") return "短视频同城 -> 家长/媒体圈";
+      if (event.sourceType === "social") return "学生社交圈 -> 城市讨论";
+      if (event.sourceType === "localnews") return "本地媒体圈 -> 全城公共议题";
+      if (event.layer === "security") return "隐私搬运圈 -> 公共安全讨论";
+      return "校园局部圈层 -> 城市讨论";
+    }
+
+    function selectEvent(id, openDetail = false, shouldFocus = true) {
+      const event = eventById(id);
+      state.selected = event.id;
+      state.chain = event.chain;
+      state.detailOpen = openDetail;
+      state.materialIndex = 0;
+      render();
+      if (shouldFocus) focusRealMap(true);
+    }
+
+    function geoFor(event) {
+      return geoById[event.id] || cityCenter;
+    }
+
+    function positionMapOverlays() {
+      if (!realMapReady) return;
+      const mapBox = $("#realMap").getBoundingClientRect();
+      $$(".marker").forEach((button) => {
+        const event = eventById(button.dataset.event);
+        const point = realMap.project(geoFor(event));
+        button.style.left = `${point.x}px`;
+        button.style.top = `${point.y}px`;
+        button.style.display = point.x < -80 || point.y < -80 || point.x > mapBox.width + 80 || point.y > mapBox.height + 80 ? "none" : "grid";
+      });
+      $$(".poi-label").forEach((label) => {
+        const zone = zones[Number(label.dataset.poi)];
+        if (!zone) return;
+        const point = realMap.project(zone.geo);
+        label.style.left = `${point.x}px`;
+        label.style.top = `${point.y}px`;
+        label.style.display = point.x < -120 || point.y < -80 || point.x > mapBox.width + 120 || point.y > mapBox.height + 80 ? "none" : "grid";
+      });
+    }
+
+    function realMapData() {
+      return {
+        type: "FeatureCollection",
+        features: visibleEvents().map((event) => ({
+          type: "Feature",
+          properties: {
+            id: event.id,
+            title: event.title,
+            risk: event.risk,
+            heat: event.heat,
+            layer: event.layer,
+            color: layerPalette[event.layer] || "#2ad7ff"
+          },
+          geometry: { type: "Point", coordinates: geoFor(event) }
+        }))
+      };
+    }
+
+    function showMainlinePrompt(event) {
+      if (activeMapPopup) activeMapPopup.remove();
+      const prompt = $("#mainlinePrompt");
+      $("#promptTitle").textContent = event.title;
+      $("#promptMeta").textContent = `${event.district} · ${event.place} · 热度 ${event.heat} / 风险 ${event.risk}`;
+      $("#promptHint").textContent = `主线：${chainInfoTitle(chainById(event.chain))}`;
+      prompt.dataset.event = event.id;
+      prompt.classList.remove("hidden");
+    }
+
+    function amapTilePosition(lon, lat, zoom) {
+      const latRad = lat * Math.PI / 180;
+      const scale = 2 ** zoom;
+      return {
+        x: Math.floor((lon + 180) / 360 * scale),
+        y: Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * scale)
+      };
+    }
+
+    function amapTileUrl(x, y, zoom) {
+      const server = Math.abs(x + y) % 4 + 1;
+      return `https://webrd0${server}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=${x}&y=${y}&z=${zoom}`;
+    }
+
+    function renderAmapTileFallback(container) {
+      if (container.querySelector(".amap-fallback")) return;
+      const zoom = 12;
+      const center = amapTilePosition(cityCenter[0], cityCenter[1], zoom);
+      const tiles = [];
+      for (let row = -2; row < 2; row += 1) {
+        for (let col = -2; col < 2; col += 1) {
+          const x = center.x + col;
+          const y = center.y + row;
+          tiles.push(`<img alt="" src="${amapTileUrl(x, y, zoom)}" loading="eager" />`);
+        }
+      }
+      container.innerHTML = `<div class="amap-fallback" aria-hidden="true">${tiles.join("")}</div>`;
+    }
+
+    function initRealMap() {
+      const container = $("#realMap");
+      if (!container || realMap) return;
+      if (!window.maplibregl) {
+        renderAmapTileFallback(container);
+        return;
+      }
+      container.querySelector(".amap-fallback")?.remove();
+      realMap = new maplibregl.Map({
+        container,
+        style: {
+          version: 8,
+          sources: {
+            "amap": {
+              type: "raster",
+              tiles: [
+                "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+                "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+                "https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+                "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
+              ],
+              tileSize: 256,
+              attribution: "高德地图"
+            }
+          },
+          layers: [{ id: "amap", type: "raster", source: "amap", paint: { "raster-saturation": -0.06, "raster-contrast": -0.02 } }]
+        },
+        center: cityCenter,
+        zoom: 10.85,
+        pitch: 0,
+        bearing: 0,
+        attributionControl: false
+      });
+      realMap.dragRotate.disable();
+      realMap.touchZoomRotate.disableRotation();
+      realMap.on("load", () => {
+        realMapReady = true;
+        updateRealMapSource();
+        positionMapOverlays();
+        fitCityMap(false);
+      });
+      realMap.on("click", "city-event-points", (event) => {
+        const feature = event.features && event.features[0];
+        if (feature) {
+          const item = eventById(feature.properties.id);
+          selectEvent(item.id, false, true);
+          showMainlinePrompt(item);
+        }
+      });
+      realMap.on("mouseenter", "city-event-points", () => { realMap.getCanvas().style.cursor = "pointer"; });
+      realMap.on("mouseleave", "city-event-points", () => { realMap.getCanvas().style.cursor = ""; });
+      realMap.on("move", positionMapOverlays);
+      realMap.on("zoom", positionMapOverlays);
+      realMap.on("resize", positionMapOverlays);
+      setTimeout(() => realMap.resize(), 0);
+    }
+
+    function updateRealMapSource() {
+      if (!realMapReady) return;
+      const data = realMapData();
+      const source = realMap.getSource("city-events");
+      if (source) {
+        source.setData(data);
+      } else {
+        realMap.addSource("city-events", { type: "geojson", data });
+        realMap.addLayer({
+          id: "city-event-points",
+          type: "circle",
+          source: "city-events",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["get", "risk"], 35, 5, 90, 10],
+            "circle-color": ["get", "color"],
+            "circle-opacity": .92,
+            "circle-stroke-color": "#05080c",
+            "circle-stroke-width": 2
+          }
+        });
+        realMap.addLayer({
+          id: "city-event-selected",
+          type: "circle",
+          source: "city-events",
+          filter: ["==", ["get", "id"], state.selected],
+          paint: {
+            "circle-radius": 15,
+            "circle-color": "rgba(255,255,255,0)",
+            "circle-stroke-color": "#e9f7ff",
+            "circle-stroke-width": 2,
+            "circle-stroke-opacity": .92
+          }
+        });
+      }
+      if (realMap.getLayer("city-event-selected")) {
+        realMap.setFilter("city-event-selected", ["==", ["get", "id"], state.selected]);
+      }
+    }
+
+    function fitCityMap(animate = true) {
+      if (!realMapReady) return;
+      realMap.resize();
+      realMap.fitBounds(cityBounds, {
+        padding: { top: 26, right: 26, bottom: 26, left: 26 },
+        duration: animate ? 460 : 0
+      });
+      setTimeout(positionMapOverlays, animate ? 500 : 0);
+    }
+
+    function focusRealMap(animate = true) {
+      if (!realMapReady) return;
+      const event = eventById(state.selected);
+      realMap.resize();
+      realMap.easeTo({
+        center: geoFor(event),
+        zoom: Math.max(realMap.getZoom(), 12.05),
+        duration: animate ? 520 : 0
+      });
+      setTimeout(positionMapOverlays, animate ? 560 : 0);
+    }
+
+    function showToast(text) {
+      const toast = $("#toast");
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function matches(event) {
+      const q = state.query.trim();
+      const qOk = !q || [event.title, event.place, event.source, event.summary, event.district].join(" ").includes(q);
+      const sourceOk = state.source === "all" || event.sourceType === state.source;
+      return state.activeLayers.has(event.layer) && qOk && sourceOk;
+    }
+
+    function visibleEvents() {
+      return events.filter(matches);
+    }
+
+    function eventMinutes(event) {
+      const [hours, minutes] = String(event.time || "00:00").split(":").map(Number);
+      return (Number.isFinite(hours) ? hours : 0) * 60 + (Number.isFinite(minutes) ? minutes : 0);
+    }
+
+    function cityInfoScore(event) {
+      return event.heat * 0.68 + event.risk * 0.12 + (eventMinutes(event) / 1440) * 20;
+    }
+
+    function rankedCityInfos(items = visibleEvents()) {
+      return [...items].sort((a, b) => {
+        const scoreDelta = cityInfoScore(b) - cityInfoScore(a);
+        if (scoreDelta) return scoreDelta;
+        return eventMinutes(b) - eventMinutes(a);
+      });
+    }
+
+    function renderKpis() {
+      const shown = visibleEvents();
+      const ranked = rankedCityInfos(shown);
+      const videoCount = events.filter((event) => ["shortvideo", "localnews"].includes(event.sourceType)).length * 7 + 118;
+      const discussion = shown.reduce((sum, event) => sum + event.heat * 214, 0);
+      const hot = ranked[0] || eventById(state.selected);
+      const kpiIcon = (key) => ({
+        event: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7z"/><path d="M10 7h4M10 11h4M10 15h3"/></svg>`,
+        add: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="8"/></svg>`,
+        heat: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 3 5 5.4 5 9a5 5 0 0 1-10 0c0-2.4 1.2-4.4 3-6"/><path d="M12 14c1.2 1 2 2 2 3.2a2 2 0 0 1-4 0c0-1.2.8-2.2 2-3.2z"/></svg>`,
+        video: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="11" height="12" rx="2"/><path d="m15 10 5-3v10l-5-3z"/></svg>`,
+        discuss: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v9H8l-3 3z"/><path d="M8 9h8M8 12h5"/></svg>`,
+        spread: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 11l8-4M8 13l8 4"/></svg>`,
+        breakout: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14c5-9 11-9 16-4"/><path d="M4 14h5v5M15 5h5v5"/><path d="M13 12l4-4"/></svg>`
+      }[key] || "");
+      const deltaClass = (delta) => delta.startsWith("-") ? "down" : /^(\+)?0%?$/.test(delta) || delta.includes("持平") ? "flat" : "up";
+      const kpis = [
+        ["事件总量", "2,846", "+18%", "event", "var(--blue)", "较昨日 2,408"],
+        ["新增事件", "638", "+23%", "add", "var(--green)", "较昨日 518"],
+        ["当前最高热度", "86,520", "+136%", "heat", "var(--red)", hot.title],
+        ["视频/直播数量", String(videoCount), "+35%", "video", "var(--purple)", "较昨日 937"],
+        ["同城讨论量", discussion.toLocaleString("zh-CN"), "+42%", "discuss", "var(--amber)", "评论与转发聚合"],
+        ["多平台扩散事件", "176", "+16%", "spread", "var(--green)", "较昨日 152"],
+        ["破圈苗头事件", "21", "+5", "breakout", "var(--pink)", "较昨日 16"]
+      ];
+      $("#kpiRow").innerHTML = kpis.map((item) => `
+        <div class="kpi" style="--tone:${item[4]}">
+          <div class="kpi-icon">${kpiIcon(item[3])}</div>
+          <div>
+            <label>${item[0]}</label>
+            <div class="kpi-value"><strong>${item[1]}</strong><em class="kpi-delta ${deltaClass(item[2])}">${item[2]}</em></div>
+            <small>${item[5]}</small>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function sourceTypeLabel(type) {
+      return {
+        shortvideo: "短视频",
+        social: "社媒",
+        localnews: "本地新闻",
+        gov: "政务",
+        community: "社区",
+        media: "媒体"
+      }[type] || type;
+    }
+
+    function chainInfoTitle(chain) {
+      return chain.title.replaceAll("主线", "资讯组");
+    }
+
+    function freshLabel(event) {
+      const latest = Math.max(...events.map(eventMinutes));
+      const delta = Math.max(0, latest - eventMinutes(event));
+      if (delta <= 10) return "最新";
+      if (delta <= 60) return `${delta}分钟前`;
+      return event.time;
+    }
+
+    function ensureSelection() {
+      if (!matches(eventById(state.selected))) state.selected = (visibleEvents()[0] || events[0]).id;
+      state.chain = eventById(state.selected).chain;
+    }
+
+    function syncUrl() {
+      const params = new URLSearchParams();
+      params.set("lat", "30.2741");
+      params.set("lon", "120.1551");
+      params.set("zoom", "10.85");
+      params.set("view", "hangzhou");
+      params.set("caseId", "campus-death-high-intensity");
+      params.set("mainlineId", state.chain);
+      params.set("timeRange", state.range);
+      params.set("layers", Array.from(state.activeLayers).join(","));
+      params.set("eventId", state.selected);
+      if (state.query) params.set("q", state.query);
+      history.replaceState(null, "", `${location.pathname}?${params.toString()}`);
+    }
+
+    function renderLayers() {
+      const search = $("#layerSearch").value.trim();
+      const dataSources = [
+        ["短视频/直播", "160", "var(--pink)"],
+        ["同城社媒", "282,480", "var(--purple)"],
+        ["本地新闻", "128", "var(--blue)"],
+        ["政务公告", "36", "var(--green)"],
+        ["社区群摘要", "289", "var(--amber)"]
+      ].map(([name, count, color]) => ({ name, count, color }));
+      const mapLayers = [
+        { name: "事件热力图", note: `${state.heatOpacity}%`, color: "var(--red)", range: true },
+        { name: "视频/直播点", note: "7", color: "var(--pink)" },
+        { name: "传播路径", note: "5 条", color: "var(--blue)" },
+        { name: "同城讨论热区", note: "4 片", color: "var(--purple)" },
+        { name: "区域边界", note: "西湖/拱墅/上城", color: "var(--green)" },
+        { name: "重点场所", note: "学校/医院/主管部门", color: "var(--cyan)" }
+      ];
+      const visibleEventLayers = layerDefs.filter((item) => !search || item.name.includes(search));
+      const visibleSources = dataSources.filter((item) => !search || item.name.includes(search));
+      const visibleMapLayers = mapLayers.filter((item) => !search || item.name.includes(search));
+      $("#layerList").innerHTML = `
+        <section class="layer-section">
+          <div class="layer-section-title">事件类型 <small>${visibleEventLayers.length}/${layerDefs.length}</small></div>
+          <div class="layer-event-items">
+            ${visibleEventLayers.map((item) => `
+              <button class="layer-row ${state.activeLayers.has(item.id) ? "active" : ""}" data-layer="${item.id}" style="--tone:${item.color}" type="button">
+                <i class="check">✓</i>
+                <i class="layer-icon">${item.code}</i>
+                <span>${item.name}</span>
+                <b class="layer-count">${events.filter((event) => event.layer === item.id).length}</b>
+              </button>
+            `).join("")}
+          </div>
+        </section>
+        <section class="layer-section">
+          <div class="layer-section-title">数据源 <small>在线 36/38</small></div>
+          ${visibleSources.map((item) => `
+            <div class="layer-row source-only" style="--tone:${item.color}">
+              <i class="check">✓</i>
+              <span>${item.name}</span>
+              <b class="layer-note">${item.count}</b>
+            </div>
+          `).join("")}
+        </section>
+        <section class="layer-section">
+          <div class="layer-section-title">地图图层 <small>态势表达</small></div>
+          ${visibleMapLayers.map((item) => item.range ? `
+            <label class="map-layer-row heat-opacity-row" style="--tone:${item.color}">
+              <i class="check">✓</i>
+              <span>${item.name}</span>
+              <input id="heatOpacity" type="range" min="30" max="100" value="${state.heatOpacity}" aria-label="事件热力图透明度" />
+              <b class="layer-note">${item.note}</b>
+            </label>
+          ` : `
+            <button class="map-layer-row" style="--tone:${item.color}" type="button">
+              <i class="check">✓</i>
+              <span>${item.name}</span>
+              <b class="layer-note">${item.note}</b>
+            </button>
+          `).join("")}
+        </section>
+      `;
+      $$("#layerList [data-layer]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = button.dataset.layer;
+          if (state.activeLayers.has(id)) state.activeLayers.delete(id);
+          else state.activeLayers.add(id);
+          if (!state.activeLayers.size) state.activeLayers.add(id);
+          render();
+        });
+      });
+      const heatOpacity = $("#heatOpacity");
+      if (heatOpacity) {
+        heatOpacity.addEventListener("input", (event) => {
+          state.heatOpacity = Number(event.target.value) || 82;
+          const heatLayer = $("#heatLayer");
+          if (heatLayer) heatLayer.style.opacity = String(state.heatOpacity / 100);
+          const note = event.target.closest(".map-layer-row")?.querySelector(".layer-note");
+          if (note) note.textContent = `${state.heatOpacity}%`;
+        });
+      }
+    }
+
+    function renderMap() {
+      $("#zoneLayer").innerHTML = zones.map((zone, index) => `
+        <div class="poi-label" data-poi="${index}" style="left:${zone.x}%;top:${zone.y}%;--tone:${zone.color}">
+          ${zone.name}<small>${zone.type}</small>
+        </div>
+      `).join("");
+      const shown = visibleEvents();
+      $("#routeLayer").innerHTML = "";
+      $("#heatLayer").innerHTML = shown
+        .filter((event) => event.heat >= 70 || event.risk >= 78)
+        .map((event) => {
+          const itemLayer = layer(event.layer);
+          const size = Math.max(86, Math.min(190, event.heat * 1.65));
+          const alpha = Math.max(.34, Math.min(.72, event.heat / 140));
+          return `<span class="heat-blob" style="--x:${event.x}%;--y:${event.y}%;--size:${size}px;--tone:${itemLayer.color};--alpha:${alpha}"></span>`;
+        }).join("");
+      $("#heatLayer").style.opacity = String(state.heatOpacity / 100);
+      $("#riskLayer").innerHTML = "";
+      const selected = eventById(state.selected);
+      const pathEvents = rankedCityInfos(shown)
+        .filter((event) => event.id !== selected.id)
+        .slice(0, 7);
+      $("#pathLayer").innerHTML = `
+        <svg class="flow-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          ${pathEvents.map((event, index) => {
+            const c1x = selected.x + (event.x - selected.x) * .34;
+            const c2x = selected.x + (event.x - selected.x) * .72;
+            const offset = index % 2 ? -9 : 9;
+            return `<path class="${index > 2 ? "secondary" : ""}" d="M ${selected.x} ${selected.y} C ${c1x} ${selected.y + offset}, ${c2x} ${event.y - offset}, ${event.x} ${event.y}" />`;
+          }).join("")}
+        </svg>`;
+      $("#markerLayer").innerHTML = events.map((event) => {
+        const itemLayer = layer(event.layer);
+        const visible = matches(event);
+        const markerText = Math.max(1, Math.round(event.heat * 1.72));
+        return `
+          <button class="marker ${visible ? "" : "dim"} ${event.id === state.selected ? "active" : ""}" data-event="${event.id}" aria-label="${event.title}，风险评分 ${event.risk}" style="left:${event.x}%;top:${event.y}%;--tone:${itemLayer.color}">
+            ${markerText}
+          </button>
+        `;
+      }).join("");
+      $$(".marker").forEach((button) => {
+        button.addEventListener("click", () => {
+          const event = eventById(button.dataset.event);
+          if (!matches(event)) return;
+          selectEvent(event.id, false, true);
+          showMainlinePrompt(event);
+        });
+      });
+      updateRealMapSource();
+      positionMapOverlays();
+      const mapLegend = $("#mapLegend");
+      mapLegend.className = "map-legend heat-legend";
+      mapLegend.innerHTML = `
+        <b>热度强度 / 事件聚合</b>
+        <div class="legend-gradient">
+          <div class="legend-scale-labels"><span>高</span><span>低</span></div>
+          <i></i>
+        </div>
+        <p class="legend-explain">
+          <strong>时间聚合说明</strong>
+          <span>数字 = 事件数量</span>
+          <span>颜色 = 热度强度</span>
+          <span>点击聚合点进入主线提示</span>
+        </p>
+      `;
+    }
+
+    function renderDetail() {
+      const event = eventById(state.selected);
+      $("#detailPanel").classList.toggle("hidden", !state.detailOpen);
+      $("#detailTitle").textContent = event.title;
+      $("#detailSummary").textContent = event.summary;
+      $("#detailMetrics").innerHTML = [
+        ["类型", layer(event.layer).name], ["地点", event.place], ["时间", event.time], ["风险", event.risk],
+        ["可信", event.confidence], ["状态", event.status], ["扩散", event.spread], ["热度", event.heat]
+      ].map((row) => `<div class="kv"><span>${row[0]}</span><b>${row[1]}</b></div>`).join("");
+      $("#detailRows").innerHTML = [
+        ["来源", event.source], ["原始内容", event.raw], ["AI 摘要", event.summary], ["关联主线", chainById(event.chain).title]
+      ].map((row) => `<div class="detail-row"><b>${row[0]}</b><span>${row[1]}</span></div>`).join("");
+    }
+
+    function renderSelectedEventPanel() {
+      const event = eventById(state.selected);
+      const currentLayer = layer(event.layer);
+      const materials = materialsFor(event);
+      if (state.materialIndex >= materials.length) state.materialIndex = 0;
+      $("#selectedRiskBadge").textContent = `R${event.risk}`;
+      $("#selectedRiskBadge").style.setProperty("--tone", currentLayer.color);
+      $("#selectedEventTitle").textContent = event.title;
+      $("#selectedEventMeta").textContent = `${event.place} · ${event.time} · ${currentLayer.name} · ${event.status}`;
+      $("#selectedEventBrief").textContent = event.summary;
+      const sourceCounts = materials.reduce((acc, item) => {
+        acc[item.source] = (acc[item.source] || 0) + 1;
+        return acc;
+      }, {});
+      $("#selectedSourceChips").innerHTML = Object.entries(sourceCounts)
+        .map(([name, count]) => `<span class="source-chip">${name} ${count}</span>`)
+        .join("");
+      $("#selectedMaterials").innerHTML = materials.map((item, index) => `
+        <button class="material-row ${index === state.materialIndex ? "active" : ""}" data-material="${index}" style="--tone:${materialTone(item.source)}">
+          <span class="material-thumb">${item.kind}</span>
+          <span class="material-copy">
+            <b>${item.source} · ${item.title}</b>
+            <span>${item.text}</span>
+          </span>
+          <span class="material-meta">
+            <b>${item.time}</b>
+            <i class="badge" style="--tone:${materialTone(item.source)}">${item.trust}</i>
+            <em>${item.metric}</em>
+          </span>
+        </button>
+      `).join("");
+      $$(".material-row").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.materialIndex = Number(button.dataset.material) || 0;
+          renderSelectedEventPanel();
+          renderPanels();
+          showToast("下方已联动到该素材");
+        });
+      });
+    }
+
+    function materialPlaybackValue(cam) {
+      const text = `${cam[2] || ""} ${cam[3] || ""}`;
+      let best = 0;
+      text.replace(/([\d.]+)\s*w/gi, (_, value) => {
+        best = Math.max(best, Number(value) * 10000);
+        return _;
+      });
+      if (best > 0) return best;
+      text.replace(/([\d,]+)\s*(?:播放|阅读|围观|评论|回放)?/g, (_, value) => {
+        best = Math.max(best, Number(value.replace(/,/g, "")));
+        return _;
+      });
+      return best;
+    }
+
+    function renderPanels() {
+      const shown = visibleEvents();
+      const ranked = rankedCityInfos(shown);
+      const visibleIds = new Set(shown.map((event) => event.id));
+      $("#newsCount").textContent = ranked.length;
+      const topRisk = shown.length ? Math.max(...shown.map((event) => event.risk)) : 0;
+      const signalBadge = $("#signalBadge");
+      const riskPct = $("#riskPct");
+      const riskLevel = $("#riskLevel");
+      if (signalBadge) signalBadge.textContent = shown.length + 8;
+      if (riskPct) riskPct.textContent = `${Math.round(topRisk / 2.2)}%`;
+      if (riskLevel) riskLevel.textContent = topRisk >= 85 ? "RISK 5" : topRisk >= 70 ? "RISK 4" : "RISK 3";
+      const lead = eventById(state.selected);
+      const headline = ranked[0] || lead;
+      const selectedMaterials = materialsFor(lead);
+      const selectedMaterial = selectedMaterials[state.materialIndex] || selectedMaterials[0];
+      $("#newsFeature").innerHTML = `
+        <h3>当前置顶：${headline.title}</h3>
+        <p>${headline.summary}</p>
+        <div class="news-metrics">
+          <div class="news-metric"><span>热度</span><b>${headline.heat}</b></div>
+          <div class="news-metric"><span>新鲜度</span><b>${freshLabel(headline)}</b></div>
+          <div class="news-metric"><span>可信度</span><b>${headline.confidence.toFixed(2)}</b></div>
+          <div class="news-metric"><span>来源</span><b>${sourceTypeLabel(headline.sourceType)}</b></div>
+        </div>
+      `;
+      $("#newsList").innerHTML = ranked.slice(0, 11).map((event, index) => `
+        <button class="news-row" data-event="${event.id}" style="--tone:${layer(event.layer).color}">
+          <span class="source">${index + 1}. ${sourceTypeLabel(event.sourceType)}</span>
+          <span><b>${event.title}</b><span>${event.time} · 热度 ${event.heat} · ${event.raw}</span></span>
+          <i class="badge">H${event.heat}</i>
+        </button>
+      `).join("");
+      const materialCards = [
+        [selectedMaterial.source, `当前选中素材：${selectedMaterial.title}`, `${selectedMaterial.kind} · ${selectedMaterial.metric}`, selectedMaterial.text, materialTone(selectedMaterial.source), true],
+        ["抖音同城", "校门口沟通片段被同城账号二次剪辑", "10:22 · 42 秒 · 播放 18.6w", "评论 4,280 条，情绪标签追问/焦虑；需要保留原始上下文并遮挡未成年人信息。", "var(--pink)"],
+        ["快手直播", "家属等待沟通直播切片", "10:47 · 回放 12 分钟 · 围观 2.3w", "核心回应缺口是下一次沟通时间表不清，标题化传播正在放大等待情绪。", "var(--purple)"],
+        ["微博视频", "同城话题追问监控和通知时间", "视频 5 条 · 评论 4,280", "舆论焦点从死亡事实转向证据保全和校方是否知情。", "var(--blue)"],
+        ["头条视频", "本地媒体梳理家属核心诉求", "阅读 12.4w · 评论 1,730", "报道把家属诉求、校方说明和调查组介入并列呈现。", "var(--cyan)"],
+        ["公众号视频号", "未成年人隐私保护提醒", "3 条 · 官方/社区", "强调不传播姓名照片和未经核验截图，可作为隐私处置依据。", "var(--green)"],
+        ["现场回传", "属地引导家属代表沟通", "3 段 · 待核验", "现场秩序尚未失控，但沟通空间和时间表仍是关键缺口。", "var(--red)"]
+      ];
+      const orderedMaterialCards = materialCards
+        .map((cam, index) => ({ cam, index, playback: materialPlaybackValue(cam) }))
+        .sort((a, b) => b.playback - a.playback || a.index - b.index);
+      $("#liveCount").textContent = orderedMaterialCards.length;
+      $("#webcamGrid").innerHTML = orderedMaterialCards.map(({ cam }, index) => `
+        <div class="cam ${cam[5] ? "focused" : ""}" style="--tone:${cam[4]}">
+          <div class="cam-head">${cam[0]} · ${cam[2]}</div>
+          <div class="cam-body"><b>${cam[1]}${index < 3 ? '<span class="hot-mark">🔥</span>' : ''}</b><span>${cam[3]}</span></div>
+        </div>
+      `).join("");
+      const chainSummaries = chains.map((chain) => {
+        const items = chain.nodes.map(eventById).filter((event) => visibleIds.has(event.id));
+        const ordered = rankedCityInfos(items);
+        const heat = ordered.length ? Math.max(...ordered.map((event) => event.heat)) : 0;
+        const latest = ordered.length ? ordered.reduce((max, event) => Math.max(max, eventMinutes(event)), 0) : 0;
+        return { chain, ordered, heat, latest, score: heat * 0.75 + latest / 1440 * 25 };
+      }).filter((item) => item.ordered.length).sort((a, b) => b.score - a.score);
+      $("#chainCount").textContent = chainSummaries.length;
+      $("#chainList").innerHTML = chainSummaries.map(({ chain, ordered, heat }) => `
+        <button class="chain-card ${chain.id === state.chain ? "active" : ""}" data-chain="${chain.id}" style="--tone:${chain.id === state.chain ? "var(--cyan)" : "var(--blue)"}">
+          <span class="source">${ordered.length} 条资讯</span>
+          <span><b>${chainInfoTitle(chain)}</b><span>最新 ${ordered[0].time} · 最高热度 ${heat} · ${ordered.map((event) => sourceTypeLabel(event.sourceType)).slice(0, 4).join(" / ")}</span></span>
+          <i class="badge">${chain.id === state.chain ? "已选中" : "聚合"}</i>
+        </button>
+      `).join("");
+      $$(".focus-row,.news-row").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectEvent(button.dataset.event, false, true);
+        });
+      });
+      $$("#chainList .chain-card").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.chain = button.dataset.chain;
+          const next = rankedCityInfos(chainById(state.chain).nodes.map(eventById).filter(matches))[0] || eventById(chainById(state.chain).nodes[0]);
+          selectEvent(next.id, false, true);
+        });
+      });
+    }
+
+    function renderSituationPanels() {
+      const shown = visibleEvents();
+      const ranked = rankedCityInfos(shown);
+      const top = ranked.slice(0, 8);
+      const toneForRank = (index) => index < 2 ? "var(--red)" : index < 5 ? "var(--amber)" : "var(--blue)";
+      const speed = (event, index) => Math.round(event.heat * (34 - index * 2) + event.risk * 3);
+      const hasLiveMaterial = (event) =>
+        `${event.source}${event.raw}${event.title}`.includes("直播") ||
+        event.sourceType === "localnews" ||
+        materialsFor(event).some((item) => `${item.kind}${item.title}${item.source}`.includes("直播"));
+      $("#hotRankList").innerHTML = `
+        ${top.map((event, index) => `
+        <button class="rank-row" data-event="${event.id}" style="--tone:${toneForRank(index)}">
+          <span class="rank-no">${index + 1}</span>
+          <span class="rank-title">
+            <b>${event.title}</b>
+            <span class="rank-meta">
+              <i class="meta-text">${event.district} · ${event.place} · ${sourceTypeLabel(event.sourceType)}</i>
+              ${hasLiveMaterial(event) ? `<em class="live-tag">直播</em>` : ""}
+            </span>
+          </span>
+          <span class="rank-score">${(event.heat * 920).toLocaleString("zh-CN")}<small>+${Math.max(18, event.risk - 30)}%</small></span>
+        </button>
+        `).join("")}
+        <div class="rank-formula">
+          <b>热度指数计算</b>
+          <div class="formula-weights">
+            <i><strong>40%</strong><span>播放阅读</span></i>
+            <i><strong>30%</strong><span>评论转发</span></i>
+            <i><strong>20%</strong><span>30分钟增速</span></i>
+            <i><strong>10%</strong><span>多平台出现</span></i>
+          </div>
+          <span>结果按同城权重、来源可信度和重复搬运去重折算，服务当前热度榜排序。</span>
+        </div>
+      `;
+      $$("#hotRankList .rank-row").forEach((button) => {
+        button.addEventListener("click", () => {
+          const event = eventById(button.dataset.event);
+          selectEvent(event.id, false, true);
+          showMainlinePrompt(event);
+        });
+      });
+
+      const stanceRows = [
+        ["负向", "62%", "var(--red)"],
+        ["中立", "26%", "var(--amber)"],
+        ["正向", "9%", "var(--green)"],
+        ["不确定", "3%", "var(--blue)"]
+      ];
+      $("#stanceList").innerHTML = stanceRows.map((row) => `
+        <div class="stance-row"><span>${row[0]}</span><div class="mini-bar"><i style="--v:${row[1]};--tone:${row[2]}"></i></div><b>${row[1]}</b></div>
+      `).join("");
+      $("#monitorList").innerHTML = [
+        ["情绪主轴", "质疑回应过短、要求公开证据保全", "62%", "var(--red)"],
+        ["分歧焦点", "是否长期欺凌、校方是否提前知情", "47%", "var(--amber)"],
+        ["降温支点", "联合调查时间表与家属核验窗口", "31%", "var(--green)"]
+      ].map((item) => `
+        <div class="monitor-row" style="--tone:${item[3]}"><b>${item[0]}</b><strong>${item[2]}</strong><span>${item[1]}</span></div>
+      `).join("");
+
+      $("#newHot").innerHTML = top.slice(0, 3).map((event, index) => `
+        <button class="compact-row" data-event="${event.id}" style="--tone:${toneForRank(index)}">
+          <span class="rank-no">${index + 1}</span><b>${event.time} ${event.title}</b><strong>${(event.heat * 920).toLocaleString("zh-CN")}</strong>
+        </button>
+      `).join("");
+      $("#speedList").innerHTML = top.slice(0, 3).map((event, index) => `
+        <button class="compact-row" data-event="${event.id}" style="--tone:${toneForRank(index)}">
+          <span class="rank-no">${index + 1}</span><b>${event.title}</b><strong>${speed(event, index).toLocaleString("zh-CN")}/分钟</strong>
+        </button>
+      `).join("");
+      const breakout = ranked.filter((event) => event.heat >= 78 || event.spread.includes("破圈") || event.sourceType === "shortvideo").slice(0, 3);
+      $("#breakoutList").innerHTML = breakout.map((event, index) => `
+        <button class="compact-row breakout-row" data-event="${event.id}" style="--tone:${toneForRank(index)}">
+          <span class="rank-no">${index + 1}</span>
+          <span class="breakout-copy"><b>${event.title}</b><span>${breakoutRoute(event)}</span></span>
+          <strong class="probability-score"><span>破圈概率</span>${Math.min(89, event.heat - 6)}%</strong>
+        </button>
+      `).join("");
+      $("#platformList").innerHTML = top.slice(0, 3).map((event, index) => `
+        <button class="compact-row platform-row" data-event="${event.id}" style="--tone:${toneForRank(index)}">
+          <span class="rank-no">${index + 1}</span>
+          <span class="platform-copy"><b>${event.title}</b><span>${eventPlatforms(event).length} 个主流平台同步出现</span></span>
+          <span class="platform-dots">${eventPlatforms(event).map(platformLogo).join("")}</span>
+        </button>
+      `).join("");
+      const sources = [
+        ["抖音", "1,264", "实时"],
+        ["快手", "498", "2分钟前"],
+        ["头条", "412", "实时"],
+        ["微博", "896", "实时"],
+        ["微信公众号", "732", "1分钟前"],
+        ["本地论坛", "289", "5分钟前"],
+        ["新闻媒体", "128", "5分钟前"],
+        ["家长群", "318", "摘要入库"]
+      ];
+      $("#chainCount").textContent = `${sources.length}个平台`;
+      $("#sourceStatus").innerHTML = sources.map((source) => `
+        <div class="source-row">${platformLogo(source[0])}<b>${source[0]}</b><span>${source[1]}</span><span>${source[2]}</span></div>
+      `).join("");
+      $$("#newHot .compact-row,#speedList .compact-row,#breakoutList .compact-row,#platformList .compact-row").forEach((button) => {
+        button.addEventListener("click", () => {
+          const event = eventById(button.dataset.event);
+          selectEvent(event.id, false, true);
+          showMainlinePrompt(event);
+        });
+      });
+    }
+
+    function renderTimeline() {
+      const shown = visibleEvents().sort((a, b) => a.time.localeCompare(b.time));
+      $("#timelineDots").innerHTML = shown.map((event, index) => {
+        const x = 4 + (index / Math.max(1, shown.length - 1)) * 92;
+        const size = event.id === state.selected ? 8 : 6;
+        return `<button class="tl-dot ${event.id === state.selected ? "active" : ""}" data-event="${event.id}" style="--x:${x}%;--s:${size}px;--tone:${layer(event.layer).color}" title="${event.time} ${event.title}"><span class="tl-dot-time">${event.time}</span></button>`;
+      }).join("");
+      $("#timelineCards").innerHTML = rankedCityInfos(shown).slice(0, 6).map((event, index) => {
+        const materials = materialsFor(event);
+        const videoCount = materials.filter((item) => `${item.kind}${item.title}${item.source}`.includes("视频")).length + (event.sourceType === "shortvideo" ? 1 : 0);
+        const liveCount = materials.filter((item) => `${item.kind}${item.title}${item.source}`.includes("直播") || item.source === "快手").length + (event.sourceType === "localnews" ? 1 : 0);
+        const growth = Math.max(18, event.risk - 30);
+        const y1 = Math.max(3, 18 - event.heat / 7);
+        const y2 = Math.max(3, y1 - 2 + (index % 3));
+        const y3 = Math.max(2, y2 - growth / 20);
+        const y4 = Math.max(2, y3 - (event.heat >= 90 ? 3 : 1));
+        return `
+          <button class="tl-card ${event.id === state.selected ? "active" : ""}" data-event="${event.id}" style="--tone:${layer(event.layer).color}">
+            <span class="tl-time">${event.time}</span>
+            <b class="tl-title">${event.title}</b>
+            <span class="tl-place">${event.district} · ${event.place}</span>
+            <span class="tl-media">视频 ${videoCount} · 直播 ${liveCount}</span>
+            <span class="tl-metrics">
+              <b>热度 ${event.heat}</b>
+              <strong>+${growth}%</strong>
+              <svg class="tl-spark" viewBox="0 0 56 18" aria-hidden="true">
+                <path class="spark-glow" d="M2 ${y1.toFixed(1)} L17 ${y2.toFixed(1)} L32 ${y3.toFixed(1)} L54 ${y4.toFixed(1)}" />
+                <path d="M2 ${y1.toFixed(1)} L17 ${y2.toFixed(1)} L32 ${y3.toFixed(1)} L54 ${y4.toFixed(1)}" />
+              </svg>
+            </span>
+          </button>
+        `;
+      }).join("");
+      $$(".tl-dot").forEach((dot) => {
+        dot.addEventListener("click", () => {
+          selectEvent(dot.dataset.event, false, true);
+        });
+      });
+      $$("#timelineCards .tl-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          const event = eventById(card.dataset.event);
+          selectEvent(event.id, false, true);
+          showMainlinePrompt(event);
+        });
+      });
+    }
+
+    function renderControls() {
+      const searchInput = $("#searchInput");
+      if (searchInput) searchInput.value = state.query;
+      $$("#rangeButtons button").forEach((button) => button.classList.toggle("active", button.dataset.range === state.range));
+      $$("#newsTabs button").forEach((button) => button.classList.toggle("active", button.dataset.source === state.source));
+    }
+
+    function render() {
+      ensureSelection();
+      syncUrl();
+      renderKpis();
+      renderControls();
+      renderLayers();
+      renderMap();
+      renderDetail();
+      renderSelectedEventPanel();
+      renderPanels();
+      renderSituationPanels();
+      renderTimeline();
+    }
+
+    const searchInput = $("#searchInput");
+    if (searchInput) {
+      searchInput.addEventListener("input", (event) => {
+        state.query = event.target.value;
+        render();
+      });
+    }
+    $("#layerSearch").addEventListener("input", renderLayers);
+    $$("#rangeButtons button").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.range = button.dataset.range;
+        render();
+      });
+    });
+    $$("#newsTabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.source = button.dataset.source;
+        render();
+      });
+    });
+    $("#citySelect").addEventListener("change", (event) => {
+      const name = event.target.options[event.target.selectedIndex].textContent;
+      $("#scopeTitle").textContent = `${name}青澜中学同城情绪态势`;
+      showToast("城市视图已切换，当前 mock 仍聚焦校园事中主线");
+    });
+    $("#closeDetail").addEventListener("click", () => {
+      state.detailOpen = false;
+      renderDetail();
+    });
+    const copyBtn = $("#copyBtn");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(location.href);
+          showToast("链接已复制");
+        } catch {
+          showToast("链接已生成");
+        }
+      });
+    }
+    const dataHubUrl = () => `data-hub.html?caseId=campus-death-high-intensity&regionId=campus-core&mainlineId=ML-001&signalId=SIG-001&cityEventId=${encodeURIComponent(state.selected)}`;
+    const mainlineUrl = () => `mainline-builder.html?caseId=campus-death-high-intensity&mainlineId=ML-001&signalId=SIG-001&cityEventId=${encodeURIComponent(state.selected)}`;
+    $("#addMainline").addEventListener("click", () => { location.href = mainlineUrl(); });
+    $("#selectedJoinMainline").addEventListener("click", () => { location.href = mainlineUrl(); });
+    $("#promptClose").addEventListener("click", () => $("#mainlinePrompt").classList.add("hidden"));
+    $("#promptEnterMainline").addEventListener("click", () => { location.href = mainlineUrl(); });
+    $("#selectedOpenData").addEventListener("click", () => {
+      location.href = dataHubUrl();
+    });
+    $("#markConfirmed").addEventListener("click", () => showToast("已标记确认"));
+    $("#markReview").addEventListener("click", () => showToast("已标记待核验"));
+    $("#markNoise").addEventListener("click", () => showToast("已标记噪声"));
+    const optionalButtons = [
+      ["#upgradeBtn", "City Pro mock"],
+      ["#fullBtn", "全屏模式 mock"],
+      ["#settingsBtn", "设置面板 mock"],
+      ["#signBtn", "登录入口 mock"]
+    ];
+    optionalButtons.forEach(([selector, message]) => {
+      const button = $(selector);
+      if (button) button.addEventListener("click", () => showToast(message));
+    });
+    $("#zoomIn").addEventListener("click", () => realMapReady ? realMap.zoomIn({ duration: 240 }) : showToast("缩放 +"));
+    $("#zoomOut").addEventListener("click", () => realMapReady ? realMap.zoomOut({ duration: 240 }) : showToast("缩放 -"));
+    $("#homeBtn").addEventListener("click", () => {
+      if (realMapReady) fitCityMap(true);
+      else showToast("回到城市中心");
+    });
+    $$(".map-mode button").forEach((button) => {
+      button.addEventListener("click", () => {
+        $$(".map-mode button").forEach((item) => item.classList.toggle("active", item === button));
+        const mode = button.textContent.trim();
+        const map = $("#realMap");
+        const tint = $(".map-tint");
+        if (mode === "卫星") {
+          map.style.filter = "saturate(.72) brightness(.82) contrast(1.08)";
+          tint.style.opacity = ".28";
+          $("#heatLayer").style.opacity = String(Math.max(.42, state.heatOpacity / 140));
+        } else if (mode === "热力") {
+          map.style.filter = "saturate(.62) brightness(.95) contrast(.92)";
+          tint.style.opacity = ".68";
+          $("#heatLayer").style.opacity = String(Math.min(1, state.heatOpacity / 80));
+        } else {
+          map.style.filter = "";
+          tint.style.opacity = "";
+          $("#heatLayer").style.opacity = String(state.heatOpacity / 100);
+        }
+      });
+    });
+    $$("[data-collapse]").forEach((button) => {
+      button.addEventListener("click", () => button.closest(".float-panel").classList.toggle("collapsed"));
+    });
+    $$("#domainTabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        $$("#domainTabs button").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        showToast(`${button.textContent}域已聚焦`);
+      });
+    });
+
+    initRealMap();
+    render();
+  </script>
+</body>
+</html>

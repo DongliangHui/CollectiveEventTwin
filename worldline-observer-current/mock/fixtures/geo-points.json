@@ -1,0 +1,13 @@
+{
+  "caseId": "campus-death-high-intensity",
+  "points": [
+    { "id": "qinglan-school", "name": "青澜中学", "type": "campus", "coordinates": [120.1348, 30.2825], "regionId": "campus-core" },
+    { "id": "school-gate", "name": "校门口沟通点", "type": "offline-gathering", "coordinates": [120.1329, 30.2809], "regionId": "family-gathering" },
+    { "id": "teaching-building", "name": "教学楼证据点", "type": "evidence-point", "coordinates": [120.1365, 30.2855], "regionId": "campus-core" },
+    { "id": "family-room", "name": "家属沟通室", "type": "communication-room", "coordinates": [120.1404, 30.2778], "regionId": "family-gathering" },
+    { "id": "education-bureau", "name": "主管部门回应窗口", "type": "authority", "coordinates": [120.1686, 30.2767], "regionId": "authority-response" },
+    { "id": "local-media", "name": "本地媒体传播节点", "type": "media-node", "coordinates": [120.1710, 30.2695], "regionId": "online-spread" },
+    { "id": "platform-node", "name": "同城短视频传播节点", "type": "platform-node", "coordinates": [120.1551, 30.2741], "regionId": "online-spread" },
+    { "id": "privacy-risk", "name": "未成年人隐私风险节点", "type": "privacy-risk", "coordinates": [120.1624, 30.2912], "regionId": "privacy-risk" }
+  ]
+}

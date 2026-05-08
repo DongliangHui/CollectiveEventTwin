@@ -1,0 +1,12 @@
+[project]
+name = "collective-event-twin-worker"
+version = "0.1.0"
+description = "Temporal worker for CollectiveEventTwin P0 workflows."
+requires-python = ">=3.11"
+dependencies = [
+  "temporalio>=1.7.0",
+  "collective-event-twin-api",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

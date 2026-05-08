@@ -1,0 +1,7 @@
+{
+  "name": "Investor Demo - Risk Intelligence Twin",
+  "id": "investor-demo-risk-intelligence-twin",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}

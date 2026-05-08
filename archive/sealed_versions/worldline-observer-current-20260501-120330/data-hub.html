@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 数据 / 信号检索工作台</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .91);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    button, a, input { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid rgba(47,109,246,.48);
+      outline-offset: 2px;
+    }
+
+    .app { height: 100dvh; min-height: 900px; display: grid; grid-template-rows: 56px 88px 1fr 66px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 270px 1fr 430px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs a {
+      min-width: 68px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 14px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1.45fr;
+      gap: 8px;
+      padding: 10px 14px 8px;
+    }
+    .metric {
+      position: relative;
+      min-height: 76px;
+      padding: 9px 12px 9px 16px;
+      border: 1px solid rgba(216,205,188,.86);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,253,247,.9), rgba(255,253,247,.64));
+      text-align: left;
+      transition: background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease);
+      overflow: hidden;
+    }
+    .metric::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 4px;
+      border-radius: 0 6px 6px 0;
+      background: var(--tone);
+      opacity: .82;
+    }
+    .metric:hover, .metric.active {
+      border-color: color-mix(in srgb, var(--tone) 42%, var(--line));
+      background: var(--panel-solid);
+      transform: translateY(-1px);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 12%, transparent);
+    }
+    .metric label { display: block; color: var(--muted); font-size: 11px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .metric b { display: block; margin-top: 5px; color: var(--tone); font-size: 21px; line-height: 1; }
+    .metric p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.18; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .metric.strategy-metric b { font-size: 16px; line-height: 1.18; color: var(--ink); }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr) 396px;
+      gap: 10px;
+      padding: 0 14px 10px;
+      overflow: hidden;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .pad { padding: 14px; }
+    .title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .title span, .title a { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .title a {
+      color: var(--ink);
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+    }
+
+    .filter-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; }
+    .filter-hint {
+      padding: 10px;
+      border: 1px solid rgba(47,109,246,.2);
+      border-radius: 12px;
+      background: rgba(47,109,246,.06);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+    .filter-scroll { min-height: 0; overflow: auto; padding-right: 2px; scrollbar-width: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+    .filter-group { padding: 10px 0; border-top: 1px solid rgba(216,205,188,.72); }
+    .filter-group:first-child { border-top: 0; padding-top: 0; }
+    .filter-group b { display: block; margin-bottom: 7px; font-size: 12px; }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filter-chip, .tag-row button, .pill {
+      min-height: 26px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,247,.72);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+    }
+    .filter-chip.active, .tag-row button.active, .pill.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .check-list { display: grid; gap: 6px; }
+    .check-item {
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .check-item input { accent-color: var(--ink); }
+    .date-range { display: grid; grid-template-columns: 1fr; gap: 7px; }
+    .date-field {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .date-field input, .select-field select {
+      width: 100%;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-solid);
+      color: var(--ink);
+      outline: none;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .select-field { display: grid; gap: 6px; }
+    .range-filter { display: grid; gap: 7px; }
+    .range-values { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .dual-range {
+      position: relative;
+      height: 28px;
+      display: grid;
+      align-items: center;
+    }
+    .dual-range::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      height: 6px;
+      border-radius: 999px;
+      background: #e8e1d6;
+    }
+    .dual-range input[type="range"] {
+      position: absolute;
+      width: 100%;
+      pointer-events: none;
+      appearance: none;
+      background: transparent;
+    }
+    .dual-range input[type="range"]::-webkit-slider-thumb {
+      pointer-events: auto;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: var(--panel-solid);
+      box-shadow: var(--soft);
+    }
+    .dual-range input[type="range"]::-moz-range-thumb {
+      pointer-events: auto;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: var(--panel-solid);
+      box-shadow: var(--soft);
+    }
+    .filter-summary {
+      display: grid;
+      gap: 7px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.66);
+    }
+    .filter-summary span { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .filter-summary strong { color: var(--ink); }
+
+    .center { display: grid; grid-template-rows: 112px minmax(0, 1fr) 204px; gap: 10px; min-height: 0; overflow: hidden; }
+    .search-panel { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 10px 12px; align-items: start; }
+    .search-box { display: grid; gap: 8px; }
+    .stage-note { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .search-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-line input {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.72);
+      outline: none;
+      font-weight: 800;
+    }
+    .primary-btn, .outline-btn, .text-btn {
+      min-height: 34px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-solid);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .primary-btn { background: var(--ink); border-color: var(--ink); color: white; }
+    .text-btn { border-color: transparent; background: transparent; color: var(--muted); }
+    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; max-height: 58px; overflow: hidden; }
+    .strategy {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+    .strategy div {
+      min-height: 40px;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.66);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .strategy b { display: block; color: var(--ink); margin-bottom: 4px; }
+
+    .table-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) 42px; }
+    .table-head, .signal-row {
+      display: grid;
+      grid-template-columns: 62px minmax(260px, 1.6fr) .7fr .62fr .64fr .62fr .7fr 200px;
+      gap: 8px;
+      align-items: center;
+    }
+    .table-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .table-body { min-height: 0; overflow: auto; padding: 0 12px; scrollbar-width: none; }
+    .table-body::-webkit-scrollbar { display: none; }
+    .signal-row {
+      width: 100%;
+      min-height: 62px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(216,205,188,.78);
+      font-size: 12px;
+      transition: background .2s var(--ease);
+    }
+    .signal-row:hover, .signal-row.active { background: color-mix(in srgb, var(--tone) 8%, transparent); }
+    .signal-main { cursor: pointer; }
+    .signal-row b { display: block; font-size: 12px; line-height: 1.35; }
+    .signal-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 800; line-height: 1.32; }
+    .badge {
+      display: inline-grid;
+      place-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid color-mix(in srgb, var(--tone) 46%, var(--line));
+      border-radius: 8px;
+      color: var(--tone);
+      background: color-mix(in srgb, var(--tone) 10%, var(--panel-solid));
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .score { color: var(--tone); font-weight: 900; }
+    .status-pill {
+      display: inline-grid;
+      place-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 8px;
+      background: rgba(255,253,247,.8);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .row-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+    .row-actions button {
+      min-height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .row-actions button.primary-mini { background: var(--ink); color: white; border-color: var(--ink); }
+    .table-foot {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      background: rgba(255,253,247,.62);
+    }
+    .pager { display: flex; gap: 6px; align-items: center; }
+    .pager button {
+      min-width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .pager button.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .pager .page-nav { min-width: 54px; padding: 0 8px; }
+
+    .draft-panel {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr 1fr 210px;
+      gap: 10px;
+      padding: 12px;
+    }
+    .draft-card {
+      min-height: 0;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+      overflow: hidden;
+    }
+    .draft-card b { display: block; margin-bottom: 7px; font-size: 13px; }
+    .draft-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; font-weight: 800; }
+    .draft-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 8px; }
+    .draft-stats div {
+      min-height: 44px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.72);
+    }
+    .draft-stats span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .draft-stats strong { display: block; margin-top: 5px; color: var(--ink); font-size: 17px; }
+    .draft-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .draft-chips span {
+      min-height: 23px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .draft-list { display: grid; gap: 5px; }
+    .draft-list span {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .draft-list strong { color: var(--ink); }
+    .draft-actions { display: grid; grid-template-rows: auto 1fr auto auto; gap: 8px; }
+    .draft-actions small { color: var(--muted); font-size: 11px; line-height: 1.45; font-weight: 800; }
+
+    .detail-panel { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 10px; }
+    .selected-title h2 { margin: 0; font-size: 18px; line-height: 1.18; }
+    .selected-title p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .trust-grid div { min-height: 46px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.68); }
+    .trust-grid span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .trust-grid b { display: block; margin-top: 5px; font-size: 15px; }
+    .why {
+      padding: 12px;
+      border: 1px solid rgba(47,109,246,.24);
+      border-radius: 12px;
+      background: rgba(47,109,246,.07);
+    }
+    .why b { display: block; font-size: 13px; margin-bottom: 7px; }
+    .why ol { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; line-height: 1.5; font-weight: 800; }
+    .position-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .position-row span {
+      min-height: 25px;
+      padding: 5px 7px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .detail-scroll { min-height: 0; overflow: auto; scrollbar-width: none; }
+    .detail-scroll::-webkit-scrollbar { display: none; }
+    .detail-section { padding-top: 10px; border-top: 1px solid var(--line); }
+    .detail-section b { display: block; margin-bottom: 8px; font-size: 13px; }
+    .evidence-row, .recommend-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .evidence-row + .evidence-row, .recommend-row + .recommend-row { margin-top: 7px; }
+    .evidence-row span:first-child, .recommend-row span:first-child { color: var(--ink); }
+    .recommend-row strong { color: var(--ink); }
+    .mini-actions { display: flex; align-items: center; gap: 5px; }
+    .mini-actions strong { white-space: nowrap; }
+    .mini-actions button {
+      min-height: 24px;
+      padding: 0 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-solid);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .mini-actions button.dark { background: var(--ink); color: white; border-color: var(--ink); }
+    .right-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr) 188px;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 14px 12px;
+    }
+    .flow-step {
+      min-height: 46px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+    }
+    .flow-step.active { border-color: var(--ink); background: var(--panel-solid); }
+    .flow-step.current { border-color: var(--green); background: rgba(24,168,115,.07); }
+    .flow-step b { display: block; font-size: 12px; }
+    .flow-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .flow a { height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: white; font-size: 13px; font-weight: 900; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translate(-50%, 14px);
+      min-width: 280px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,253,247,.96);
+      box-shadow: var(--soft);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease), transform .25s var(--ease);
+      font-size: 12px;
+      font-weight: 800;
+      z-index: 10;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs">
+        <a href="risk-dashboard.html?caseId=iran-war-escalation&regionId=hormuz&mainlineId=ML-001&signalId=SIG-001">驾驶舱</a>
+        <a class="active" href="data-hub.html?caseId=iran-war-escalation&regionId=hormuz&mainlineId=ML-001&signalId=SIG-001">数据</a>
+        <a href="mainline-builder.html?caseId=iran-war-escalation&mainlineId=ML-001&signalId=SIG-001">主线</a>
+        <a href="worldline-observer.html?caseId=iran-war-escalation&mainlineId=ML-001&worldStateId=WS-001&nodeId=NODE-C3">推演</a>
+        <a href="agent-council.html?caseId=iran-war-escalation&mainlineId=ML-001&nodeId=NODE-C3&councilId=COUNCIL-001">会议</a>
+        <a href="decision-brief.html?caseId=iran-war-escalation&reportId=REPORT-001&mainlineId=ML-001">汇报</a>
+      </nav>
+      <div class="status"><span>数据批次 batch-20260425-001</span><span>接口健康 <strong id="healthText">28/28 正常</strong></span><i class="live-dot"></i></div>
+    </header>
+
+    <section class="metrics" id="metrics"></section>
+
+    <main class="workspace">
+      <aside class="panel pad filter-panel">
+        <div>
+          <div class="title">数据源与条件筛选 <span id="filterScope">当前：全部接口</span></div>
+          <div class="filter-hint">本页只做检索、筛选、查相似和加入草稿；数据源治理、字段映射、可信度校正在数据源管理页处理。</div>
+        </div>
+        <div class="filter-scroll" id="filterGroups"></div>
+        <div class="filter-summary" id="filterSummary"></div>
+      </aside>
+
+      <section class="center">
+        <section class="panel search-panel">
+          <div class="search-box">
+            <div class="title">数据 / 信号检索工作台 <span>当前阶段：数据检索与抓取</span></div>
+            <div class="search-line">
+              <input id="queryInput" value="霍尔木兹 通航受限 战争险 近24小时" />
+              <button class="primary-btn" id="searchBtn">检索</button>
+            </div>
+            <div class="tag-row" id="quickTags"></div>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-head">
+            <span>优先级</span><span>数据 / 信号摘要</span><span>来源</span><span>时间</span><span>区域 / 对象</span><span>标签</span><span>状态</span><span>操作</span>
+          </div>
+          <div class="table-body" id="signalTable"></div>
+          <div class="table-foot">
+            <span id="resultSummary">当前显示 1-6 / 共 42 条候选数据，已按相似度、可信度和证据完整度排序</span>
+            <div class="pager" aria-label="信号分页">
+              <button class="page-nav" id="prevPage">上一页</button>
+              <button class="active">1</button>
+              <button>2</button>
+              <button>3</button>
+              <button>…</button>
+              <button>7</button>
+              <button class="page-nav" id="nextPage">下一页</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel draft-panel">
+          <div class="draft-card">
+            <b>当前主线草稿包</b>
+            <div class="draft-stats">
+              <div><span>已选数据</span><strong id="draftCount">7</strong></div>
+              <div><span>支撑证据</span><strong>5</strong></div>
+              <div><span>待补缺口</span><strong>3</strong></div>
+            </div>
+            <div class="draft-chips" id="draftChips"></div>
+          </div>
+          <div class="draft-card">
+            <b>系统初步识别</b>
+            <div class="draft-list">
+              <span><strong>可能诱因</strong><em>通航不确定 / 保险重定价 / 核查争议</em></span>
+              <span><strong>可能支点</strong><em>霍尔木兹通航、航运保险、能源价格</em></span>
+              <span><strong>归属主线</strong><em>ML-001 霍尔木兹通航受限与能源外溢</em></span>
+            </div>
+          </div>
+          <div class="draft-card">
+            <b>证据缺口</b>
+            <div class="draft-list">
+              <span><strong>AIS 连续轨迹</strong><em>待补</em></span>
+              <span><strong>保险报价原文</strong><em>待核验</em></span>
+              <span><strong>官方执行口径</strong><em>待确认</em></span>
+            </div>
+          </div>
+          <div class="draft-actions">
+            <b>本页输出</b>
+            <small>草稿包不是最终主线，只是可追溯材料集合。下一页由人工确认成线路径、诱因、支点和缺口。</small>
+            <button class="outline-btn" id="continueData">继续补充数据</button>
+            <a class="primary-btn" id="enterBuilder" href="mainline-builder.html">进入主线建模</a>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel pad detail-panel">
+        <section class="selected-title">
+          <div class="title">选中数据详情 <span id="selectedId">SIG-001</span></div>
+          <h2 id="detailTitle"></h2>
+          <p id="detailSub"></p>
+        </section>
+        <section class="trust-grid" id="trustGrid"></section>
+        <section class="why">
+          <b>为什么值得关注？</b>
+          <ol id="detailWhy"></ol>
+        </section>
+        <section>
+          <div class="title">可补强主线位置 <span>进入草稿后可调整</span></div>
+          <div class="position-row" id="positionRows"></div>
+        </section>
+        <div class="detail-scroll">
+          <section class="detail-section">
+            <b>来源证据与原文片段</b>
+            <div id="evidenceRows"></div>
+          </section>
+          <section class="detail-section">
+            <b>相关数据推荐</b>
+            <div id="recommendRows"></div>
+          </section>
+        </div>
+        <div class="right-actions">
+          <button class="primary-btn" id="addDraft">加入主线草稿</button>
+          <button class="outline-btn" id="findSimilar">查相似数据</button>
+        </div>
+      </aside>
+    </main>
+
+    <section class="flow">
+      <div class="flow-step active"><b>1 数据接入与治理</b><span>接口、质量、标签体系</span></div>
+      <div class="flow-step active current"><b>2 数据检索与抓取</b><span>筛选、查相似、加入草稿</span></div>
+      <div class="flow-step"><b>3 问题线索识别</b><span>进入主线工作台</span></div>
+      <div class="flow-step"><b>4 主线建模确认</b><span>生成 World State</span></div>
+      <div class="flow-step"><b>5 世界线推演</b><span>分支与 Agent Council</span></div>
+      <a href="mainline-builder.html">下一步：建模</a>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
+    const sourceOptions = ["全部接口", "AIS / 航运报价", "船东论坛", "能源市场", "G7 / 官方声明", "IAEA / 机构摘要", "历史案例"];
+    const regionOptions = ["全部区域", "霍尔木兹", "波斯湾", "红海", "黎巴嫩边境", "伊朗核设施", "海湾基地", "全球市场"];
+    const tagOptions = ["全部标签", "通航受限", "航运保险", "能源价格", "核查争议", "代理人外溢", "外交斡旋", "相似案例"];
+    const keywordOptions = ["War Risk Premium", "AIS 等待", "护航机制", "IAEA 访问", "临检", "拒保"];
+    const riskOptions = ["高价值前兆", "待人工核验", "证据缺口", "缓和证据", "已入草稿"];
+    const statusOptions = ["未入草稿", "已入草稿", "待核验", "参考", "已排除"];
+    const quickTags = ["全部", "同渠道", "同标签", "同区域", "关键词", "近24小时", "高价值前兆", "待人工核验"];
+    const signals = [
+      {
+        id: "SIG-001", p: "P0", tone: "red", sourceId: "AIS / 航运报价",
+        title: "IRGC 临检扩大与霍尔木兹通航风险升温",
+        sub: "AIS 等待船舶增加，船东论坛讨论保险拒保条款",
+        source: "AIS / 船东论坛", time: "04-26 22:15", area: "霍尔木兹", object: "油轮通道", tag: "通航受限",
+        sim: "0.91", trust: "A", status: "未入草稿", action: "加入草稿",
+        why: ["与当前主线草稿语义相似度 0.91", "命中风险语义：通航受限 / 能源外溢", "关联对象覆盖霍尔木兹、航运保险、能源价格", "船舶等待、保险报价、论坛讨论三个渠道重复出现", "可补强当前主线的起点信号与支撑证据"],
+        positions: ["起点信号", "支撑证据", "关键支点"],
+        excerpts: [["AIS 船舶状态", "霍尔木兹东向油轮等待时间较前一日上升约 22%", "A"], ["船东论坛", "多名运营方提到 War Risk Premium 重新报价", "B"], ["保险摘要", "部分承保方要求重新确认航线风险", "B"]],
+        recs: [["同航线相似信号", "14 条"], ["通航受限同标签", "23 条"], ["保险费率原文片段", "8 条"], ["可能同属 ML-001", "5 条"]]
+      },
+      {
+        id: "SIG-012", p: "P1", tone: "amber", sourceId: "IAEA / 机构摘要",
+        title: "IAEA 核查窗口推迟，制裁合法性争议升温",
+        sub: "核查可达性下降与制裁讨论同时出现",
+        source: "IAEA / 官方声明", time: "04-27 08:10", area: "伊朗核设施", object: "Fordow / Yazd", tag: "核查争议",
+        sim: "0.83", trust: "B", status: "已入草稿", action: "查看详情",
+        why: ["与外部制裁节奏和外交压力同时相关", "影响能源外溢主线中的外部军事事件支点", "当前存在官方口径与媒体转述差异", "可补强证据缺口但需要人工确认原文"],
+        positions: ["证据缺口", "外部事件支点"],
+        excerpts: [["机构摘要", "核查访问窗口被描述为不完整", "B"], ["官方声明", "将继续寻求安全访问安排", "A"]],
+        recs: [["IAEA 原文", "3 条"], ["制裁声明同标签", "9 条"], ["历史核查争议案例", "2 条"]]
+      },
+      {
+        id: "SIG-017", p: "P1", tone: "red", sourceId: "船东论坛",
+        title: "黎以边境火箭弹频率上升，北部战线外溢",
+        sub: "边境事件与代理人组织表态出现同向变化",
+        source: "以色列 / 黎巴嫩事件", time: "04-27 09:40", area: "黎巴嫩边境", object: "真主党 / 以军", tag: "代理人外溢",
+        sim: "0.87", trust: "B", status: "待核验", action: "补证后加入",
+        why: ["代理人战线可能改变美国与海湾国家反应", "与霍尔木兹主线存在外溢压力关系", "事件频率升高但指挥链证据不足", "适合作为分支风险补证材料"],
+        positions: ["分支支点", "证据缺口"],
+        excerpts: [["边境事件摘要", "短时段火箭弹事件较上周同期增加", "B"], ["媒体转述", "相关组织表态出现更强对抗措辞", "C"]],
+        recs: [["同区域事件", "11 条"], ["代理人网络标签", "16 条"], ["官方战报原文", "4 条"]]
+      },
+      {
+        id: "SIG-021", p: "P1", tone: "amber", sourceId: "能源市场",
+        title: "Brent 风险溢价与油轮股同步上行",
+        sub: "能源价格与航运保险定价出现联动",
+        source: "能源市场 / 交易摘要", time: "04-27 10:20", area: "全球市场", object: "Brent / 油轮股", tag: "能源价格",
+        sim: "0.79", trust: "A", status: "未入草稿", action: "加入草稿",
+        why: ["能解释通航受限为何传导到资产价格", "与保险费率重定价共同支撑能源外溢路径", "市场信号强但需避免被短线噪声放大"],
+        positions: ["影响对象", "支撑证据"],
+        excerpts: [["市场摘要", "Brent 风险价上移至 105 附近", "A"], ["航运股摘要", "油轮板块出现避险买盘", "B"]],
+        recs: [["同资产价格信号", "18 条"], ["保险费率联动", "8 条"], ["历史油价冲击", "5 条"]]
+      },
+      {
+        id: "SIG-029", p: "P2", tone: "green", sourceId: "G7 / 官方声明",
+        title: "G7 护航机制讨论出现，封锁预期短线降温",
+        sub: "护航讨论压低极端封锁预期，但短期执行不确定性仍在",
+        source: "G7 / 海湾国家", time: "04-27 11:05", area: "波斯湾", object: "护航机制", tag: "外交斡旋",
+        sim: "0.72", trust: "A", status: "未入草稿", action: "作为缓和证据",
+        why: ["这是主线中的缓和条件，不应和高风险信号混在一起判断", "可用于后续世界线中降低极端封锁概率", "当前仍缺少执行时间表和参与范围"],
+        positions: ["缓和证据", "分支条件"],
+        excerpts: [["G7 声明", "讨论维护关键能源通道安全", "A"], ["海湾国家表态", "支持降低误判并保护商业航运", "B"]],
+        recs: [["护航机制同标签", "7 条"], ["海湾国家声明", "6 条"], ["历史护航案例", "4 条"]]
+      },
+      {
+        id: "SIG-033", p: "P2", tone: "violet", sourceId: "历史案例",
+        title: "2019 年油轮袭击前兆与当前信号结构相似",
+        sub: "AIS 异常、保险措辞、外交压力三类线索组合相近",
+        source: "历史案例库", time: "历史匹配", area: "霍尔木兹", object: "历史前兆", tag: "相似案例",
+        sim: "0.76", trust: "B", status: "参考", action: "查看详情",
+        why: ["历史相似并不代表必然复现，但能帮助解释为什么这些信号值得进入推演", "可补强当前主线的前兆模式说明"],
+        positions: ["历史前兆", "解释依据"],
+        excerpts: [["历史案例", "通航不确定、保险条款收紧、外交口径变化曾同步出现", "B"], ["匹配说明", "相似度 0.76，核心差异在外部军事介入程度", "B"]],
+        recs: [["相似前兆案例", "2 条"], ["差异变量", "5 条"], ["外部介入案例", "3 条"]]
+      }
+    ];
+
+    let activeMetric = "results";
+    let activeTag = "全部";
+    let selectedId = "SIG-001";
+    let draftCount = 7;
+    let currentPage = 1;
+    const selectedFilters = {
+      sources: ["全部接口"],
+      timeStart: "2026-04-26T00:00",
+      timeEnd: "2026-04-27T12:00",
+      region: "全部区域",
+      tag: "全部标签",
+      keyword: "War Risk Premium",
+      risk: "高价值前兆",
+      confidenceMin: 68,
+      confidenceMax: 100,
+      statuses: []
+    };
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+
+    function toast(text) {
+      $("#toast").textContent = text;
+      $("#toast").classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => $("#toast").classList.remove("show"), 1800);
+    }
+
+    function persistDraft(extra = {}) {
+      try {
+        const key = "worldline-observer-demo-state";
+        const state = JSON.parse(localStorage.getItem(key) || "{}");
+        localStorage.setItem(key, JSON.stringify({
+          ...state,
+          caseId: "CASE-IRAN-001",
+          signalId: selectedId,
+          mainlineId: "ML-001",
+          selectedSignalIds: ["SIG-001", "SIG-012", "SIG-017"],
+          mainlineDraftStatus: "ready",
+          ...extra
+        }));
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+
+    function selected() {
+      return signals.find(item => item.id === selectedId) || signals[0];
+    }
+
+    function filteredSignals() {
+      let rows = [...signals];
+      const selectedSources = selectedFilters.sources.includes("全部接口") ? [] : selectedFilters.sources;
+      if (selectedSources.length) rows = rows.filter(item => selectedSources.some(source => item.sourceId === source || item.source.includes(source.replace(" / ", " / "))));
+      if (selectedFilters.region !== "全部区域") rows = rows.filter(item => item.area === selectedFilters.region || (selectedFilters.region === "霍尔木兹" && item.area === "全球市场"));
+      if (selectedFilters.tag !== "全部标签") rows = rows.filter(item => item.tag === selectedFilters.tag || (selectedFilters.tag === "通航受限" && item.id === "SIG-033"));
+      rows = rows.filter(item => {
+        const trustScore = item.trust === "A" ? 92 : item.trust === "B" ? 78 : 56;
+        return trustScore >= selectedFilters.confidenceMin && trustScore <= selectedFilters.confidenceMax;
+      });
+      if (selectedFilters.statuses.length) rows = rows.filter(item => selectedFilters.statuses.includes(rowStatus(item)));
+      if (activeMetric === "review") rows = rows.filter(item => /核验|补证|待/.test(item.status + item.action));
+      if (activeMetric === "recommend") rows = rows.filter(item => Number(item.sim) >= .76);
+      if (activeMetric === "draft") rows = rows.filter(item => /已入草稿|SIG-001|SIG-012|SIG-017/.test(item.status + item.id));
+      if (activeTag === "高价值前兆") rows = rows.filter(item => item.p === "P0" || Number(item.sim) >= .86);
+      if (activeTag === "待人工核验") rows = rows.filter(item => /核验|补证/.test(item.status + item.action));
+      if (activeTag === "同区域") rows = rows.filter(item => item.area === selected().area || item.area === "霍尔木兹");
+      if (activeTag === "同标签") rows = rows.filter(item => item.tag === selected().tag);
+      return rows;
+    }
+
+    function renderMetrics() {
+      const data = [
+        { id: "results", label: "当前检索结果数", value: "42 条", sub: "命中霍尔木兹与通航语义", tone: "blue" },
+        { id: "draft", label: "已加入主线草稿", value: `${draftCount} 条`, sub: "可追溯材料集合", tone: "green" },
+        { id: "recommend", label: "相关数据推荐", value: "68 条", sub: "同渠道 / 同标签 / 同区域", tone: "violet" },
+        { id: "review", label: "待核验数据", value: "12 条", sub: "来源或原文仍需确认", tone: "amber" },
+        { id: "strategy", label: "当前检索策略", value: "同渠道 + 同标签 + 同区域", sub: "相似度阈值 0.68，重复转发降权", tone: "red", strategy: true }
+      ];
+      $("#metrics").innerHTML = data.map(item => `
+        <button class="metric ${item.strategy ? "strategy-metric" : ""} ${activeMetric === item.id ? "active" : ""}" data-metric="${item.id}" style="--tone:${colors[item.tone]}">
+          <label>${item.label}</label><b>${item.value}</b><p>${item.sub}</p>
+        </button>
+      `).join("");
+      $$(".metric").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeMetric = btn.dataset.metric;
+          renderMetrics();
+          renderSignals();
+          toast(`已按“${btn.querySelector("label").textContent}”联动筛选列表`);
+        });
+      });
+    }
+
+    function renderFilters() {
+      $("#filterGroups").innerHTML = `
+        <section class="filter-group">
+          <b>数据源</b>
+          <div class="check-list">
+            ${sourceOptions.map(option => `
+              <label class="check-item">
+                <span>${option}</span>
+                <input type="checkbox" data-source="${option}" ${selectedFilters.sources.includes(option) ? "checked" : ""}>
+              </label>
+            `).join("")}
+          </div>
+        </section>
+        <section class="filter-group">
+          <b>时间范围</b>
+          <div class="date-range">
+            <label class="date-field">开始时间<input id="timeStart" type="datetime-local" value="${selectedFilters.timeStart}"></label>
+            <label class="date-field">结束时间<input id="timeEnd" type="datetime-local" value="${selectedFilters.timeEnd}"></label>
+          </div>
+        </section>
+        <section class="filter-group">
+          <b>区域</b>
+          <label class="select-field">
+            <select id="regionSelect">
+              ${regionOptions.map(option => `<option value="${option}" ${selectedFilters.region === option ? "selected" : ""}>${option}</option>`).join("")}
+            </select>
+          </label>
+        </section>
+        <section class="filter-group">
+          <b>标签</b>
+          <label class="select-field">
+            <select id="tagSelect">
+              ${tagOptions.map(option => `<option value="${option}" ${selectedFilters.tag === option ? "selected" : ""}>${option}</option>`).join("")}
+            </select>
+          </label>
+        </section>
+        <section class="filter-group">
+          <b>关键词</b>
+          <div class="filter-chips">${keywordOptions.map(option => `<button class="filter-chip ${selectedFilters.keyword === option ? "active" : ""}" data-keyword="${option}">${option}</button>`).join("")}</div>
+        </section>
+        <section class="filter-group">
+          <b>风险语义</b>
+          <div class="filter-chips">${riskOptions.map(option => `<button class="filter-chip ${selectedFilters.risk === option ? "active" : ""}" data-risk="${option}">${option}</button>`).join("")}</div>
+        </section>
+        <section class="filter-group">
+          <b>可信度范围</b>
+          <div class="range-filter">
+            <div class="range-values"><span id="confidenceMinText">${selectedFilters.confidenceMin}%</span><span id="confidenceMaxText">${selectedFilters.confidenceMax}%</span></div>
+            <div class="dual-range">
+              <input id="confidenceMin" type="range" min="0" max="100" value="${selectedFilters.confidenceMin}">
+              <input id="confidenceMax" type="range" min="0" max="100" value="${selectedFilters.confidenceMax}">
+            </div>
+          </div>
+        </section>
+        <section class="filter-group">
+          <b>状态</b>
+          <div class="check-list">
+            ${statusOptions.map(option => `
+              <label class="check-item">
+                <span>${option}</span>
+                <input type="checkbox" data-status="${option}" ${selectedFilters.statuses.includes(option) ? "checked" : ""}>
+              </label>
+            `).join("")}
+          </div>
+        </section>
+      `;
+      $("#filterSummary").innerHTML = [
+        ["数据源", selectedFilters.sources.join("、")],
+        ["区域", selectedFilters.region],
+        ["标签", selectedFilters.tag],
+        ["可信度", `${selectedFilters.confidenceMin}% - ${selectedFilters.confidenceMax}%`],
+        ["状态", selectedFilters.statuses.join("、") || "全部"]
+      ].map(row => `<span><strong>${row[0]}</strong><em>${row[1]}</em></span>`).join("");
+      $("#filterScope").textContent = `当前：${selectedFilters.sources.length > 2 ? `${selectedFilters.sources.length} 个数据源` : selectedFilters.sources.join("、")}`;
+      $$("[data-source]").forEach(input => {
+        input.addEventListener("change", () => {
+          const value = input.dataset.source;
+          if (value === "全部接口" && input.checked) selectedFilters.sources = ["全部接口"];
+          else {
+            selectedFilters.sources = selectedFilters.sources.filter(item => item !== "全部接口");
+            if (input.checked) selectedFilters.sources.push(value);
+            else selectedFilters.sources = selectedFilters.sources.filter(item => item !== value);
+            if (!selectedFilters.sources.length) selectedFilters.sources = ["全部接口"];
+          }
+          renderFilters();
+          renderSignals();
+          toast(`已更新数据源筛选`);
+        });
+      });
+      $("#timeStart").addEventListener("change", event => {
+        selectedFilters.timeStart = event.target.value;
+        renderFilters();
+        toast("已更新时间范围起点");
+      });
+      $("#timeEnd").addEventListener("change", event => {
+        selectedFilters.timeEnd = event.target.value;
+        renderFilters();
+        toast("已更新时间范围终点");
+      });
+      $("#regionSelect").addEventListener("change", event => {
+        selectedFilters.region = event.target.value;
+        $("#queryInput").value = `${selectedFilters.region} ${selectedFilters.tag} ${selectedFilters.keyword}`;
+        renderFilters();
+        renderSignals();
+        toast(`区域已切换为：${selectedFilters.region}`);
+      });
+      $("#tagSelect").addEventListener("change", event => {
+        selectedFilters.tag = event.target.value;
+        $("#queryInput").value = `${selectedFilters.region} ${selectedFilters.tag} ${selectedFilters.keyword}`;
+        renderFilters();
+        renderSignals();
+        toast(`标签已切换为：${selectedFilters.tag}`);
+      });
+      $$("[data-keyword]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedFilters.keyword = btn.dataset.keyword;
+          $("#queryInput").value = `${selectedFilters.region} ${selectedFilters.tag} ${selectedFilters.keyword}`;
+          renderFilters();
+          renderSignals();
+          toast(`关键词已切换为：${selectedFilters.keyword}`);
+        });
+      });
+      $$("[data-risk]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedFilters.risk = btn.dataset.risk;
+          activeTag = btn.dataset.risk === "待人工核验" ? "待人工核验" : btn.dataset.risk === "高价值前兆" ? "高价值前兆" : activeTag;
+          renderFilters();
+          renderSearch();
+          renderSignals();
+          toast(`风险语义已切换为：${selectedFilters.risk}`);
+        });
+      });
+      ["confidenceMin", "confidenceMax"].forEach(id => {
+        $(`#${id}`).addEventListener("input", event => {
+          const value = Number(event.target.value);
+          if (id === "confidenceMin") selectedFilters.confidenceMin = Math.min(value, selectedFilters.confidenceMax - 1);
+          if (id === "confidenceMax") selectedFilters.confidenceMax = Math.max(value, selectedFilters.confidenceMin + 1);
+          $("#confidenceMinText").textContent = `${selectedFilters.confidenceMin}%`;
+          $("#confidenceMaxText").textContent = `${selectedFilters.confidenceMax}%`;
+          renderSignals();
+        });
+        $(`#${id}`).addEventListener("change", () => renderFilters());
+      });
+      $$("[data-status]").forEach(input => {
+        input.addEventListener("change", () => {
+          const value = input.dataset.status;
+          if (input.checked) selectedFilters.statuses.push(value);
+          else selectedFilters.statuses = selectedFilters.statuses.filter(item => item !== value);
+          selectedFilters.statuses = [...new Set(selectedFilters.statuses)];
+          renderFilters();
+          renderSignals();
+          toast("已更新状态筛选");
+        });
+      });
+    }
+
+    function renderSearch() {
+      $("#quickTags").innerHTML = quickTags.map(tag => `<button class="${activeTag === tag ? "active" : ""}" data-tag="${tag}">${tag}</button>`).join("");
+      $$("#quickTags button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeTag = btn.dataset.tag;
+          renderSearch();
+          renderStrategy();
+          renderSignals();
+          toast(`当前策略加入：${activeTag}`);
+        });
+      });
+      $("#searchBtn").onclick = () => {
+        activeMetric = "results";
+        currentPage = 1;
+        renderMetrics();
+        renderSignals();
+        toast("已按关键词刷新检索结果");
+      };
+    }
+
+    function renderStrategy() {
+      if (!$("#strategy")) return;
+      $("#strategy").innerHTML = [
+        ["优先返回", `${activeTag === "全部" ? "同渠道 / 同标签" : activeTag} 数据`],
+        ["主筛选", `${selectedFilters.region} · ${selectedFilters.tag}`],
+        ["相似阈值", "0.68 以上"],
+        ["排除规则", "重复转发降权，低可信源不单独入草稿"]
+      ].map(row => `<div><b>${row[0]}</b>${row[1]}</div>`).join("");
+    }
+
+    function rowStatus(item) {
+      if (item.status === "已入草稿") return "已入草稿";
+      if (/核验|补证/.test(item.status + item.action)) return "待核验";
+      if (/参考/.test(item.status)) return "参考";
+      return "未入草稿";
+    }
+
+    function renderSignals() {
+      const rows = filteredSignals();
+      $("#signalTable").innerHTML = rows.map(item => `
+        <div class="signal-row ${item.id === selectedId ? "active" : ""}" data-id="${item.id}" style="--tone:${colors[item.tone]}">
+          <span class="badge signal-main" data-row="${item.id}">${item.p}</span>
+          <span class="signal-main" data-row="${item.id}"><b>${item.title}</b><small>${item.sub}</small></span>
+          <span>${item.source}<small>可信度 ${item.trust}</small></span>
+          <span>${item.time}</span>
+          <span>${item.area}<small>${item.object}</small></span>
+          <span>${item.tag}<small>相似度 <em class="score">${item.sim}</em></small></span>
+          <span class="status-pill">${rowStatus(item)}</span>
+          <span class="row-actions">
+            <button data-op="detail" data-id="${item.id}">详情</button>
+            <button data-op="similar" data-id="${item.id}">查相似</button>
+            <button class="primary-mini" data-op="draft" data-id="${item.id}">加入</button>
+            <button data-op="exclude" data-id="${item.id}">排除</button>
+          </span>
+        </div>
+      `).join("");
+      $("#resultSummary").textContent = `当前显示 1-${rows.length} / 共 42 条候选数据，已按相似度、可信度和证据完整度排序`;
+      $$(".signal-main").forEach(cell => cell.addEventListener("click", () => {
+        selectedId = cell.dataset.row;
+        renderSignals();
+        renderDetail();
+      }));
+      $$("[data-op]").forEach(btn => {
+        btn.addEventListener("click", event => {
+          event.stopPropagation();
+          selectedId = btn.dataset.id;
+          const item = selected();
+          if (btn.dataset.op === "detail") {
+            renderSignals();
+            renderDetail();
+            toast(`已打开 ${item.id} 详情`);
+          }
+          if (btn.dataset.op === "similar") {
+            activeTag = "同标签";
+            $("#queryInput").value = `${item.tag} ${item.area} 相似数据`;
+            renderSearch();
+            renderStrategy();
+            renderDetail();
+            toast(`已按 ${item.id} 查找相似数据`);
+          }
+          if (btn.dataset.op === "draft") {
+            addToDraft(item.id);
+          }
+          if (btn.dataset.op === "exclude") {
+            toast(`${item.id} 已标记为排除，本轮不进入草稿包`);
+          }
+        });
+      });
+    }
+
+    function renderDetail() {
+      const item = selected();
+      $("#selectedId").textContent = item.id;
+      $("#detailTitle").textContent = item.title;
+      $("#detailSub").textContent = `${item.source} · ${item.time} · ${item.area} / ${item.object} · ${item.tag}`;
+      $("#trustGrid").innerHTML = [
+        ["来源可信度", item.trust],
+        ["相似度", item.sim],
+        ["当前状态", rowStatus(item)]
+      ].map(row => `<div><span>${row[0]}</span><b>${row[1]}</b></div>`).join("");
+      $("#detailWhy").innerHTML = item.why.map(text => `<li>${text}</li>`).join("");
+      $("#positionRows").innerHTML = item.positions.map(pos => `<span>${pos}</span>`).join("");
+      $("#evidenceRows").innerHTML = item.excerpts.map((row, index) => `
+        <div class="evidence-row">
+          <span>${row[0]}：${row[1]}</span>
+          <div class="mini-actions">
+            <strong>可信度 ${row[2]}</strong>
+            <button data-origin="${index}">原文</button>
+          </div>
+        </div>
+      `).join("");
+      $("#recommendRows").innerHTML = item.recs.map((row, index) => `
+        <div class="recommend-row">
+          <span>${row[0]}</span>
+          <div class="mini-actions">
+            <strong>${row[1]}</strong>
+            <button data-rec-view="${index}" data-rec="${row[0]}">查看</button>
+            <button class="dark" data-rec-add="${index}" data-rec="${row[0]}">加入</button>
+          </div>
+        </div>
+      `).join("");
+      $$("[data-origin]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const row = item.excerpts[Number(btn.dataset.origin)];
+          toast(`已打开原文：${row[0]} · ${row[2]} 级可信度`);
+        });
+      });
+      $$("[data-rec-view]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          $("#queryInput").value = btn.dataset.rec;
+          activeTag = "同标签";
+          renderSearch();
+          toast(`已切换检索条件：${btn.dataset.rec}`);
+        });
+      });
+      $$("[data-rec-add]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          draftCount += 1;
+          renderDraft();
+          persistDraft({ recommendedAdded: btn.dataset.rec });
+          toast(`${btn.dataset.rec} 已加入当前主线草稿包`);
+        });
+      });
+    }
+
+    function renderDraft() {
+      $("#draftCount").textContent = draftCount;
+      $("#draftChips").innerHTML = ["SIG-001", "SIG-012", "SIG-017", "AIS 片段", "G7 声明", "保险报价", "IAEA 摘要"].map(item => `<span>${item}</span>`).join("");
+      renderMetrics();
+    }
+
+    function addToDraft(id = selectedId) {
+      selectedId = id;
+      draftCount += 1;
+      renderDraft();
+      renderSignals();
+      renderDetail();
+      persistDraft();
+      toast(`${id} 已加入 ML-001 主线草稿包`);
+    }
+
+    function bindActions() {
+      $("#addDraft").addEventListener("click", () => addToDraft(selectedId));
+      $("#findSimilar").addEventListener("click", () => {
+        activeTag = "同标签";
+        $("#queryInput").value = `${selected().tag} ${selected().area} 相似数据`;
+        renderSearch();
+        renderStrategy();
+        toast(`正在围绕 ${selected().id} 查找相似数据`);
+      });
+      $("#continueData").addEventListener("click", () => {
+        activeMetric = "recommend";
+        activeTag = "同区域";
+        renderMetrics();
+        renderSearch();
+        renderSignals();
+        toast("已切到相关推荐，继续补充草稿包证据");
+      });
+      const setPage = page => {
+        currentPage = Math.max(1, Math.min(7, page));
+        $$(".pager button").forEach(item => item.classList.remove("active"));
+        const pageBtn = $$(".pager button").find(item => item.textContent === String(currentPage));
+        if (pageBtn) pageBtn.classList.add("active");
+        toast(`已切换到第 ${currentPage} 页候选数据`);
+      };
+      $("#prevPage").addEventListener("click", () => setPage(currentPage - 1));
+      $("#nextPage").addEventListener("click", () => setPage(currentPage + 1));
+      $$(".pager button:not(.page-nav)").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (btn.textContent === "…") {
+            toast("中间页码已折叠，可用上一页/下一页连续翻页");
+            return;
+          }
+          setPage(Number(btn.textContent) || currentPage);
+        });
+      });
+      $("#enterBuilder").addEventListener("click", () => persistDraft({ mainlineDraftStatus: "ready" }));
+    }
+
+    function init() {
+      renderMetrics();
+      renderFilters();
+      renderSearch();
+      renderStrategy();
+      renderSignals();
+      renderDraft();
+      renderDetail();
+      bindActions();
+    }
+    init();
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+</body>
+</html>

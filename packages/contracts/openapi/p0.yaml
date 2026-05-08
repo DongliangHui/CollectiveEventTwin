@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: CollectiveEventTwin P0 API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: API is reachable.
+  /api/v1/admin/seed:
+    post:
+      operationId: seedP0
+      summary: Idempotently upsert P0 fixtures.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fixture:
+                  type: string
+                  enum: [all, campus, community, negative]
+              required: [fixture]
+      responses:
+        "200":
+          description: Seed counts.
+  /api/v1/cases:
+    get:
+      operationId: listCases
+      responses:
+        "200":
+          description: Cases visible to the P0 app.
+  /api/v1/cases/{case_id}:
+    get:
+      operationId: getCaseBundle
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: Closed loop bundle for a case.
+  /api/v1/cases/{case_id}/sources:
+    get:
+      operationId: listCaseSources
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: Accepted and rejected source records.
+  /api/v1/cases/{case_id}/signals:
+    get:
+      operationId: listCaseSignals
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: Case signals.
+  /api/v1/cases/{case_id}/evidence:
+    get:
+      operationId: listCaseEvidence
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: Case evidence.
+  /api/v1/cases/{case_id}/risk-factors:
+    get:
+      operationId: listRiskFactors
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: Case risk factors.
+  /api/v1/mainlines/{mainline_id}/confirm:
+    post:
+      operationId: confirmMainline
+      parameters:
+        - name: mainline_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Confirmed mainline.
+  /api/v1/worldline-nodes/{node_id}/run-council:
+    post:
+      operationId: runCouncil
+      parameters:
+        - name: node_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Agent Council output conforming to p0.agent_council.v1.
+  /api/v1/council-sessions/{session_id}/apply:
+    post:
+      operationId: applyCouncil
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Applied council session.
+  /api/v1/reports/{report_id}/confirm:
+    post:
+      operationId: confirmReport
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actor: { type: string }
+                reason: { type: string }
+              required: [actor, reason]
+      responses:
+        "200":
+          description: Confirmed report with formal conclusion populated.
+  /api/v1/evidence/{evidence_id}:
+    patch:
+      operationId: updateEvidence
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated evidence status.
+  /api/v1/risk-factors/{factor_id}:
+    patch:
+      operationId: updateRiskFactor
+      parameters:
+        - name: factor_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated risk factor status.
+  /api/v1/tasks/{task_id}:
+    patch:
+      operationId: updateTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated task status.
+  /api/v1/map-layers/{case_id}:
+    get:
+      operationId: getMapLayers
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: GeoJSON-style operational layers.
+  /api/v1/cases/{case_id}/workflow-runs:
+    get:
+      operationId: listWorkflowRuns
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+      responses:
+        "200":
+          description: Workflow run records for the case.
+  /api/v1/workflows/{workflow_name}/start:
+    post:
+      operationId: startWorkflow
+      parameters:
+        - name: workflow_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - IngestCaseWorkflow
+              - BuildMainlineWorkflow
+              - GenerateWorldlineWorkflow
+              - RunCouncilWorkflow
+              - GenerateReportWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                case_id: { type: string }
+                target_id: { type: [string, "null"] }
+              required: [case_id]
+      responses:
+        "200":
+          description: Completed Temporal workflow run record.
+components:
+  parameters:
+    CaseId:
+      name: case_id
+      in: path
+      required: true
+      schema:
+        type: string

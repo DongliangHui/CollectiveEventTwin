@@ -1,0 +1,2186 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk Intelligence Twin 投资人高保真 Demo</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffdf7;
+      --paper-2: #ece6d8;
+      --ink: #14181c;
+      --muted: #59616a;
+      --faint: #8a8f93;
+      --line: #d8cfbd;
+      --amber: #b86620;
+      --amber-2: #f2d19a;
+      --red: #9b342b;
+      --red-2: #efb8ad;
+      --green: #2e6b56;
+      --green-2: #c8e2d4;
+      --blue: #28506f;
+      --blue-2: #c5d9e8;
+      --shadow: 0 18px 40px rgba(47, 38, 24, .08);
+      --shadow-soft: 0 10px 26px rgba(47, 38, 24, .06);
+      --radius: 8px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background:
+        linear-gradient(90deg, rgba(20,24,28,.025) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(20,24,28,.025) 1px, transparent 1px),
+        var(--bg);
+      background-size: 32px 32px;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans CN", "Geist", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select { font: inherit; }
+    button {
+      border: 0;
+      cursor: pointer;
+      color: inherit;
+      background: transparent;
+    }
+    button:active { transform: translateY(1px) scale(.992); }
+
+    .app {
+      max-width: 1480px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: 24px 28px 38px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) auto;
+      gap: 22px;
+      align-items: start;
+      padding: 8px 6px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .brand-mark::before, .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px solid var(--amber);
+      border-radius: 50%;
+    }
+    .brand-mark::after {
+      inset: 17px;
+      background: var(--amber);
+      border: 0;
+    }
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-sub {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .nav {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: 830px;
+    }
+    .nav button {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      transition: background .28s var(--ease), color .28s var(--ease), transform .28s var(--ease);
+    }
+    .nav button:hover { background: rgba(20,24,28,.055); color: var(--ink); }
+    .nav button.active { background: var(--ink); color: var(--paper); }
+
+    .screen {
+      display: none;
+      min-height: calc(100dvh - 114px);
+      padding: 34px 0 0;
+      animation: reveal .45s var(--ease) both;
+    }
+    .screen.active { display: block; }
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .screen-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+    .kicker {
+      color: var(--amber);
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0;
+      max-width: 860px;
+      font-size: clamp(28px, 4.2vw, 50px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      font-weight: 800;
+    }
+    .lead {
+      margin: 16px 0 0;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.58;
+    }
+    .meta {
+      min-width: 286px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,253,247,.64);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .grid { display: grid; gap: 18px; }
+    .g-brief { grid-template-columns: 1.8fr .9fr; }
+    .g-risk { grid-template-columns: repeat(4, 1fr); }
+    .g-two { grid-template-columns: 1fr 1fr; }
+    .g-evidence { grid-template-columns: .9fr 1.05fr .8fr; }
+    .g-scenario { grid-template-columns: .85fr 1.35fr .8fr; }
+    .g-shell { grid-template-columns: 300px minmax(0, 1fr) 330px; align-items: start; }
+    .g-worlds { grid-template-columns: 270px minmax(0, 1fr) 330px; align-items: start; }
+    .g-observe { grid-template-columns: 250px minmax(0, 1fr) 340px; align-items: start; }
+    .g-agents { grid-template-columns: .75fr 1.25fr .85fr; }
+    .g-investor { grid-template-columns: 1.15fr .8fr .85fr; }
+    .g-report { grid-template-columns: 1.45fr .75fr; }
+
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      min-width: 0;
+    }
+    .panel.pad { padding: 22px; }
+    .panel-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .panel-title span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .metric {
+      position: relative;
+      min-height: 126px;
+      padding: 18px 20px 18px 34px;
+      overflow: hidden;
+    }
+    .metric::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 20px;
+      width: 6px;
+      height: 86px;
+      border-radius: 6px;
+      background: var(--tone, var(--amber));
+    }
+    .metric small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 9px;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 850;
+    }
+    .metric p {
+      margin: 11px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 13px;
+      font-weight: 800;
+      transition: transform .28s var(--ease), background .28s var(--ease), opacity .28s var(--ease);
+    }
+    .btn:hover { background: #23282d; }
+    .btn.secondary {
+      background: var(--paper-2);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .btn.amber { background: var(--amber); color: white; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 27px;
+      padding: 0 11px;
+      border-radius: 999px;
+      background: var(--amber-2);
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .pill.red { background: var(--red-2); color: var(--red); }
+    .pill.green { background: var(--green-2); color: var(--green); }
+    .pill.blue { background: var(--blue-2); color: var(--blue); }
+
+    .story-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .step {
+      padding: 18px;
+      min-height: 110px;
+      border: 1px solid var(--line);
+      background: var(--paper-2);
+      border-radius: var(--radius);
+      transition: transform .32s var(--ease), background .32s var(--ease), color .32s var(--ease);
+    }
+    .step:hover { transform: translateY(-4px); background: var(--ink); color: var(--paper); }
+    .step b {
+      display: block;
+      color: var(--amber);
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+    .step h3 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+    .step p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .step:hover p { color: #ddd6c7; }
+
+    .boundary-list, .rows { display: grid; gap: 12px; }
+    .boundary-list li,
+    .row {
+      list-style: none;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      margin-top: 5px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .map {
+      position: relative;
+      min-height: 360px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 36% 35%, rgba(216, 207, 189, .85) 0 18%, transparent 19%),
+        radial-gradient(circle at 72% 72%, rgba(202, 190, 160, .72) 0 17%, transparent 18%),
+        linear-gradient(145deg, #e9e2d3, #f8f3e8);
+      overflow: hidden;
+    }
+    .map::before {
+      content: "";
+      position: absolute;
+      left: 42%;
+      top: 42%;
+      width: 220px;
+      height: 44px;
+      border-radius: 999px;
+      background: var(--red-2);
+      transform: rotate(-8deg);
+      opacity: .88;
+    }
+    .map::after {
+      content: "";
+      position: absolute;
+      left: 22%;
+      top: 64%;
+      width: 480px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(40,80,111,.2);
+      transform: rotate(3deg);
+    }
+    .map-label {
+      position: absolute;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,253,247,.78);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .risk-dot {
+      position: absolute;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 0 8px rgba(184,102,32,.13);
+      animation: pulse 2.8s var(--ease) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(.9); opacity: .72; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    .event-card {
+      padding: 20px;
+      background: var(--paper-2);
+      border: 1px solid var(--amber);
+      border-radius: var(--radius);
+    }
+    .event-card h2 {
+      margin: 0;
+      max-width: 520px;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+    .event-card p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .signal {
+      display: grid;
+      grid-template-columns: 132px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .signal b { color: var(--amber); font-size: 12px; }
+    .signal span { color: var(--muted); }
+
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--paper-2);
+      overflow: hidden;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      width: var(--v);
+      border-radius: inherit;
+      background: var(--tone, var(--amber));
+    }
+    .vector {
+      display: grid;
+      gap: 8px;
+      padding: 12px 0 18px;
+      border-top: 1px solid var(--line);
+    }
+    .vector div:first-child {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .control {
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+    .case-select {
+      display: grid;
+      gap: 10px;
+    }
+    .case-option {
+      width: 100%;
+      display: grid;
+      gap: 7px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      text-align: left;
+      transition: border-color .28s var(--ease), background .28s var(--ease), transform .28s var(--ease);
+    }
+    .case-option:hover { transform: translateX(4px); }
+    .case-option.active { border-color: var(--amber); background: #f5e7cc; }
+    .case-option b { font-size: 13px; }
+    .case-option span { color: var(--muted); font-size: 11px; line-height: 1.3; }
+    .shell-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .shell-tile {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      min-height: 96px;
+    }
+    .shell-tile small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .shell-tile strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 1;
+    }
+    .shell-tile p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+    }
+    .shell-entry {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .shell-entry span { color: var(--muted); font-size: 12px; }
+    .trust-meter {
+      display: grid;
+      gap: 14px;
+    }
+    .trust-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 42px;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .control input[type="range"] {
+      width: 100%;
+      accent-color: var(--amber);
+    }
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .segmented button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      transition: background .28s var(--ease), color .28s var(--ease), transform .28s var(--ease);
+    }
+    .segmented button.active { background: var(--ink); color: var(--paper); }
+
+    .path-tree { position: relative; padding: 10px 0; }
+    .path-node {
+      position: relative;
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin: 16px 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      transition: transform .28s var(--ease), border-color .28s var(--ease), background .28s var(--ease);
+    }
+    .path-node.active { border-color: var(--red); background: #f4ddd6; }
+    .path-node:hover { transform: translateX(5px); }
+    .path-node b {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--paper);
+      color: var(--amber);
+      border: 1px solid var(--line);
+    }
+    .path-node h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .path-node p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+    .prob { font-size: 20px; font-weight: 850; color: var(--red); }
+    .world-board {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(178px, 1fr));
+      gap: 18px;
+      overflow-x: auto;
+      min-height: 540px;
+      padding: 12px 8px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(216,207,189,.42) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(216,207,189,.35) 1px, transparent 1px),
+        rgba(236,230,216,.45);
+      background-size: 44px 44px;
+    }
+    .world-board::before {
+      content: "";
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 70px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber), rgba(184,102,32,.25));
+      pointer-events: none;
+    }
+    .world-board::after {
+      content: "";
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 300px;
+      height: 1px;
+      border-top: 1px dashed rgba(20,24,28,.18);
+      pointer-events: none;
+    }
+    .world-col {
+      min-width: 150px;
+      display: grid;
+      grid-template-rows: 38px repeat(3, minmax(104px, auto));
+      gap: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .world-time {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .world-card {
+      min-height: 104px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      position: relative;
+      transition: transform .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease);
+      text-align: left;
+      color: var(--ink);
+      animation: nodeIn .52s var(--ease) both;
+      animation-delay: calc(var(--i) * 130ms);
+      box-shadow: 0 8px 18px rgba(47,38,24,.04);
+    }
+    .world-card::before {
+      content: "";
+      position: absolute;
+      left: -11px;
+      top: 22px;
+      width: 10px;
+      height: 1px;
+      background: var(--line);
+    }
+    .world-card:hover { transform: translateY(-3px); border-color: var(--amber); }
+    .world-card.selected {
+      outline: 2px solid rgba(184,102,32,.28);
+      border-color: var(--amber);
+      background: #f5e7cc;
+    }
+    .world-card.active {
+      border-color: var(--red);
+      background: #f4ddd6;
+    }
+    .world-card.relief {
+      border-color: var(--green);
+      background: #e3eee6;
+    }
+    .world-card h3 {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.22;
+    }
+    .world-card p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .world-card .delta {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--amber);
+    }
+    @keyframes nodeIn {
+      from { opacity: 0; transform: translateX(-16px) scale(.98); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    .node-kind {
+      display: inline-flex;
+      min-height: 20px;
+      align-items: center;
+      padding: 0 7px;
+      margin-bottom: 9px;
+      border-radius: 999px;
+      background: rgba(255,253,247,.72);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .node-detail {
+      display: grid;
+      gap: 14px;
+    }
+    .worldline-layout {
+      display: grid;
+      gap: 14px;
+    }
+    .distribution {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .dist-card {
+      min-height: 112px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      transition: transform .28s var(--ease), border-color .28s var(--ease), background .28s var(--ease);
+    }
+    .dist-card.active {
+      border-color: var(--tone, var(--amber));
+      background: color-mix(in srgb, var(--tone, var(--amber)) 14%, var(--paper));
+      transform: translateY(-2px);
+    }
+    .dist-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .dist-card strong {
+      display: block;
+      margin-top: 12px;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .dist-card p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .observe-canvas {
+      position: relative;
+      min-height: 590px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(20,24,28,.16) 1px, transparent 1.5px),
+        linear-gradient(180deg, rgba(255,253,247,.92), rgba(236,230,216,.72));
+      background-size: 24px 24px, auto;
+    }
+    .now-line {
+      position: absolute;
+      top: 16px;
+      bottom: 18px;
+      width: 2px;
+      background: repeating-linear-gradient(180deg, #8f62e6 0 7px, transparent 7px 13px);
+      opacity: .78;
+      left: var(--now-x, 55%);
+      pointer-events: none;
+      transition: left .45s var(--ease);
+    }
+    .now-line::before {
+      content: "当前时刻";
+      position: absolute;
+      top: 8px;
+      left: 9px;
+      width: 68px;
+      color: #7952cc;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .graph-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .graph-svg path {
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-dasharray: 8 8;
+      opacity: .76;
+      animation: dashFlow 1.6s linear infinite;
+    }
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -32; }
+    }
+    .graph-node {
+      position: absolute;
+      width: 148px;
+      min-height: 66px;
+      padding: 10px 12px 10px 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,253,247,.94);
+      box-shadow: 0 10px 22px rgba(47,38,24,.07);
+      text-align: left;
+      color: var(--ink);
+      opacity: 0;
+      transform: translateX(-18px) scale(.97);
+      pointer-events: none;
+      transition: opacity .42s var(--ease), transform .42s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+    }
+    .graph-node.visible {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+    .graph-node.selected {
+      border-color: var(--tone, var(--amber));
+      background: color-mix(in srgb, var(--tone, var(--amber)) 13%, var(--paper));
+      outline: 3px solid color-mix(in srgb, var(--tone, var(--amber)) 20%, transparent);
+    }
+    .graph-node .badge {
+      position: absolute;
+      left: 10px;
+      top: 12px;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--tone, var(--amber));
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .graph-node b {
+      display: block;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    .graph-node span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
+    }
+    .prob-bubble {
+      position: absolute;
+      right: -10px;
+      top: -10px;
+      min-width: 30px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0 7px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .time-axis {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      padding: 12px 10px 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .time-axis span {
+      border-left: 1px solid var(--line);
+      padding-left: 8px;
+    }
+    .playbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow-soft);
+    }
+    .play-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .step-dots {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      align-items: center;
+    }
+    .step-dot {
+      position: relative;
+      height: 36px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .step-dot::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 8px;
+      height: 2px;
+      background: var(--line);
+    }
+    .step-dot::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--line);
+    }
+    .step-dot.active::after { background: #8f62e6; box-shadow: 0 0 0 7px rgba(143,98,230,.14); }
+    .step-dot span {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+    .detail-kicker {
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .detail-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.16;
+    }
+    .detail-body {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .detail-block {
+      padding-top: 13px;
+      border-top: 1px solid var(--line);
+    }
+    .detail-block b {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--ink);
+    }
+    .detail-block span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .world-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .fork-note {
+      padding: 14px;
+      border-left: 4px solid var(--amber);
+      background: var(--paper-2);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .chart {
+      height: 170px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      align-items: end;
+      gap: 10px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+    }
+    .chart i {
+      height: var(--h);
+      min-height: 18px;
+      border-radius: 6px 6px 2px 2px;
+      background: var(--amber);
+      opacity: .82;
+      transform-origin: bottom;
+      animation: grow .8s var(--ease) both;
+      animation-delay: calc(var(--i) * 70ms);
+    }
+    @keyframes grow {
+      from { transform: scaleY(.2); opacity: .3; }
+      to { transform: scaleY(1); opacity: .82; }
+    }
+
+    .agent-list { display: grid; gap: 10px; }
+    .agent {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+    }
+    .agent button {
+      display: contents;
+      text-align: left;
+    }
+    .agent.active { border-color: var(--amber); background: #f5e7cc; }
+    .agent-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--tone, var(--amber));
+      position: relative;
+    }
+    .agent-mark::after {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: inherit;
+      background: rgba(255,255,255,.64);
+    }
+    .agent h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+    .agent p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+    }
+    .message {
+      padding: 15px 18px;
+      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+    .message b {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--amber);
+      font-size: 12px;
+    }
+    .message.extract {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    .message.extract b { color: var(--amber-2); }
+
+    .heatmap {
+      display: grid;
+      grid-template-columns: 90px repeat(6, 1fr);
+      gap: 8px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .hm-cell {
+      height: 40px;
+      border-radius: 6px;
+      background: var(--green);
+      transition: transform .25s var(--ease), filter .25s var(--ease);
+    }
+    .hm-cell:hover { transform: scale(1.06); filter: saturate(1.08); }
+    .hm-amber { background: var(--amber); }
+    .hm-red { background: var(--red); }
+    .hm-blue { background: var(--blue); }
+    .exposure {
+      display: grid;
+      gap: 16px;
+    }
+    .exposure-row {
+      display: grid;
+      grid-template-columns: 132px 1fr 34px;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .flags { display: grid; gap: 12px; }
+    .flag {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .flag b { color: var(--red); font-size: 14px; }
+
+    .report {
+      padding: 30px 36px;
+    }
+    .report h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      line-height: 1.15;
+    }
+    .report-section {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 26px;
+      padding: 24px 0;
+      border-top: 1px solid var(--line);
+    }
+    .report-section b {
+      color: var(--amber);
+      font-size: 13px;
+    }
+    .report-section p {
+      margin: 0;
+      line-height: 1.55;
+      color: var(--ink);
+      font-size: 15px;
+    }
+    .review-item {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .review-item b { color: var(--amber); }
+
+    .mapping {
+      display: grid;
+      grid-template-columns: .8fr 1.15fr 1.15fr;
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .map-row { display: contents; }
+    .mapping div {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      background: var(--paper);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .mapping .head {
+      background: var(--ink);
+      color: var(--paper);
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .mapping div:nth-child(3n) { border-right: 0; }
+
+    .side-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 14px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .footer-note {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 26px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      max-width: 360px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,253,247,.92);
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: opacity .35s var(--ease), transform .35s var(--ease);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      z-index: 4;
+      transition: opacity .4s var(--ease), visibility .4s var(--ease);
+    }
+    .loading.done {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .skeleton {
+      width: min(760px, 80vw);
+      display: grid;
+      gap: 14px;
+    }
+    .sk {
+      height: 20px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--paper-2), var(--paper), var(--paper-2));
+      background-size: 220% 100%;
+      animation: shimmer 1.2s linear infinite;
+    }
+    .sk.big { height: 70px; border-radius: 10px; }
+    @keyframes shimmer { to { background-position: -220% 0; } }
+
+    @media (max-width: 1100px) {
+      .app { padding: 18px; }
+      .screen-head,
+      .topbar,
+      .g-brief,
+      .g-shell,
+      .g-worlds,
+      .g-evidence,
+      .g-scenario,
+      .g-agents,
+      .g-investor,
+      .g-report { grid-template-columns: 1fr; }
+      .g-risk { grid-template-columns: repeat(2, 1fr); }
+      .nav { justify-content: flex-start; }
+      .story-steps { grid-template-columns: 1fr 1fr; }
+      .meta { min-width: 0; }
+    }
+
+    @media (max-width: 720px) {
+      .app { padding: 14px; }
+      .brand-title { white-space: normal; }
+      .g-risk,
+      .g-two,
+      .story-steps,
+      .segmented,
+      .report-section,
+      .signal,
+      .path-node,
+      .exposure-row { grid-template-columns: 1fr; }
+      .screen { padding-top: 24px; }
+      h1 { font-size: 30px; }
+      .map { min-height: 280px; }
+      .heatmap { grid-template-columns: 78px repeat(3, 1fr); overflow-x: auto; }
+      .mapping { grid-template-columns: 1fr; }
+      .mapping div { border-right: 0; }
+      .footer-note { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div class="skeleton" aria-label="Loading prototype">
+      <div class="sk big"></div>
+      <div class="sk" style="width:72%"></div>
+      <div class="sk" style="width:88%"></div>
+      <div class="sk" style="width:58%"></div>
+    </div>
+  </div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-title">Risk Intelligence Twin / 风险智能推演平台</div>
+          <div class="brand-sub">Investor prototype · public-source mock · human review required</div>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Demo navigation">
+        <button class="active" data-go="brief">Brief</button>
+        <button data-go="risk">Shell</button>
+        <button data-go="evidence">Evidence</button>
+        <button data-go="scenario">Worlds</button>
+        <button data-go="agents">Agents</button>
+        <button data-go="investor">Investor</button>
+        <button data-go="report">Report</button>
+        <button data-go="transfer">Transfer</button>
+      </nav>
+    </header>
+
+    <section class="screen active" id="brief">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">Investor Demo / 投资人演示路径</div>
+          <h1>用通用系统壳，把一个当前风险态势推演成多条平行世界线</h1>
+          <p class="lead">From current case selection to evidence, parallel-world simulation, agent pressure-testing, market impact, and decision reports. 这不是一个发光大屏，而是一条可复核的风险演化工作流。</p>
+        </div>
+        <div class="meta">Snapshot: 2026-04-25 12:00 Asia/Tokyo<br>Mode: static interactive HTML prototype<br>Data: public-source based mock</div>
+      </div>
+
+      <div class="grid g-brief">
+        <div class="panel pad">
+          <div class="panel-title">8-10 minute story spine / 演示主线 <span>click through left to right</span></div>
+          <div class="story-steps">
+            <div class="step"><b>01</b><h3>选择案例</h3><p>Universal system shell</p></div>
+            <div class="step"><b>02</b><h3>解释风险</h3><p>Evidence chain and confidence</p></div>
+            <div class="step"><b>03</b><h3>平行推演</h3><p>Forked worlds over time</p></div>
+            <div class="step"><b>04</b><h3>模拟立场</h3><p>Agent council pressure test</p></div>
+            <div class="step"><b>05</b><h3>投资影响</h3><p>Cross-asset and transaction lens</p></div>
+            <div class="step"><b>06</b><h3>报告交付</h3><p>Decision report and monitoring list</p></div>
+          </div>
+          <div class="actions">
+            <button class="btn" data-go="risk">Start demo / 进入驾驶舱</button>
+            <button class="btn secondary" data-toast="本 Demo 只使用公开源抽象和 Mock 派生指标，不构成实时情报、投资建议或军事建议。">Product boundary / 产品边界</button>
+          </div>
+        </div>
+
+        <aside class="panel pad">
+          <div class="panel-title">Demo anchors / 关键数据锚点 <span>organic mock values</span></div>
+          <div class="grid g-two">
+            <div class="metric panel" style="--tone:var(--amber)"><small>Overall risk score</small><strong>84/100</strong><p>Orange warning, trend rising</p></div>
+            <div class="metric panel" style="--tone:var(--red)"><small>7D escalation</small><strong>69%</strong><p>Confidence 0.76</p></div>
+            <div class="metric panel" style="--tone:var(--red)"><small>Hormuz vessels</small><strong>5</strong><p>Past 24 hours</p></div>
+            <div class="metric panel" style="--tone:var(--amber)"><small>Brent mock range</small><strong>$105</strong><p>High volatility zone</p></div>
+          </div>
+          <ul class="boundary-list" style="padding:0;margin:18px 0 0">
+            <li><i class="dot"></i><span>Not military or investment advice</span></li>
+            <li><i class="dot"></i><span>Agent outputs are role simulations, not official positions</span></li>
+            <li><i class="dot"></i><span>Human review required before external use</span></li>
+          </ul>
+        </aside>
+      </div>
+      <div class="footer-note"><span>Mock based on public sources. Human review required before external use.</span><span>Static demo · no real-time intelligence</span></div>
+    </section>
+
+    <section class="screen" id="risk">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">01 Universal System Shell / 通用系统壳</div>
+          <h1>先选当前案例，再进入证据、推演、Agent 和报告闭环</h1>
+          <p class="lead">This is the reusable operating shell: case selector, risk summary, live indicators, posture map, evidence, scenario entrance, agent entrance, report entrance, and trust layer.</p>
+        </div>
+        <div class="meta">Main logic: one current world becomes several parallel worlds once a scenario is launched.</div>
+      </div>
+
+      <div class="grid g-shell">
+        <aside class="panel pad">
+          <div class="panel-title">当前案例选择器 / Case selector <span>generic shell</span></div>
+          <div class="case-select" id="caseSelector">
+            <button class="case-option active" data-case="usiran"><b>美伊停火脆弱期风险</b><span>Geopolitical, shipping, energy, sanctions</span></button>
+            <button class="case-option" data-case="community"><b>老旧小区改造争议</b><span>Social risk transfer example</span></button>
+            <button class="case-option" data-case="supply"><b>关键供应链中断</b><span>Industrial continuity scenario</span></button>
+          </div>
+          <div class="actions">
+            <button class="btn" data-go="scenario">进入推演 / Open worlds</button>
+          </div>
+        </aside>
+
+        <div>
+          <div class="shell-strip" id="dynamicCards">
+            <div class="shell-tile"><small>综合风险 / Overall</small><strong>84</strong><p>Orange warning</p></div>
+            <div class="shell-tile"><small>关键硬指标 / Hard signal</small><strong>5艘</strong><p>Hormuz vessels 24h</p></div>
+            <div class="shell-tile"><small>未来7天 / 7D path</small><strong>69%</strong><p>Escalation probability</p></div>
+            <div class="shell-tile"><small>置信度 / Confidence</small><strong>0.78</strong><p>Source-based mock</p></div>
+          </div>
+
+          <div class="grid g-two">
+            <div class="panel pad">
+              <div class="panel-title">案例风险摘要 / Risk summary <span id="caseStage">Fragile ceasefire</span></div>
+              <button class="event-card" data-go="evidence" style="width:100%;text-align:left">
+                <span class="pill" id="caseLevel">Orange warning</span>
+                <h2 id="caseTitle" style="margin-top:14px">美伊战争停火脆弱期下的霍尔木兹封锁与地区外溢风险</h2>
+                <p id="caseSummary">同一当前态势下，封锁强度、通航恢复、IAEA 访问和制裁节奏会分叉出不同未来路径。</p>
+              </button>
+              <div class="shell-entry"><div><b>推演场景入口</b><br><span>Scenario worlds from current state</span></div><button class="btn secondary" data-go="scenario">Open</button></div>
+              <div class="shell-entry"><div><b>Agent 入口</b><br><span>Role-based pressure testing</span></div><button class="btn secondary" data-go="agents">Open</button></div>
+              <div class="shell-entry"><div><b>报告入口</b><br><span>Decision report artifact</span></div><button class="btn secondary" data-go="report">Open</button></div>
+            </div>
+
+            <div class="panel pad">
+              <div class="panel-title">风险态势图 / Risk posture map <span>not operational coordinates</span></div>
+              <div class="map" id="postureMap">
+                <div class="map-label" style="left:10%;top:24%">Current risk source / 当前风险源</div>
+                <div class="map-label" style="left:48%;top:42%;color:var(--red)">Amplifier / 风险放大器</div>
+                <div class="map-label" style="left:58%;top:72%">Spillover domain / 外溢区域</div>
+                <span class="risk-dot" style="left:44%;top:47%"></span>
+                <span class="risk-dot" style="left:52%;top:49%;animation-delay:.4s"></span>
+                <span class="risk-dot" style="left:66%;top:70%;animation-delay:.8s"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel pad">
+          <div class="panel-title">风险信号与可信度 / Signals & trust</div>
+          <div id="shellSignals">
+            <div class="signal"><b>IAEA</b><span>核查访问部分且存在争议</span><span class="pill">A</span></div>
+            <div class="signal"><b>Shipping</b><span>霍尔木兹 24h 仅 5 艘通过</span><span class="pill red">T+1</span></div>
+            <div class="signal"><b>Sanctions</b><span>制裁向船队、炼厂、融资外溢</span><span class="pill">T+1</span></div>
+          </div>
+          <div class="trust-meter" style="margin-top:18px">
+            <div class="trust-row"><span>Source grade</span><div class="bar"><i style="--v:92%;--tone:var(--green)"></i></div><b>A</b></div>
+            <div class="trust-row"><span>Freshness</span><div class="bar"><i style="--v:78%;--tone:var(--amber)"></i></div><b>T+1</b></div>
+            <div class="trust-row"><span>Model fit</span><div class="bar"><i style="--v:81%;--tone:var(--blue)"></i></div><b>0.81</b></div>
+            <div class="trust-row"><span>Review state</span><div class="bar"><i style="--v:60%;--tone:var(--red)"></i></div><b>待审</b></div>
+          </div>
+        </aside>
+      </div>
+      <div class="footer-note"><span>通用壳包含：案例选择器、风险摘要、动态指标、态势图、证据链、推演、Agent、报告、可信度。</span><span>Risk event id: EVT-USIRAN-20260425-001</span></div>
+    </section>
+
+    <section class="screen" id="evidence">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">02 Event & Evidence Chain</div>
+          <h1>系统为什么判断它有风险？</h1>
+          <p class="lead">The prototype avoids black-box confidence. Every score is tied to a source, a risk vector, and a manual review queue.</p>
+        </div>
+        <div class="meta">Public sources, source tiers, confidence and reviewer queue are visible by design.</div>
+      </div>
+
+      <div class="grid g-evidence">
+        <div class="panel pad">
+          <div class="panel-title">Risk event object / 风险事件对象</div>
+          <h2 style="margin:0 0 18px;font-size:24px;line-height:1.18">美伊战争停火脆弱期下的霍尔木兹封锁与地区外溢风险</h2>
+          <div class="rows">
+            <div class="row"><i class="dot"></i><span><b>Stage</b><br>停火脆弱期 / Fragile ceasefire</span></div>
+            <div class="row"><i class="dot"></i><span><b>Impact</b><br>Very high / 能源、航运、制裁、核查</span></div>
+            <div class="row"><i class="dot"></i><span><b>Confidence</b><br>0.78 · source-based mock</span></div>
+            <div class="row"><i class="dot"></i><span><b>Manual review</b><br>Required before external use</span></div>
+          </div>
+        </div>
+
+        <div class="panel pad">
+          <div class="panel-title">Evidence chain / 证据链 <span id="sourceStatus">5 sources loaded</span></div>
+          <div id="sourceRows">
+            <div class="signal"><b>Reuters</b><span>封锁全球化，34艘船被迫转向</span><span>Tier A · T+1</span></div>
+            <div class="signal"><b>Reuters</b><span>过去24小时仅5艘船通过霍尔木兹</span><span>Tier A · T+1</span></div>
+            <div class="signal"><b>IAEA</b><span>核查访问部分且存在争议</span><span>Official · M+2</span></div>
+            <div class="signal"><b>US Treasury</b><span>伊朗石油贸易与影子船队制裁扩大</span><span>Official · T+1</span></div>
+            <div class="signal"><b>UK Commons</b><span>霍尔木兹石油与 LNG 通道战略简报</span><span>Parliamentary · T+1</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn secondary" id="toggleSources">Simulate empty state</button>
+            <button class="btn secondary" id="simulateError">Simulate source error</button>
+          </div>
+        </div>
+
+        <div class="panel pad">
+          <div class="panel-title">Risk vectors / 风险向量</div>
+          <div class="vector"><div><span>封锁与通航权</span><span>92</span></div><div class="bar"><i style="--v:92%;--tone:var(--red)"></i></div></div>
+          <div class="vector"><div><span>能源供应</span><span>94</span></div><div class="bar"><i style="--v:94%;--tone:var(--red)"></i></div></div>
+          <div class="vector"><div><span>核查透明度</span><span>86</span></div><div class="bar"><i style="--v:86%;--tone:var(--amber)"></i></div></div>
+          <div class="vector"><div><span>地区安全</span><span>83</span></div><div class="bar"><i style="--v:83%;--tone:var(--amber)"></i></div></div>
+          <div class="vector"><div><span>制裁合规</span><span>79</span></div><div class="bar"><i style="--v:79%;--tone:var(--blue)"></i></div></div>
+          <div class="actions">
+            <button class="btn" data-go="scenario">Run Scenario / 进入推演</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-note"><span>Mock based on public sources. Human review required before external use.</span><span>Evidence explains the score. It does not replace judgment.</span></div>
+    </section>
+
+    <section class="screen" id="scenario">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">03 Parallel Worlds Engine / 平行世界推演引擎</div>
+          <h1>同一个当前案例，被不同动作分叉成多条未来世界线</h1>
+          <p class="lead">The demo now shows the evolution process: T0 current state, T+24h first reaction, T+72h propagation, and T+7d stabilized outcome. Each world has its own triggers, deltas, and early signals.</p>
+        </div>
+        <div class="meta">Pick a world line. The board explains how the future changes step by step.</div>
+      </div>
+
+      <div class="grid g-observe">
+        <aside class="panel pad">
+          <div class="panel-title">世界线控制台 / World controls</div>
+          <div class="control"><label>Blockade intensity <span id="blockadeVal">88</span></label><input type="range" id="blockade" min="20" max="100" value="88"></div>
+          <div class="control"><label>Hormuz traffic stress <span id="trafficVal">92</span></label><input type="range" id="traffic" min="20" max="100" value="92"></div>
+          <div class="control"><label>IAEA access uncertainty <span id="iaeaVal">74</span></label><input type="range" id="iaea" min="10" max="100" value="74"></div>
+          <div class="control"><label>Sanctions pace <span id="sanctionVal">81</span></label><input type="range" id="sanction" min="10" max="100" value="81"></div>
+          <div class="segmented" id="scenarioTabs">
+            <button class="active" data-scn="baseline">World A</button>
+            <button data-scn="shock">World B</button>
+            <button data-scn="relief">World C</button>
+          </div>
+          <div class="fork-note" style="margin-top:18px">
+            平行世界不是三套页面，而是同一个 T0 态势在不同处置动作下的分叉。系统保留每条路径的触发条件、早期信号和风险增量。
+          </div>
+        </aside>
+
+        <div class="worldline-layout">
+          <div class="distribution" id="worldDistribution"></div>
+          <div class="observe-canvas" id="observeCanvas">
+            <svg class="graph-svg" id="graphSvg" viewBox="0 0 1000 590" preserveAspectRatio="none"></svg>
+            <div class="now-line" id="nowLine"></div>
+            <div id="graphNodes"></div>
+            <div class="time-axis">
+              <span>起点<br>04-15 09:00</span>
+              <span>舆情初发<br>04-15 18:00</span>
+              <span>当前时刻<br>04-17 10:00</span>
+              <span>后续发展<br>04-17 13:00</span>
+              <span>未来走向<br>04-17 16:00</span>
+            </div>
+          </div>
+          <div class="playbar">
+            <button class="play-btn" id="playWorlds" aria-label="Play worldline">▶</button>
+            <div class="step-dots" id="stepDots"></div>
+            <button class="btn secondary" id="resetWorlds">重置观察</button>
+          </div>
+          <div class="actions">
+            <button class="btn" data-go="agents">Start Agent Council / 启动 Agent</button>
+            <button class="btn secondary" data-toast="推演引擎输出的是分叉路径和早期信号，不是确定预测。每条世界线都必须保留证据链和人工复核状态。">Model boundary</button>
+          </div>
+        </div>
+
+        <aside class="panel pad">
+          <div class="panel-title">节点详情 / Node details <span id="overallScore">84</span></div>
+          <div class="node-detail" id="nodeDetail">
+            <div class="detail-kicker">T0 · Current state</div>
+            <h2 class="detail-title">当前态势</h2>
+            <p class="detail-body">点击左侧任意节点，查看它对应的触发条件、证据链、风险增量和建议动作。</p>
+          </div>
+          <div style="margin-top:18px">
+            <div class="panel-title" style="margin-bottom:12px">Impact delta / 风险增量</div>
+            <div class="chart" id="deltaChart"></div>
+          </div>
+        </aside>
+      </div>
+      <div class="footer-note"><span>Parallel-world logic: current state -> forked interventions -> temporal evolution -> compared outcomes.</span><span>Scenario outputs are paths, not forecasts.</span></div>
+    </section>
+
+    <section class="screen" id="agents">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">04 Agent Council</div>
+          <h1>各方会如何反应，冲突点在哪里？</h1>
+          <p class="lead">Agent roles pressure-test the scenario before a report is written. The interface avoids personal profiling and official impersonation.</p>
+        </div>
+        <div class="meta">Agent outputs simulate roles from public-source patterns. They are not official positions.</div>
+      </div>
+
+      <div class="grid g-agents">
+        <div class="panel pad">
+          <div class="panel-title">Agent roles / 角色模拟</div>
+          <div class="agent-list" id="agentList"></div>
+        </div>
+        <div class="panel pad">
+          <div class="panel-title">Pressure-test dialogue / 压力测试对话 <span id="activeAgent">Market</span></div>
+          <div id="dialogue"></div>
+          <div class="actions">
+            <button class="btn" data-go="investor">Open Investor Lens / 投行视角</button>
+          </div>
+        </div>
+        <div class="panel pad">
+          <div class="panel-title">System synthesis / 系统总结</div>
+          <div class="rows">
+            <div class="row"><i class="dot"></i><span><b>Core conflicts</b><br>封锁合法性、核查通道、通航规则</span></div>
+            <div class="row"><i class="dot"></i><span><b>Consensus space</b><br>72小时海上事件冻结机制</span></div>
+            <div class="row"><i class="dot"></i><span><b>High-risk wording</b><br>Ambiguous blockade expansion claims</span></div>
+            <div class="row"><i class="dot"></i><span><b>Revision</b><br>Tie blockade adjustment to IAEA access nodes</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-note"><span>Mock based on public sources. Human review required before external use.</span><span>Agent simulation is for pressure-testing decisions, not substituting stakeholders.</span></div>
+    </section>
+
+    <section class="screen" id="investor">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">05 Investment Lens</div>
+          <h1>这件事如何传导到市场和交易？</h1>
+          <p class="lead">For investors, the platform becomes useful when it turns conflict signals into sector exposure, transaction flags, and stress-test inputs.</p>
+        </div>
+        <div class="meta">Primary action: generate the decision report after reviewing market transmission.</div>
+      </div>
+
+      <div class="grid g-investor">
+        <div class="panel pad">
+          <div class="panel-title">Cross-asset heatmap / 跨资产热力 <span>hover cells</span></div>
+          <div class="heatmap">
+            <b></b><b>Oil</b><b>LNG</b><b>Ship</b><b>Air</b><b>EM FX</b><b>Credit</b>
+            <b>Base</b><i class="hm-cell hm-amber"></i><i class="hm-cell hm-amber"></i><i class="hm-cell hm-amber"></i><i class="hm-cell"></i><i class="hm-cell hm-blue"></i><i class="hm-cell"></i>
+            <b>Hormuz&lt;10</b><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-amber"></i><i class="hm-cell hm-amber"></i><i class="hm-cell hm-amber"></i>
+            <b>IAEA stop</b><i class="hm-cell hm-amber"></i><i class="hm-cell hm-amber"></i><i class="hm-cell hm-blue"></i><i class="hm-cell"></i><i class="hm-cell hm-amber"></i><i class="hm-cell hm-red"></i>
+            <b>Sanctions+</b><i class="hm-cell hm-amber"></i><i class="hm-cell hm-blue"></i><i class="hm-cell hm-red"></i><i class="hm-cell"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i>
+            <b>Incident</b><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i><i class="hm-cell hm-red"></i>
+          </div>
+          <p class="side-note">Heatmap uses mock stress signals: Brent, freight, insurance, credit spreads, and emerging-market currency pressure.</p>
+        </div>
+        <div class="panel pad">
+          <div class="panel-title">Sector exposure / 行业暴露</div>
+          <div class="exposure">
+            <div class="exposure-row"><span>Airlines</span><div class="bar"><i style="--v:88%;--tone:var(--red)"></i></div><b>88</b></div>
+            <div class="exposure-row"><span>Petrochemicals</span><div class="bar"><i style="--v:64%;--tone:var(--amber)"></i></div><b>64</b></div>
+            <div class="exposure-row"><span>Shipping insurers</span><div class="bar"><i style="--v:91%;--tone:var(--red)"></i></div><b>91</b></div>
+            <div class="exposure-row"><span>Defense</span><div class="bar"><i style="--v:38%;--tone:var(--green)"></i></div><b>38</b></div>
+            <div class="exposure-row"><span>Renewables</span><div class="bar"><i style="--v:46%;--tone:var(--blue)"></i></div><b>46</b></div>
+            <div class="exposure-row"><span>Trade finance</span><div class="bar"><i style="--v:79%;--tone:var(--amber)"></i></div><b>79</b></div>
+          </div>
+        </div>
+        <div class="panel pad">
+          <div class="panel-title">Deal red flags / 交易红旗</div>
+          <div class="flags">
+            <div class="flag"><b>P0</b><span>Counterparty exposure to shadow fleet</span></div>
+            <div class="flag"><b>P0</b><span>Sanctioned refinery or vessel linkage</span></div>
+            <div class="flag"><b>P1</b><span>Insurance exclusion on Gulf route</span></div>
+            <div class="flag"><b>P1</b><span>Force majeure in Asian refinery supply</span></div>
+            <div class="flag"><b>P2</b><span>FX and margin sensitivity not priced</span></div>
+          </div>
+          <div class="actions"><button class="btn" data-go="report">Generate Report / 生成报告</button></div>
+        </div>
+      </div>
+      <div class="footer-note"><span>Mock based on public sources. Human review required before external use.</span><span>Not investment advice. Designed for risk review and diligence.</span></div>
+    </section>
+
+    <section class="screen" id="report">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">06 Decision Report</div>
+          <h1>最终交付给决策会的是什么？</h1>
+          <p class="lead">The final artifact is not a chat log. It is a structured report for analysts, investment committees, and risk teams.</p>
+        </div>
+        <div class="meta">Report status: draft pending human review<br>Version: RPT-USIRAN-20260425-DEMO</div>
+      </div>
+
+      <div class="grid g-report">
+        <article class="panel report">
+          <h2>美伊战争停火脆弱期风险研判报告</h2>
+          <p class="side-note">Draft pending human review · Source-based mock · Structured intelligence report</p>
+          <div class="report-section"><b>Executive summary</b><p>美国封锁全球化、霍尔木兹通航极低、核查不确定性和制裁升级共同构成高外溢风险。未来 7 天最可能路径为低烈度长期化或谈判拉锯。</p></div>
+          <div class="report-section"><b>Key findings</b><p>霍尔木兹是风险传导放大器；IAEA 访问是连接军事、外交和市场溢价的关键变量；制裁扩大会穿透到第三国企业、银行和保险商。</p></div>
+          <div class="report-section"><b>Recommended actions</b><p>建立 72 小时海上事件冻结机制；发布通航白名单和检查规则；推动 IAEA 阶段性访问路线图；对高暴露企业开展制裁和供应链专项筛查。</p></div>
+          <div class="report-section"><b>Monitoring checklist</b><p>霍尔木兹每日通航船只、Brent 是否突破 110、主要保赔协会拒保范围、IAEA 新访问安排、美国财政部制裁名单、海湾设施警戒等级。</p></div>
+          <div class="actions"><button class="btn" data-go="transfer">Transferability / 迁移能力</button><button class="btn secondary" data-toast="导出 PDF 在此高保真原型中作为静态交互展示，真实产品会接入报告服务。">Export PDF</button></div>
+        </article>
+
+        <aside class="panel pad">
+          <div class="panel-title">Human review queue / 人工复核</div>
+          <div class="review-item"><b>REV-001</b><span>停火有效性与执行机制</span></div>
+          <div class="review-item"><b>REV-002</b><span>霍尔木兹通航口径</span></div>
+          <div class="review-item"><b>REV-003</b><span>IAEA 访问限制含义</span></div>
+          <div class="review-item"><b>REV-004</b><span>第三国制裁影响范围</span></div>
+          <div class="review-item"><b>REV-005</b><span>油价二阶影响</span></div>
+          <div class="review-item"><b>REV-006</b><span>人道伤亡核验状态</span></div>
+          <p class="side-note">High-risk warnings and recommendations become externally usable only after expert review.</p>
+        </aside>
+      </div>
+      <div class="footer-note"><span>Mock based on public sources. Human review required before external use.</span><span>Final artifact supports decision review, not automatic decisions.</span></div>
+    </section>
+
+    <section class="screen" id="transfer">
+      <div class="screen-head">
+        <div>
+          <div class="kicker">07 Transferability</div>
+          <h1>这不是单一场景工具，而是一套风险推演操作系统</h1>
+          <p class="lead">The same operating model transfers from geopolitical risk to social risk governance without changing the core workflow.</p>
+        </div>
+        <div class="meta">Second layer narrative: capability migration, not a separate demo story.</div>
+      </div>
+
+      <div class="grid g-brief">
+        <div class="panel pad">
+          <div class="panel-title">Capability mapping / 能力迁移</div>
+          <div class="mapping">
+            <div class="head">Capability</div><div class="head">Geopolitical demo</div><div class="head">Social governance transfer</div>
+            <div>Public signals</div><div>公开源外交、航运、能源、制裁数据</div><div>热线、网格、公开舆情、项目材料</div>
+            <div>Risk event object</div><div>霍尔木兹封锁与地区外溢风险</div><div>小区改造集中诉求风险</div>
+            <div>Evidence chain</div><div>Reuters, IAEA, Treasury, Commons</div><div>工单、网格上报、历史案例、公告</div>
+            <div>Scenario sandbox</div><div>封锁强度、IAEA 访问、制裁节奏</div><div>公告、沟通会、补偿说明、施工安排</div>
+            <div>Agent council</div><div>国家、机构、市场、人道组织</div><div>居民、街道、施工方、媒体、调解专家</div>
+            <div>Decision report</div><div>投资影响与 72 小时监测清单</div><div>沟通建议与处置复核清单</div>
+          </div>
+        </div>
+        <aside class="panel pad">
+          <div class="panel-title">Investor takeaway / 投资人判断点</div>
+          <h2 style="font-size:27px;line-height:1.25;margin:0 0 18px">核心价值不是“模型很聪明”，而是把风险发现、解释、推演、压力测试和报告交付连成闭环。</h2>
+          <p class="lead" style="font-size:15px;margin-top:0">The platform turns uncertain events into auditable workflows for analysts, investors, and decision teams.</p>
+          <div class="rows">
+            <div class="row"><i class="dot"></i><span><b>Credible</b><br>evidence-linked</span></div>
+            <div class="row"><i class="dot"></i><span><b>Actionable</b><br>scenario paths</span></div>
+            <div class="row"><i class="dot"></i><span><b>Governed</b><br>human review</span></div>
+            <div class="row"><i class="dot"></i><span><b>Extensible</b><br>cross-domain</span></div>
+          </div>
+          <div class="actions"><button class="btn" data-go="brief">Back to start / 回到开场</button></div>
+        </aside>
+      </div>
+      <div class="footer-note"><span>Mock based on public sources. Human review required before external use.</span><span>Transferability closes the second layer without breaking the main story.</span></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const screens = [...document.querySelectorAll(".screen")];
+    const navButtons = [...document.querySelectorAll(".nav button")];
+    const toast = document.getElementById("toast");
+
+    const caseData = {
+      usiran: {
+        level: "Orange warning",
+        stage: "Fragile ceasefire",
+        title: "美伊战争停火脆弱期下的霍尔木兹封锁与地区外溢风险",
+        summary: "同一当前态势下，封锁强度、通航恢复、IAEA 访问和制裁节奏会分叉出不同未来路径。",
+        cards: [["综合风险 / Overall", "84", "Orange warning"], ["关键硬指标 / Hard signal", "5艘", "Hormuz vessels 24h"], ["未来7天 / 7D path", "69%", "Escalation probability"], ["置信度 / Confidence", "0.78", "Source-based mock"]],
+        signals: [["IAEA", "核查访问部分且存在争议", "A"], ["Shipping", "霍尔木兹 24h 仅 5 艘通过", "T+1"], ["Sanctions", "制裁向船队、炼厂、融资外溢", "T+1"]]
+      },
+      community: {
+        level: "Orange watch",
+        stage: "苗头升温期",
+        title: "A 街道老旧小区改造争议与集中诉求风险",
+        summary: "同一居民诉求态势下，公告、沟通会、补偿说明和施工安排会分叉出缓和、拉锯或外溢路径。",
+        cards: [["综合风险 / Overall", "72", "Orange watch"], ["关键硬指标 / Hard signal", "+240%", "热线工单 7 日增长"], ["未来7天 / 7D path", "46%", "外溢关注概率"], ["置信度 / Confidence", "0.81", "Multi-source mock"]],
+        signals: [["12345", "近 7 日相关工单增长 240%", "A"], ["Grid", "4 次居民集中咨询上报", "T+0"], ["Public", "补偿不透明关键词升温", "B+"]]
+      },
+      supply: {
+        level: "Amber monitor",
+        stage: "供应链扰动期",
+        title: "关键零部件供应中断与制造交付风险",
+        summary: "同一供应冲击下，替代供应、库存释放、客户优先级和物流恢复会形成不同交付世界线。",
+        cards: [["综合风险 / Overall", "76", "Amber monitor"], ["关键硬指标 / Hard signal", "18天", "安全库存"], ["未来7天 / 7D path", "38%", "延期交付概率"], ["置信度 / Confidence", "0.74", "ERP + supplier mock"]],
+        signals: [["Supplier", "一级供应商产能恢复低于预期", "B+"], ["Inventory", "核心物料库存覆盖 18 天", "A"], ["Logistics", "替代航线成本上升 12.7%", "T+1"]]
+      }
+    };
+
+    const scenarioData = {
+      baseline: {
+        name: "World A: baseline tension",
+        score: 84,
+        bars: [42, 50, 58, 63, 70, 69, 76],
+        cpi: "High and rising",
+        insurance: "Watch threshold active",
+        fx: "Medium-high",
+        trigger: "通航未恢复 + 封锁声明继续升级",
+        signal: "保险拒保范围扩大，Brent 接近 110",
+        action: "进入 Agent 压力测试，验证沟通与交易红旗",
+        worlds: [
+          { time: "T0", nodes: [
+            { title: "当前态势", kind: "root", body: "停火仍在，但封锁、核查、通航和制裁同时处于高不确定状态。", delta: "+0", tone: "active", trigger: "公开源信号同时指向海上通航、核查和制裁压力。", evidence: "Reuters / IAEA / US Treasury / UK Commons", action: "锁定风险对象，进入证据链复核。" }
+          ]},
+          { time: "T+24h", nodes: [
+            { title: "市场先定价风险", kind: "market", body: "油价和航运保险先行反应，交易团队开始重估暴露。", delta: "+6", tone: "", trigger: "通航数据继续低位，Brent 接近 110。", evidence: "油价、保赔协会、航运报价", action: "标记航空、炼化、航运保险暴露。" },
+            { title: "外交措辞拉锯", kind: "diplomacy", body: "各方声明保留谈判空间，但都避免先做实质退让。", delta: "+3", tone: "", trigger: "封锁未撤，IAEA 访问未落地。", evidence: "公开声明与调停方窗口", action: "等待硬信号，不把声明当作风险解除。" }
+          ]},
+          { time: "T+72h", nodes: [
+            { title: "低烈度长期化", kind: "drift", body: "无单一爆点，但通航低位和制裁扩散让风险溢价固化。", delta: "+10", tone: "", trigger: "每日通航仍低于 10 艘。", evidence: "AIS/航运口径 + 公开报道", action: "提高能源与贸易融资监测频率。" },
+            { title: "局部误读发酵", kind: "signal", body: "旧事件或模糊措辞被重新传播，形成二次预期冲击。", delta: "+12", tone: "active", trigger: "社媒/市场通讯重复引用未核实说法。", evidence: "公开舆情与交易员报告摘要", action: "要求人工复核来源链。" }
+          ]},
+          { time: "T+7d", nodes: [
+            { title: "谈判拉锯", kind: "outcome", body: "调停框架出现，但每个核查节点都会重新触发市场波动。", delta: "+8", tone: "", trigger: "IAEA 阶段节点没有完全落地。", evidence: "IAEA访问安排与调停方声明", action: "生成 72 小时滚动监测清单。" },
+            { title: "风险溢价固化", kind: "outcome", body: "市场不再只交易新闻，而开始把长期运费、保险、信用风险纳入定价。", delta: "+14", tone: "active", trigger: "保险和融资条款未恢复到战前水平。", evidence: "保险条款、运费、CDS、行业利润率", action: "进入投行视角做交易红旗筛查。" }
+          ]}
+        ]
+      },
+      shock: {
+        name: "World B: escalation fork",
+        score: 91,
+        bars: [58, 66, 74, 80, 86, 91, 94],
+        cpi: "Severe pass-through",
+        insurance: "Withdrawal probable",
+        fx: "High stress",
+        trigger: "船只扣押/误击 + IAEA 访问暂停",
+        signal: "保赔协会扩大拒保，区域设施警戒上调",
+        action: "立即生成 P0 交易红旗与 72 小时复核清单",
+        worlds: [
+          { time: "T0", nodes: [
+            { title: "当前态势", kind: "root", body: "同样的初始风险对象，等待第一个硬触发信号。", delta: "+0", tone: "", trigger: "封锁、通航、核查、制裁四组变量均处高位。", evidence: "风险对象与证据链", action: "保持橙色预警并等待触发器。" }
+          ]},
+          { time: "T+24h", nodes: [
+            { title: "海上事件触发", kind: "trigger", body: "扣押或误击报道出现，系统把路径切入红色分支。", delta: "+14", tone: "active", trigger: "船只扣押/误击/布雷相关报道。", evidence: "Reuters / 航运机构 / 官方声明", action: "冻结基线路径，启动红色复核。" },
+            { title: "IAEA 访问暂停", kind: "trigger", body: "核查链路中断，安全叙事迅速压过谈判叙事。", delta: "+17", tone: "active", trigger: "访问取消或申报争议升级。", evidence: "IAEA 与政府公开文件", action: "上调核查透明度风险。" }
+          ]},
+          { time: "T+72h", nodes: [
+            { title: "制裁与保险连锁", kind: "cascade", body: "拒保、绕行、贸易融资筛查同时上行。", delta: "+23", tone: "active", trigger: "保赔协会扩大限制，银行加强筛查。", evidence: "制裁名单、保险条款、运费报价", action: "生成 P0 交易红旗。" },
+            { title: "区域设施警戒", kind: "cascade", body: "能源设施安全警戒上调，LNG 和油品链条进入防御状态。", delta: "+19", tone: "active", trigger: "设施警戒与军事部署相关公开信号。", evidence: "官方公告和市场通讯", action: "更新行业暴露矩阵。" }
+          ]},
+          { time: "T+7d", nodes: [
+            { title: "快速再升级", kind: "outcome", body: "军事叙事压过谈判叙事，投资影响从商品扩展到信用。", delta: "+31", tone: "active", trigger: "连续硬触发器没有被调停机制吸收。", evidence: "跨源风险信号同步上行", action: "提交高风险研判报告。" },
+            { title: "风险传导跨资产", kind: "outcome", body: "油价、航空利润、EM FX、信用利差和发行窗口同时受压。", delta: "+28", tone: "active", trigger: "能源冲击进入二阶市场变量。", evidence: "市场价格与行业敏感性表", action: "进入投行视角。" }
+          ]}
+        ]
+      },
+      relief: {
+        name: "World C: managed de-risking",
+        score: 67,
+        bars: [72, 66, 61, 58, 53, 49, 44],
+        cpi: "Contained but sticky",
+        insurance: "Premium remains high",
+        fx: "Moderating",
+        trigger: "通航白名单 + IAEA 阶段性访问路线图",
+        signal: "每日通航量恢复到 10-50 艘，Brent 风险溢价回落",
+        action: "转入监测模式，但保留制裁与保险复核",
+        worlds: [
+          { time: "T0", nodes: [
+            { title: "当前态势", kind: "root", body: "初始态势不变，改变的是处置动作和公开规则。", delta: "+0", tone: "", trigger: "同一风险对象进入降险方案。", evidence: "风险对象与证据链", action: "比较降险动作与基线动作。" }
+          ]},
+          { time: "T+24h", nodes: [
+            { title: "通航规则发布", kind: "relief", body: "白名单和检查规则降低市场对完全封锁的定价。", delta: "-7", tone: "relief", trigger: "明确可通航对象和检查程序。", evidence: "调停方与航运机构规则", action: "观察实际通航恢复。" },
+            { title: "沟通口径变清晰", kind: "relief", body: "模糊声明减少，市场能区分管制与全面封锁。", delta: "-4", tone: "relief", trigger: "各方声明出现一致术语。", evidence: "声明文本与媒体引用", action: "降低误读风险权重。" }
+          ]},
+          { time: "T+72h", nodes: [
+            { title: "核查路线图成形", kind: "relief", body: "IAEA 阶段性访问让军事叙事降温。", delta: "-13", tone: "relief", trigger: "访问时间表和设施清单出现。", evidence: "IAEA 与调停方公开文件", action: "下调核查不确定性。" },
+            { title: "市场风险溢价回落", kind: "market", body: "油价和保险报价仍高，但尾部风险定价开始下降。", delta: "-11", tone: "relief", trigger: "Brent 回落且保险条款未继续恶化。", evidence: "价格、保险和运费", action: "保留中等监测频率。" }
+          ]},
+          { time: "T+7d", nodes: [
+            { title: "受控拉锯", kind: "outcome", body: "风险没有消失，但从危机状态转入可管理波动。", delta: "-17", tone: "relief", trigger: "硬触发器被调停机制吸收。", evidence: "通航、核查、声明三组信号改善", action: "生成受控风险报告。" },
+            { title: "长尾制裁拖累", kind: "outcome", body: "军事风险下降，但制裁和合规仍维持企业尽调压力。", delta: "-6", tone: "", trigger: "制裁名单没有同步回撤。", evidence: "Treasury 公告与银行筛查规则", action: "继续交易红旗筛查。" }
+          ]}
+        ]
+      }
+    };
+
+    const agentData = [
+      ["US", "封锁作为谈判杠杆", "If pressure is relaxed before verification access improves, domestic and allied credibility weakens.", "blue"],
+      ["Iran", "主权与通航压力", "A blockade framed as permanent coercion makes reciprocal concessions harder to sell internally.", "amber"],
+      ["IAEA", "核查透明路线图", "A phased access roadmap would reduce uncertainty more than another general statement.", "green"],
+      ["GCC", "能源设施与通航安全", "Regional stability requires a maritime incident freeze mechanism in the next 72 hours.", "blue"],
+      ["Market", "油价、保险、运费", "The key threshold is not headline rhetoric; it is daily Hormuz throughput and insurance availability.", "red"],
+      ["Humanitarian", "停火合法性压力", "Humanitarian access changes the legitimacy frame and affects diplomatic space.", "amber"]
+    ];
+    let currentScenario = "baseline";
+    let currentNode = null;
+    let currentStep = 0;
+    let playTimer = null;
+
+    const lineColor = {
+      amber: "#b86620",
+      red: "#9b342b",
+      green: "#2e6b56",
+      blue: "#28506f",
+      purple: "#8f62e6"
+    };
+
+    const worldGraphs = {
+      baseline: {
+        dist: [
+          ["A", "积极响应逐步稳定", "28%", "+6%", "green"],
+          ["B", "部分让步持续拉锯", "26%", "-2%", "amber"],
+          ["C", "持续发酵风险聚集", "32%", "0%", "purple"],
+          ["D", "外部事件叠加风险", "14%", "-4%", "red"]
+        ],
+        nodes: [
+          { id: "s", step: 0, x: 9, y: 54, label: "S", title: "地铁事件", sub: "起点", prob: "起", tone: "blue", body: "当前案例的初始风险对象。系统将它作为世界线根节点，并等待新的证据或处置输入。", trigger: "多源信号首次聚合成风险事件。", evidence: "公开源、热线、网格/航运、历史案例", action: "确认风险对象，进入观察模式。" },
+          { id: "m", step: 1, x: 24, y: 22, label: "M", title: "媒体报道增加", sub: "舆论放大", prob: "32", tone: "green", body: "风险信号被外部信息渠道放大，叙事开始影响更多相关方。", trigger: "同类报道频率上升。", evidence: "媒体报道、公开讨论热度", action: "监测传播强度和误读点。" },
+          { id: "p", step: 1, x: 25, y: 43, label: "P", title: "票价上涨争议发酵", sub: "利益敏感", prob: "68", tone: "amber", body: "利益敏感议题成为讨论中心，开始牵引更多节点。", trigger: "价格或补偿相关关键词升温。", evidence: "投诉主题、话题词、历史案例", action: "拆分主要诉求与可沟通空间。" },
+          { id: "n", step: 1, x: 25, y: 64, label: "N", title: "网友情绪升温", sub: "情绪支线", prob: "89", tone: "purple", body: "线上情绪升温，但尚未等同于线下行动。", trigger: "负面情绪占比上升。", evidence: "公开讨论、关键词、转发速度", action: "区分情绪噪声与组织化信号。" },
+          { id: "u", step: 1, x: 25, y: 82, label: "U", title: "学生群体讨论升温", sub: "群体支线", prob: "45", tone: "green", body: "特定群体开始形成自己的解释框架。", trigger: "群体内部渠道出现集中讨论。", evidence: "公开社群与反馈记录", action: "识别群体诉求差异。" },
+          { id: "g", step: 2, x: 46, y: 48, label: "G", title: "官方回应开始", sub: "当前介入点", prob: "36", tone: "blue", body: "处置方开始回应。后续世界线取决于回应是否解释核心矛盾。", trigger: "官方声明或处置动作出现。", evidence: "公告、发布会、回应文本", action: "进入 Agent 压力测试，检查高风险措辞。" },
+          { id: "t", step: 2, x: 49, y: 65, label: "T", title: "相关话题冲上热搜", sub: "传播加速", prob: "78", tone: "amber", body: "传播速度提高，外部观察者开始影响原始议题。", trigger: "话题进入跨圈层传播。", evidence: "热榜、转发、媒体引用", action: "建立澄清入口与事实卡片。" },
+          { id: "c", step: 2, x: 49, y: 85, label: "C", title: "交通拥堵反馈增加", sub: "现实反馈", prob: "41", tone: "green", body: "线上叙事开始对应现实反馈，风险从话题进入服务体验层。", trigger: "现场反馈或运营数据异常。", evidence: "现场反馈、运营记录", action: "同步运营处置和公开解释。" },
+          { id: "x", step: 3, x: 68, y: 49, label: "C", title: "群体不满升级，线下聚集风险", sub: "当前选中", prob: "32", tone: "purple", body: "回应未完全覆盖核心矛盾，部分群体从线上表达转向线下聚集讨论。", trigger: "回应被认为不充分，线下讨论出现组织化迹象。", evidence: "E-032、E-029、E-025；影响度 0.72-0.85", action: "增加解释型沟通，设定反馈时限，避免单向通知。" },
+          { id: "o", step: 3, x: 68, y: 70, label: "O", title: "官方说明发布", sub: "解释分支", prob: "52", tone: "amber", body: "官方说明降低部分不确定性，但如果缺少具体承诺，仍会保留拉锯风险。", trigger: "说明发布但细节不足。", evidence: "公告文本、问答口径", action: "补充测算依据、流程和反馈渠道。" },
+          { id: "a", step: 4, x: 86, y: 24, label: "A", title: "舆情逐步降温恢复稳定", sub: "未来 A", prob: "A", tone: "green", body: "解释充分且反馈渠道有效，风险进入可管理状态。", trigger: "核心诉求被回应，反馈渠道有时限。", evidence: "投诉下降、情绪回落、正向反馈", action: "转入复盘与知识沉淀。" },
+          { id: "b", step: 4, x: 87, y: 49, label: "B", title: "小规模抗议局部聚集", sub: "未来 B", prob: "B", tone: "amber", body: "部分人群仍不接受现有解释，形成局部聚集但未扩散。", trigger: "回应覆盖不足或线下沟通延迟。", evidence: "现场反馈、社群召集信号", action: "增加线下咨询和调解资源。" },
+          { id: "d", step: 4, x: 87, y: 73, label: "C", title: "抗议扩大化持续发酵", sub: "未来 C", prob: "C", tone: "purple", body: "话题跨群体传播，原始矛盾和外部议题叠加。", trigger: "外部叙事介入，旧矛盾被重新激活。", evidence: "跨社区讨论、媒体二次报道", action: "建立跨部门回应机制。" },
+          { id: "r", step: 4, x: 86, y: 91, label: "D", title: "外部事件叠加风险升级", sub: "未来 D", prob: "D", tone: "red", body: "外部突发事件把原本可控的争议推入更高风险区间。", trigger: "新事件与当前议题形成情绪共振。", evidence: "外部事件、舆情同步放大", action: "启动高风险复核和应急预案。" }
+        ],
+        edges: [
+          ["s","m","green"],["s","p","amber"],["s","n","purple"],["s","u","green"],
+          ["m","g","green"],["p","g","amber"],["p","t","amber"],["n","t","amber"],["u","c","green"],
+          ["g","x","purple"],["t","x","red"],["t","o","amber"],["c","o","green"],
+          ["x","a","green"],["x","b","amber"],["x","d","purple"],["x","r","red"],["o","b","amber"],["o","a","green"]
+        ]
+      }
+    };
+    worldGraphs.shock = {
+      ...worldGraphs.baseline,
+      dist: [
+        ["A", "快速缓和失败", "11%", "-9%", "green"],
+        ["B", "局部冲突扩散", "29%", "+8%", "amber"],
+        ["C", "高风险聚集", "38%", "+6%", "purple"],
+        ["D", "外部叠加升级", "22%", "+8%", "red"]
+      ]
+    };
+    worldGraphs.relief = {
+      ...worldGraphs.baseline,
+      dist: [
+        ["A", "积极响应稳定", "46%", "+18%", "green"],
+        ["B", "低烈度拉锯", "24%", "-2%", "amber"],
+        ["C", "持续发酵", "18%", "-14%", "purple"],
+        ["D", "外部升级", "12%", "-2%", "red"]
+      ]
+    };
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => toast.classList.remove("show"), 3200);
+    }
+
+    function go(id) {
+      screens.forEach(s => s.classList.toggle("active", s.id === id));
+      navButtons.forEach(b => b.classList.toggle("active", b.dataset.go === id));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.addEventListener("click", event => {
+      const target = event.target.closest("[data-go]");
+      if (target) go(target.dataset.go);
+      const toastTarget = event.target.closest("[data-toast]");
+      if (toastTarget) showToast(toastTarget.dataset.toast);
+    });
+
+    function updateCase(kind) {
+      const data = caseData[kind];
+      if (!data) return;
+      document.querySelectorAll(".case-option").forEach(b => b.classList.toggle("active", b.dataset.case === kind));
+      document.getElementById("caseLevel").textContent = data.level;
+      document.getElementById("caseStage").textContent = data.stage;
+      document.getElementById("caseTitle").textContent = data.title;
+      document.getElementById("caseSummary").textContent = data.summary;
+      document.getElementById("dynamicCards").innerHTML = data.cards.map(card => `
+        <div class="shell-tile"><small>${card[0]}</small><strong>${card[1]}</strong><p>${card[2]}</p></div>
+      `).join("");
+      document.getElementById("shellSignals").innerHTML = data.signals.map(sig => `
+        <div class="signal"><b>${sig[0]}</b><span>${sig[1]}</span><span class="pill">${sig[2]}</span></div>
+      `).join("");
+    }
+
+    document.getElementById("caseSelector").addEventListener("click", event => {
+      const btn = event.target.closest("[data-case]");
+      if (!btn) return;
+      updateCase(btn.dataset.case);
+      showToast("已切换当前案例。系统壳不变，后续证据、推演、Agent、报告入口保持同一套工作流。");
+    });
+
+    function updateScenario(kind) {
+      currentScenario = kind;
+      const data = scenarioData[kind];
+      document.getElementById("scenarioName").textContent = data.name;
+      document.getElementById("overallScore").textContent = data.score;
+      document.getElementById("deltaChart").innerHTML = data.bars.map((v, i) => `<i style="--h:${v}%;--i:${i}"></i>`).join("");
+      renderWorldGraph(kind);
+      setWorldStep(2);
+    }
+
+    function renderWorldGraph(kind) {
+      const graph = worldGraphs[kind] || worldGraphs.baseline;
+      const distribution = document.getElementById("worldDistribution");
+      distribution.innerHTML = graph.dist.map((d, index) => `
+        <button class="dist-card ${index === 2 ? "active" : ""}" style="--tone:var(--${d[4]})" data-dist="${index}">
+          <div class="dist-head"><span>${d[0]}</span><span>${d[3]}</span></div>
+          <strong>${d[2]}</strong>
+          <p>${d[1]}</p>
+        </button>
+      `).join("");
+
+      const nodes = graph.nodes.map(node => `
+        <button class="graph-node" data-node-id="${node.id}" data-step="${node.step}" style="left:${node.x}%;top:${node.y}%;--tone:var(--${node.tone})">
+          <span class="badge">${node.label}</span>
+          <b>${node.title}</b>
+          <span>${node.sub}</span>
+          <i class="prob-bubble">${node.prob}</i>
+        </button>
+      `).join("");
+      document.getElementById("graphNodes").innerHTML = nodes;
+
+      const byId = Object.fromEntries(graph.nodes.map(n => [n.id, n]));
+      document.getElementById("graphSvg").innerHTML = graph.edges.map(edge => {
+        const from = byId[edge[0]];
+        const to = byId[edge[1]];
+        const color = lineColor[edge[2]] || lineColor.amber;
+        const x1 = from.x + 7;
+        const y1 = from.y + 5;
+        const x2 = to.x + 7;
+        const y2 = to.y + 5;
+        const mx = (x1 + x2) / 2;
+        return `<path data-edge-step="${Math.max(from.step, to.step)}" d="M ${x1 * 10} ${y1 * 5.9} C ${mx * 10} ${y1 * 5.9}, ${mx * 10} ${y2 * 5.9}, ${x2 * 10} ${y2 * 5.9}" stroke="${color}" />`;
+      }).join("");
+
+      document.getElementById("stepDots").innerHTML = ["起点", "初发", "发酵", "当前", "未来"].map((label, index) => `
+        <button class="step-dot" data-step="${index}"><span>${label}</span></button>
+      `).join("");
+    }
+
+    function setWorldStep(step) {
+      currentStep = Math.max(0, Math.min(4, step));
+      document.querySelectorAll(".graph-node").forEach(node => {
+        const visible = Number(node.dataset.step) <= currentStep;
+        node.classList.toggle("visible", visible);
+      });
+      document.querySelectorAll("#graphSvg path").forEach(path => {
+        path.style.display = Number(path.dataset.edgeStep) <= currentStep ? "block" : "none";
+      });
+      document.querySelectorAll(".step-dot").forEach(dot => {
+        dot.classList.toggle("active", Number(dot.dataset.step) <= currentStep);
+      });
+      const nowPositions = ["10%", "26%", "50%", "68%", "86%"];
+      document.getElementById("nowLine").style.setProperty("--now-x", nowPositions[currentStep]);
+      const graph = worldGraphs[currentScenario] || worldGraphs.baseline;
+      const firstVisible = [...graph.nodes].reverse().find(n => n.step <= currentStep);
+      if (firstVisible) selectNodeById(firstVisible.id);
+    }
+
+    function onStepDotClick(event) {
+      const dot = event.target.closest("[data-step]");
+      if (!dot) return;
+      setWorldStep(Number(dot.dataset.step));
+    }
+
+    function onGraphNodeClick(event) {
+      const card = event.target.closest(".graph-node[data-node-id]");
+      if (!card) return;
+      selectNodeById(card.dataset.nodeId);
+    }
+
+    function selectNodeById(id) {
+      const graph = worldGraphs[currentScenario] || worldGraphs.baseline;
+      const node = graph.nodes.find(n => n.id === id);
+      if (!node) return;
+      currentNode = node;
+      document.querySelectorAll(".graph-node").forEach(card => card.classList.toggle("selected", card.dataset.nodeId === id));
+      document.getElementById("nodeDetail").innerHTML = `
+        <div class="detail-kicker">Step ${node.step} · ${node.sub}</div>
+        <h2 class="detail-title">${node.title}</h2>
+        <p class="detail-body">${node.body}</p>
+        <div class="detail-block"><b>触发条件 / Trigger</b><span>${node.trigger}</span></div>
+        <div class="detail-block"><b>证据线索 / Evidence</b><span>${node.evidence}</span></div>
+        <div class="detail-block"><b>风险增量 / Delta</b><span>${node.delta} relative to current state</span></div>
+        <div class="detail-block"><b>建议动作 / Action</b><span>${node.action}</span></div>
+      `;
+    }
+
+    document.getElementById("graphNodes").addEventListener("click", onGraphNodeClick);
+    document.getElementById("stepDots").addEventListener("click", onStepDotClick);
+
+    document.getElementById("playWorlds").addEventListener("click", () => {
+      const btn = document.getElementById("playWorlds");
+      if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+        btn.textContent = "▶";
+        return;
+      }
+      btn.textContent = "Ⅱ";
+      if (currentStep >= 4) setWorldStep(0);
+      playTimer = setInterval(() => {
+        if (currentStep >= 4) {
+          clearInterval(playTimer);
+          playTimer = null;
+          btn.textContent = "▶";
+          return;
+        }
+        setWorldStep(currentStep + 1);
+      }, 900);
+    });
+
+    document.getElementById("resetWorlds").addEventListener("click", () => {
+      if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+      }
+      document.getElementById("playWorlds").textContent = "▶";
+      setWorldStep(0);
+    });
+
+    document.getElementById("scenarioTabs").addEventListener("click", event => {
+      const btn = event.target.closest("button[data-scn]");
+      if (!btn) return;
+      document.querySelectorAll("#scenarioTabs button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      updateScenario(btn.dataset.scn);
+    });
+
+    ["blockade", "traffic", "iaea", "sanction"].forEach(id => {
+      const input = document.getElementById(id);
+      const out = document.getElementById(id + "Val");
+      input.addEventListener("input", () => {
+        out.textContent = input.value;
+        const avg = Math.round((+document.getElementById("blockade").value + +document.getElementById("traffic").value + +document.getElementById("iaea").value + +document.getElementById("sanction").value) / 4);
+        document.getElementById("overallScore").textContent = avg;
+      });
+    });
+
+    let sourcesEmpty = false;
+    document.getElementById("toggleSources").addEventListener("click", () => {
+      sourcesEmpty = !sourcesEmpty;
+      const rows = document.getElementById("sourceRows");
+      const status = document.getElementById("sourceStatus");
+      if (sourcesEmpty) {
+        rows.innerHTML = `<div class="event-card"><h2>No sources in this filter</h2><p>调整来源等级或时间窗口后会重新填充证据链。This empty state is intentionally designed for analyst workflows.</p></div>`;
+        status.textContent = "empty state";
+      } else {
+        location.reload();
+      }
+    });
+    document.getElementById("simulateError").addEventListener("click", () => {
+      document.getElementById("sourceStatus").textContent = "source sync error";
+      showToast("Source sync failed in this simulated state. Existing evidence remains visible and report generation is blocked until review.");
+    });
+
+    function renderAgents(active = "Market") {
+      document.getElementById("agentList").innerHTML = agentData.map(a => `
+        <div class="agent ${a[0] === active ? "active" : ""}">
+          <button data-agent="${a[0]}">
+            <span class="agent-mark" style="--tone:var(--${a[3]})"></span>
+            <span><h3>${a[0]}</h3><p>${a[1]}</p></span>
+          </button>
+        </div>
+      `).join("");
+      const chosen = agentData.find(a => a[0] === active) || agentData[4];
+      document.getElementById("activeAgent").textContent = chosen[0];
+      document.getElementById("dialogue").innerHTML = `
+        <div class="message"><b>Scenario input</b>If blockade remains high while IAEA access is only partial, markets price the ceasefire as fragile.</div>
+        <div class="message"><b>${chosen[0]} Agent</b>${chosen[2]}</div>
+        <div class="message"><b>Analyst prompt</b>What would reduce the probability of mispricing or escalation in the next 72 hours?</div>
+        <div class="message extract"><b>System extract</b>Conflict points: blockade legitimacy, nuclear access, shipping rules. Consensus: a narrow maritime de-risking channel is feasible.</div>
+      `;
+    }
+    document.getElementById("agentList").addEventListener("click", event => {
+      const btn = event.target.closest("[data-agent]");
+      if (btn) renderAgents(btn.dataset.agent);
+    });
+
+    updateCase("usiran");
+    updateScenario("baseline");
+    renderAgents();
+
+    window.addEventListener("load", () => {
+      setTimeout(() => document.getElementById("loading").classList.add("done"), 360);
+    });
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="iran-narrative-overrides.js?v=20260428-goldenpath1"></script>
+  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+</body>
+</html>

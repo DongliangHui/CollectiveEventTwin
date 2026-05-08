@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WORLDLINE OBSERVER · 世界线推演 v2</title>
+<style>
+:root{
+  --nav:#071526;--bg:#f5efe6;--paper:#fffdf8;--panel:rgba(255,253,248,.94);--paper2:#fbf8f1;
+  --ink:#111820;--muted:#66717d;--line:#d9cebd;
+  --blue:#2f6df6;--red:#df4b54;--green:#18a873;--amber:#d78925;--violet:#7f63c9;--cyan:#009fb7;
+  --shadow:0 10px 24px rgba(42,34,22,.075);--strong:0 18px 48px rgba(42,34,22,.13);--r:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;width:100vw;height:100vh;min-width:1480px;min-height:900px;overflow:hidden;color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;
+  font-variant-numeric:tabular-nums;
+  background:radial-gradient(circle at 18% 8%,rgba(47,109,246,.08),transparent 30%),
+             radial-gradient(circle at 82% 6%,rgba(215,137,37,.10),transparent 28%),
+             linear-gradient(180deg,#fbf8f1 0%,var(--bg) 100%);
+}
+button,a,input,textarea,select{font:inherit;color:inherit;text-decoration:none}
+button{border:0;background:transparent;cursor:pointer}
+.app{height:100vh;display:grid;grid-template-rows:58px 72px 96px minmax(0,1fr) 62px}
+
+/* top flow */
+.topbar{display:grid;grid-template-columns:330px 1fr 150px;align-items:center;gap:18px;padding:0 18px;background:var(--nav);color:#f2f7ff;box-shadow:0 10px 30px rgba(7,21,38,.20);z-index:10}
+.brand{display:flex;gap:12px;align-items:center;font-weight:950;letter-spacing:.08em;white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7bd0ff);position:relative;box-shadow:0 0 0 6px rgba(47,109,246,.10)}
+.mark:after{content:"";position:absolute;left:8px;top:4px;width:4px;height:22px;border-radius:3px;background:#fff;transform:rotate(42deg)}
+.brand small{display:block;margin-top:2px;color:rgba(242,247,255,.62);font-size:11px;letter-spacing:0}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.flow a{height:46px;display:grid;grid-template-columns:28px 1fr;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(255,255,255,.045);color:rgba(242,247,255,.78);font-size:12px;font-weight:900;text-align:left;min-width:0}
+.flow i{width:24px;height:24px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.24);font-style:normal}
+.flow span{display:block;margin-top:1px;color:rgba(242,247,255,.48);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow .active{background:#fffdf8;color:var(--blue);box-shadow:0 12px 26px rgba(0,0,0,.24)}
+.flow .active i{background:var(--blue);border-color:var(--blue);color:#fff}
+.flow .active span{color:#5d6774}
+.top-tools{display:flex;justify-content:flex-end;align-items:center;gap:14px;font-size:19px}
+.avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#071526}
+
+/* header */
+.worldstate{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid rgba(217,206,189,.85);background:rgba(255,253,248,.84);backdrop-filter:blur(12px)}
+.btn,.select,.mini,.outline,.primary{min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--muted);font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(42,34,22,.04)}
+.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.worldstate h1{margin:0;font-size:20px;line-height:1.18}
+.worldstate p{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:800}
+.hot{padding:3px 8px;border-radius:999px;background:rgba(47,109,246,.10);color:var(--blue);font-size:11px;font-weight:950}
+.meta-strip{display:grid;grid-template-columns:repeat(5,max-content);gap:8px;align-items:center;color:var(--muted);font-size:12px;font-weight:900}
+.meta-pill{height:28px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+
+/* response path cards */
+.paths{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 18px}
+.path-card{min-height:80px;padding:11px 13px;border:1px solid rgba(217,206,189,.9);border-radius:15px;background:var(--paper);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.path-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tone)}
+.path-card.hot{border-color:color-mix(in srgb,var(--tone) 48%,var(--line));background:color-mix(in srgb,var(--tone) 8%,var(--paper))}
+.path-top{display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--muted);font-size:11px;font-weight:950}
+.path-title{margin-top:7px;display:flex;align-items:end;gap:8px}.path-title strong{font-size:25px;line-height:1;color:var(--ink)}.path-title b{font-size:13px}
+.trend{height:22px;padding:0 7px;border-radius:999px;display:inline-flex;align-items:center;background:color-mix(in srgb,var(--tone) 14%,white);color:var(--tone);font-size:11px;font-weight:950}
+.path-card p{margin:7px 0 0;color:var(--muted);font-size:11px;line-height:1.35;font-weight:800}
+
+/* main */
+.main{min-height:0;display:grid;grid-template-columns:minmax(860px,1fr) 390px;gap:10px;padding:0 18px 8px}
+.panel{min-width:0;min-height:0;background:var(--panel);border:1px solid rgba(217,206,189,.9);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-title{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;font-weight:950}
+.panel-title span{color:var(--muted);font-size:11px;font-weight:800}
+.more{min-height:24px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper2);font-size:11px;font-weight:900;color:var(--ink)}
+.left-area{display:grid;grid-template-rows:52px minmax(0,1fr);gap:10px}
+.canvas-head{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:0 14px;background:rgba(255,253,248,.74)}
+.legend{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:11px;font-weight:900}
+.legend i{width:8px;height:8px;border-radius:50%;background:var(--tone);display:inline-block;margin-right:4px}
+.view-tabs{display:flex;gap:6px}.view-tabs button{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--muted);font-size:11px;font-weight:900}.view-tabs .active{background:#4b5563;border-color:#4b5563;color:#fff}
+
+.canvas{position:relative;overflow:hidden;background:linear-gradient(rgba(217,206,189,.24) 1px,transparent 1px),linear-gradient(90deg,rgba(217,206,189,.24) 1px,transparent 1px),rgba(255,253,248,.32);background-size:24px 24px}
+.canvas svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.canvas path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.stage-ribbon{position:absolute;left:16px;right:16px;top:14px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;z-index:2}
+.stage{min-height:36px;padding:6px 8px;border:1px solid var(--line);border-radius:12px;background:rgba(255,253,248,.82);display:grid;align-content:center;font-size:10px;font-weight:950;color:var(--muted)}
+.stage.active{border-color:rgba(47,109,246,.46);background:rgba(47,109,246,.08);color:var(--blue)}
+.stage span{display:block;color:var(--ink);font-size:11px}
+
+.node{position:absolute;width:168px;min-height:78px;padding:10px 12px 10px 42px;border:1px solid var(--line);border-radius:15px;background:rgba(255,253,248,.96);box-shadow:0 14px 28px rgba(42,34,22,.10);z-index:3}
+.node.selected{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 12%,white);outline:4px solid color-mix(in srgb,var(--tone) 14%,transparent)}
+.node .kind{position:absolute;left:10px;top:11px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--tone);color:#fff;font-size:12px;font-weight:950}
+.node b{display:block;font-size:12px;line-height:1.25}
+.node small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.32;font-weight:800}
+.node em{position:absolute;right:-10px;top:-10px;min-width:30px;height:24px;padding:0 6px;display:grid;place-items:center;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-style:normal;font-size:11px;font-weight:950}
+.action-node{width:194px;min-height:96px;border:2px solid color-mix(in srgb,var(--tone) 52%,var(--line));background:color-mix(in srgb,var(--tone) 10%,white)}
+.action-node .impact{margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.impact span{min-height:20px;padding:3px 5px;border-radius:7px;background:rgba(255,253,248,.72);color:var(--muted);font-size:10px;font-weight:900}
+.injection{position:absolute;left:48%;top:47%;transform:translate(-50%,-50%);z-index:4;width:230px;padding:10px;border:1px dashed rgba(47,109,246,.65);border-radius:14px;background:rgba(255,253,248,.92);box-shadow:var(--shadow)}
+.injection b{font-size:12px}.injection p{margin:5px 0 8px;color:var(--muted);font-size:10px;line-height:1.35}.injection .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.injection button{height:28px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:10px;font-weight:900}
+
+/* right panel */
+.right{display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;min-height:0}
+.diagnosis{padding:14px}
+.diagnosis h2{margin:0;font-size:17px;line-height:1.24}
+.diagnosis p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45;font-weight:800}
+.diag-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}
+.diag{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72)}
+.diag span{display:block;color:var(--muted);font-size:10px;font-weight:900}.diag b{display:block;margin-top:5px;font-size:14px}
+.impact-panel,.pressure,.variables{padding:12px}
+.impact-list,.var-list,.agent-list{display:grid;gap:8px}
+.impact-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px}
+.impact-row b{display:block;font-size:12px}.impact-row span{display:block;margin-top:3px;color:var(--muted);font-size:10px;font-weight:800}.delta{font-weight:950;color:var(--tone)}
+.var{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:center;font-size:12px}.var i{width:14px;height:14px;border-radius:50%;display:block;background:var(--tone)}.var span{color:var(--muted)}
+.agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:8px}
+.agent{min-height:38px;padding:7px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:11px;font-weight:950;text-align:center}
+textarea{width:100%;min-height:56px;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--paper);resize:none;font-size:12px;color:var(--ink);outline:none}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+
+/* bottom */
+.timeline{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:10px 18px;border-top:1px solid rgba(217,206,189,.82);background:rgba(255,253,248,.76)}
+.play{width:42px;height:42px;border-radius:50%;background:var(--ink);color:#fff;font-weight:950;display:grid;place-items:center}
+.track{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.step{position:relative;height:42px;color:var(--muted);font-size:11px;font-weight:900;text-align:left}
+.step:before{content:"";position:absolute;left:0;right:0;top:10px;height:2px;background:var(--line)}
+.step:after{content:"";position:absolute;left:0;top:4px;width:14px;height:14px;border-radius:50%;background:#aab6c4}
+.step.active:after{background:var(--violet);box-shadow:0 0 0 8px rgba(127,99,201,.14)}
+.step span{position:absolute;left:0;bottom:0}
+.bottom-actions{display:flex;gap:8px}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><span class="mark"></span><div><span>WORLDLINE OBSERVER</span><small>世界线推演</small></div></div>
+  <nav class="flow">
+    <a href="#"><i>1</i><b>城市态势<span>发现城市正在发生的事</span></b></a>
+    <a href="#"><i>2</i><b>主题态势<span>聚合分析热点主题</span></b></a>
+    <a href="#"><i>3</i><b>数据 / 信号<span>汇集主线材料</span></b></a>
+    <a href="#"><i>4</i><b>主线建模<span>生成推演输入包</span></b></a>
+    <a class="active" href="#"><i>5</i><b>世界线推演<span>推演回应动作影响</span></b></a>
+    <a href="#"><i>6</i><b>多主体研判<span>压力测试回应动作</span></b></a>
+  </nav>
+  <div class="top-tools"><button>♧</button><button>?</button><button class="avatar">●</button></div>
+</header>
+
+<section class="worldstate">
+  <button class="btn">← 返回主线建模</button>
+  <div>
+    <h1>World State：停车收费争议与同城情绪升温 <span class="hot">WS-20250515-001</span></h1>
+    <p>核心诉求：收费依据透明｜主要情绪：不满 / 质疑｜扩散源：短视频 + 评论｜关键不确定性：原始视频、收费依据、同城代表性。</p>
+  </div>
+  <div class="meta-strip">
+    <span class="meta-pill">观察窗口 24h</span>
+    <span class="meta-pill">置信度 中高</span>
+    <span class="meta-pill">缺口 3</span>
+    <button class="btn">保存推演版本</button>
+  </div>
+</section>
+
+<section class="paths" id="paths"></section>
+
+<main class="main">
+  <section class="left-area">
+    <section class="panel canvas-head">
+      <div><div class="panel-title" style="height:auto;padding:0">回应动作驱动的世界线画布</div><div class="legend"><span><i style="--tone:var(--blue)"></i>信号</span><span><i style="--tone:var(--violet)"></i>情绪</span><span><i style="--tone:var(--amber)"></i>诉求</span><span><i style="--tone:var(--green)"></i>回应</span><span><i style="--tone:var(--red)"></i>破圈/固化</span></div></div>
+      <div class="view-tabs"><button class="active">结构图</button><button>情绪曲线</button><button>扩散路径</button><button>全屏</button></div>
+    </section>
+    <section class="panel canvas">
+      <svg viewBox="0 0 1000 620" preserveAspectRatio="none">
+        <path d="M80 330 C170 210 230 210 310 220" stroke="rgba(47,109,246,.70)" stroke-width="3"/>
+        <path d="M80 330 C170 310 230 310 310 320" stroke="rgba(47,109,246,.45)" stroke-width="2"/>
+        <path d="M310 255 C400 245 455 255 520 280" stroke="rgba(127,99,201,.70)" stroke-width="3"/>
+        <path d="M520 280 C610 230 645 230 720 205" stroke="rgba(24,168,115,.75)" stroke-width="3"/>
+        <path d="M520 280 C610 300 650 300 720 325" stroke="rgba(215,137,37,.75)" stroke-width="3"/>
+        <path d="M520 280 C610 365 660 365 720 445" stroke="rgba(223,75,84,.65)" stroke-width="3"/>
+        <path d="M720 205 C810 170 850 170 930 155" stroke="rgba(24,168,115,.75)" stroke-width="3"/>
+        <path d="M720 325 C810 320 850 320 930 320" stroke="rgba(215,137,37,.75)" stroke-width="3"/>
+        <path d="M720 445 C810 460 850 460 930 465" stroke="rgba(223,75,84,.75)" stroke-width="3"/>
+      </svg>
+      <div class="stage-ribbon"><div class="stage active">当前<span>信号进入主线</span></div><div class="stage active">情绪<span>不满/质疑集中</span></div><div class="stage active">诉求<span>要求解释</span></div><div class="stage">回应<span>动作注入</span></div><div class="stage">扩散<span>同城/跨平台</span></div><div class="stage">结果<span>降温/拉锯/破圈</span></div></div>
+
+      <div class="node selected" style="left:5%;top:47%;--tone:var(--blue)"><span class="kind">信</span><b>短视频与评论升温</b><small>视频18条 / 直播6场；同城讨论占比 78%</small><em>当前</em></div>
+      <div class="node" style="left:26%;top:26%;--tone:var(--violet)"><span class="kind">情</span><b>不满与质疑聚合</b><small>负向情绪 62%，观望下降</small><em>0.62</em></div>
+      <div class="node" style="left:26%;top:47%;--tone:var(--amber)"><span class="kind">诉</span><b>收费依据透明诉求</b><small>要求说明收费标准与反馈渠道</small><em>0.82</em></div>
+      <div class="node" style="left:45%;top:38%;--tone:var(--red)"><span class="kind">缺</span><b>回应缺口扩大</b><small>是否覆盖主要诉求仍不确定</small><em>3项</em></div>
+
+      <div class="injection">
+        <b>处置动作注入点</b>
+        <p>选择或输入回应动作，观察它对情绪、传播速度和破圈概率的影响。</p>
+        <div class="grid"><button>及时回应</button><button>部分回应</button><button>模糊回应</button><button>延迟处理</button></div>
+      </div>
+
+      <div class="node action-node" style="left:68%;top:18%;--tone:var(--green)"><span class="kind">A</span><b>及时回应 + 公开依据</b><small>2小时内公开收费依据并设置反馈窗口</small><div class="impact"><span>情绪 -18%</span><span>扩散 -22%</span><span>破圈 -12%</span><span>信任 +16%</span></div><em>32%</em></div>
+      <div class="node action-node" style="left:68%;top:40%;--tone:var(--amber)"><span class="kind">B</span><b>部分回应 + 持续追问</b><small>说明部分规则，但未覆盖核心诉求</small><div class="impact"><span>情绪 -4%</span><span>扩散 +3%</span><span>破圈 +2%</span><span>信任 +4%</span></div><em>30%</em></div>
+      <div class="node action-node" style="left:68%;top:64%;--tone:var(--red)"><span class="kind">C</span><b>回应缺口 + 责任叙事固化</b><small>只发布“正在核实”，未解释依据</small><div class="impact"><span>情绪 +14%</span><span>扩散 +18%</span><span>破圈 +11%</span><span>信任 -13%</span></div><em>26%</em></div>
+
+      <div class="node" style="left:87%;top:14%;--tone:var(--green)"><span class="kind">降</span><b>情绪降温，进入观望</b><small>同城讨论放缓，诉求转向办理进度</small><em>A</em></div>
+      <div class="node" style="left:87%;top:39%;--tone:var(--amber)"><span class="kind">拉</span><b>低烈度拉锯</b><small>持续追问，但未明显破圈</small><em>B</em></div>
+      <div class="node" style="left:87%;top:64%;--tone:var(--red)"><span class="kind">破</span><b>外部圈层介入，破圈扩散</b><small>从商圈服务问题转向公共服务议题</small><em>D</em></div>
+    </section>
+  </section>
+
+  <aside class="right">
+    <section class="panel diagnosis">
+      <div class="panel-title" style="height:auto;padding:0 0 8px">当前节点诊断 <span>不是最终结论</span></div>
+      <h2>当前处于“同城情绪升温 + 回应缺口观察”阶段</h2>
+      <p>事件还没有进入明确破圈，但短视频和评论已经把“价格不满”转成“是否应该公开收费依据”的主叙事。</p>
+      <div class="diag-grid"><div class="diag"><span>主要情绪</span><b>不满 / 质疑</b></div><div class="diag"><span>主要诉求</span><b>公开依据</b></div><div class="diag"><span>传播源</span><b>短视频 + 评论</b></div><div class="diag"><span>破圈苗头</span><b>58%</b></div></div>
+    </section>
+
+    <section class="panel impact-panel">
+      <div class="panel-title">处置影响预测 <span>动作对路径概率的影响</span></div>
+      <div class="impact-list">
+        <div class="impact-row"><div><b>及时公开收费依据</b><span>A 线“情绪降温”概率上升</span></div><strong class="delta" style="--tone:var(--green);color:var(--green)">+8%</strong></div>
+        <div class="impact-row"><div><b>只发布“正在核实”</b><span>C 线“责任叙事固化”概率上升</span></div><strong class="delta" style="--tone:var(--red);color:var(--red)">+11%</strong></div>
+        <div class="impact-row"><div><b>延迟超过 6 小时</b><span>D 线“外部圈层介入”概率上升</span></div><strong class="delta" style="--tone:var(--red);color:var(--red)">+6%</strong></div>
+      </div>
+    </section>
+
+    <section class="panel variables">
+      <div class="panel-title">关键观察变量 <span>未来 6 小时</span></div>
+      <div class="var-list">
+        <div class="var"><i style="--tone:var(--red)"></i><span>同城负向评论是否继续上升</span><b>高</b></div>
+        <div class="var"><i style="--tone:var(--amber)"></i><span>短视频是否被更多平台搬运</span><b>中高</b></div>
+        <div class="var"><i style="--tone:var(--blue)"></i><span>是否出现媒体 / 大号介入</span><b>中</b></div>
+        <div class="var"><i style="--tone:var(--green)"></i><span>回应是否覆盖主要诉求</span><b>高</b></div>
+      </div>
+    </section>
+
+    <section class="panel pressure">
+      <div class="panel-title">多主体处置压力测试 <span>Agent Council</span></div>
+      <textarea placeholder="输入一个处置动作，例如：2小时内公开收费依据并开设投诉反馈窗口，模拟同城群众、媒体、平台和属地的反应。"></textarea>
+      <div class="agent-grid"><div class="agent">当事群体</div><div class="agent">同城群众</div><div class="agent">媒体/自媒体</div><div class="agent">平台机制</div><div class="agent">属地处置方</div><div class="agent">主管部门</div></div>
+      <div class="action-grid"><button class="primary">模拟各方反应</button><button class="outline">作为假设重跑</button></div>
+    </section>
+  </aside>
+</main>
+
+<footer class="timeline">
+  <button class="play">▶</button>
+  <div class="track"><div class="step active"><span>信号升温<br>11:00</span></div><div class="step active"><span>情绪聚合<br>12:00</span></div><div class="step active"><span>当前节点<br>13:00</span></div><div class="step"><span>回应窗口<br>+2h</span></div><div class="step"><span>扩散观察<br>+6h</span></div><div class="step"><span>后续24h<br>复盘</span></div></div>
+  <div class="bottom-actions"><button class="outline">注入处置动作</button><button class="outline">重跑世界线</button><button class="primary">进入多主体压力测试</button></div>
+</footer>
+</div>
+<script>
+const paths=[
+  ['A','及时回应，情绪降温','32%','↑ 8%','情绪强度下降，扩散速度放缓，破圈概率降低','green',true],
+  ['B','部分回应，持续追问','30%','↑ 3%','同城讨论维持，诉求仍未完全收敛','amber',false],
+  ['C','回应缺口，责任叙事固化','26%','↓ 11%','负向情绪升高，主叙事转向责任归因','red',false],
+  ['D','外部圈层介入，破圈扩散','12%','→ 0%','跨平台传播增强，普通群众关注度上升','violet',false]
+];
+const colors={green:'#18a873',amber:'#d78925',red:'#df4b54',violet:'#7f63c9'};
+document.getElementById('paths').innerHTML=paths.map(p=>`
+  <button class="path-card ${p[6]?'hot':''}" style="--tone:${colors[p[5]]}">
+    <div class="path-top"><span>${p[0]}｜响应路径</span><span>${p[3]}</span></div>
+    <div class="path-title"><strong>${p[2]}</strong><b>${p[1]}</b><span class="trend">${p[3]}</span></div>
+    <p>${p[4]}</p>
+  </button>
+`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+**/*.egg-info/
+**/node_modules/
+**/dist/
+**/tsconfig.tsbuildinfo
+*.db
+.playwright-mcp/
+artifacts/
+cet-city-comments-fix.png
+apps/city-review-*.png

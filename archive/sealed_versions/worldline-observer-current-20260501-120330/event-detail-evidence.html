@@ -1,0 +1,525 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk Event Detail 风险事件详情</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .88);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5b6470;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --violet: #8f63e8;
+      --red: #ef4b5f;
+      --soft: 0 10px 26px rgba(42, 34, 22, .07);
+      --shadow: 0 22px 54px rgba(42, 34, 22, .10);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(47,109,246,.08), transparent 28%),
+        radial-gradient(circle at 72% 18%, rgba(215,137,37,.10), transparent 30%),
+        linear-gradient(180deg, #faf7f0, var(--bg));
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans CN", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+    button, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+    a { text-decoration: none; }
+
+    .app { height: 100dvh; display: grid; grid-template-rows: 58px 1fr; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 290px 1fr 330px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 18px;
+      border-bottom: 1px solid rgba(216,205,188,.86);
+      background: rgba(255,253,247,.72);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; }
+    .brand-mark {
+      width: 25px; height: 25px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: ""; position: absolute; left: 7px; top: 3px; width: 4px; height: 20px;
+      border-radius: 3px; background: white; transform: rotate(42deg);
+    }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs button, .mode-tabs a {
+      min-width: 78px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 15px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      transition: background .25s var(--ease), color .25s var(--ease);
+    }
+    .mode-tabs .active { background: var(--panel-solid); color: var(--ink); box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(760px, 1fr) 390px;
+      gap: 12px;
+      min-height: 0;
+      padding: 12px 14px 14px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.9);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(16px);
+    }
+    .pad { padding: 16px; }
+    .panel-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 13px; font-size: 14px; font-weight: 900; }
+    .panel-title span { color: var(--muted); font-size: 11px; font-weight: 700; }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      min-height: 0;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: start;
+      padding: 18px 20px;
+    }
+    .eyebrow { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 0; font-size: 28px; line-height: 1.1; letter-spacing: 0; }
+    .summary { max-width: 840px; margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .hero-actions { display: flex; gap: 8px; align-items: center; }
+    .primary, .ghost {
+      min-height: 38px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 15px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      font-weight: 900;
+      box-shadow: var(--soft);
+    }
+    .primary { background: var(--ink); color: var(--panel-solid); border-color: var(--ink); }
+    .ghost { background: var(--panel-solid); color: var(--ink); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .metric {
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+    .metric.hot { border-color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid)); }
+    .metric-top { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .metric-value { display: flex; align-items: end; gap: 7px; margin-top: 10px; }
+    .metric-value strong { font-size: 25px; line-height: .95; }
+    .trend { display: inline-flex; align-items: center; min-width: 44px; height: 22px; padding: 0 7px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid)); color: var(--tone); font-size: 11px; font-weight: 900; }
+    .metric p { margin: 7px 0 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 12px;
+      min-height: 0;
+    }
+    .section-grid { display: grid; gap: 12px; min-height: 0; }
+    .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .fact {
+      min-height: 78px;
+      padding: 12px;
+      border: 1px solid rgba(216,205,188,.84);
+      border-radius: 12px;
+      background: rgba(255,253,247,.66);
+    }
+    .fact span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .04em; }
+    .fact b { display: block; margin-top: 6px; font-size: 14px; line-height: 1.35; }
+    .fact p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+    .timeline { display: grid; gap: 8px; }
+    .time-row {
+      display: grid;
+      grid-template-columns: 82px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-top: 1px solid rgba(216,205,188,.78);
+      font-size: 12px;
+    }
+    .time-row:first-child { border-top: 0; }
+    .time-row time { color: var(--muted); font-weight: 900; }
+    .time-row b { font-size: 12px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(47,109,246,.09);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 12px;
+    }
+    .tabs button {
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .tabs button.active { background: var(--ink); color: var(--panel-solid); border-color: var(--ink); }
+
+    .state {
+      min-height: 0;
+      padding: 0 16px 16px;
+    }
+    .state-shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+      height: 100%;
+      min-height: 0;
+    }
+    .state-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 3px; }
+    .state-head b { font-size: 15px; }
+    .state-head span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .state-body { min-height: 0; }
+
+    .evidence-list { display: grid; gap: 8px; }
+    .evidence-row {
+      display: grid;
+      grid-template-columns: 74px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 52px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+      font-size: 12px;
+    }
+    .evidence-row b { color: var(--blue); font-size: 11px; }
+    .evidence-row span { color: var(--muted); line-height: 1.35; }
+    .confidence { color: var(--ink); font-weight: 900; }
+
+    .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .score-card {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+    }
+    .score-card .bar { height: 8px; margin-top: 10px; border-radius: 999px; background: #e6ddcf; overflow: hidden; }
+    .score-card .bar i { display: block; width: var(--w); height: 100%; background: var(--tone); border-radius: inherit; }
+    .score-card span { color: var(--muted); font-size: 11px; font-weight: 900; }
+    .score-card b { display: block; margin-top: 6px; font-size: 18px; }
+    .score-card p { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+    .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .review-item {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+    }
+    .review-item b { display: block; font-size: 13px; }
+    .review-item p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .decision-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .decision-row button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-solid);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .decision-row button.primary-choice { background: var(--ink); color: var(--panel-solid); border-color: var(--ink); }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+      min-height: 0;
+    }
+    .stakeholders { display: grid; gap: 8px; }
+    .stakeholder {
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.68);
+    }
+    .mark { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--tone); color: white; font-size: 12px; font-weight: 900; }
+    .stakeholder b { display: block; font-size: 12px; }
+    .stakeholder span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .stakeholder em { font-style: normal; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .principle {
+      padding: 13px;
+      border: 1px solid rgba(47,109,246,.24);
+      border-radius: 12px;
+      background: rgba(47,109,246,.07);
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    .principle b { display: block; margin-bottom: 6px; color: var(--ink); }
+    .next-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-solid);
+    }
+    .next-card p { margin: 0 0 12px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .next-card a { width: 100%; }
+
+    @media (max-width: 1180px) {
+      body { overflow: auto; }
+      .app { height: auto; min-height: 100dvh; }
+      .workspace, .content { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; height: auto; padding: 12px; }
+      .mode-tabs, .status { justify-self: start; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>RISK EVENT CENTER</span></div>
+      <nav class="mode-tabs" aria-label="Demo navigation">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <button class="active">事件</button>
+        <a href="worldline-observer.html">推演</a>
+      </nav>
+      <div class="status"><b>EVT-20260425-001</b><span>Human review required</span><span class="live-dot"></span></div>
+    </header>
+
+    <section class="workspace">
+      <main class="main">
+        <section class="panel hero">
+          <div>
+            <div class="eyebrow">Risk event detail / same page states</div>
+            <h1>A 街道老旧小区改造争议</h1>
+            <p class="summary">系统把热线、网格、公开讨论、项目材料与历史案例聚合为一个可复核风险事件。该页先解释事件本身，再通过同页状态切换展示证据链、评分拆解与人工复核。</p>
+          </div>
+          <div class="hero-actions">
+            <button class="ghost" data-tab="evidence">查看证据链</button>
+            <a class="primary" href="worldline-observer.html">进入推演</a>
+          </div>
+        </section>
+
+        <section class="metrics" id="metrics"></section>
+
+        <section class="content">
+          <div class="section-grid">
+            <section class="panel pad">
+              <div class="panel-title">事件概览 <span>what happened</span></div>
+              <div class="facts">
+                <div class="fact"><span>当前阶段</span><b>苗头期 / 待复核</b><p>尚未形成线下事件，但已有多源信号异常。</p></div>
+                <div class="fact"><span>影响范围</span><b>3 个小区，约 4200 户</b><p>主要涉及施工扰民、补偿标准与反馈渠道。</p></div>
+                <div class="fact"><span>核心矛盾</span><b>信息不透明与补偿解释不足</b><p>历史投诉未闭环被重新引用。</p></div>
+                <div class="fact"><span>当前建议</span><b>先复核证据，再进入推演</b><p>高风险结论必须保留人工确认。</p></div>
+              </div>
+            </section>
+
+            <section class="panel pad">
+              <div class="panel-title">事件时间线 <span>signal timeline</span></div>
+              <div class="timeline">
+                <div class="time-row"><time>04-18</time><b>旧改施工计划公开后，热线咨询开始上升</b><span class="tag">source</span></div>
+                <div class="time-row"><time>04-20</time><b>网格上报 4 次集中咨询，问题集中在补偿依据</b><span class="tag">field</span></div>
+                <div class="time-row"><time>04-22</time><b>公开讨论出现“补偿不透明”“施工扰民”等稳定关键词</b><span class="tag">public</span></div>
+                <div class="time-row"><time>04-25</time><b>系统合并为潜在群体性风险事件，进入人工复核</b><span class="tag">review</span></div>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel state-shell">
+            <div class="tabs">
+              <button class="active" data-tab="overview">概览</button>
+              <button data-tab="evidence">证据链</button>
+              <button data-tab="score">风险评分</button>
+              <button data-tab="review">人工复核</button>
+            </div>
+            <div class="state" id="state"></div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="side">
+        <section class="panel pad">
+          <div class="panel-title">相关方 <span>stakeholders</span></div>
+          <div class="stakeholders">
+            <div class="stakeholder"><i class="mark" style="--tone:var(--violet)">R</i><div><b>受影响居民</b><span>关注补偿、公平、施工扰民</span></div><em>疑虑 ↑</em></div>
+            <div class="stakeholder"><i class="mark" style="--tone:var(--blue)">S</i><div><b>街道 / 社区</b><span>关注解释口径与反馈压力</span></div><em>承压 ↑</em></div>
+            <div class="stakeholder"><i class="mark" style="--tone:var(--amber)">C</i><div><b>施工方</b><span>关注进度、成本与现场阻力</span></div><em>中性</em></div>
+            <div class="stakeholder"><i class="mark" style="--tone:var(--green)">M</i><div><b>媒体 / 公开讨论</b><span>关注透明度与高风险措辞</span></div><em>放大 ↑</em></div>
+          </div>
+        </section>
+
+        <section class="panel pad">
+          <div class="panel-title">核心判断 <span>not a final decision</span></div>
+          <div class="principle"><b>当前结论</b>系统倾向认为该事件具备进入推演的条件，但不自动认定处置方案。风险概率、证据链和建议动作均需人工复核后生效。</div>
+        </section>
+
+        <section class="panel pad">
+          <div class="panel-title">产品边界 <span>safety boundary</span></div>
+          <div class="principle"><b>不可替代人工决策</b>本页不做个人画像，不追踪具体个人，不自动下发处置。Agent 后续只用于角色立场模拟，不代表真实个人或组织官方立场。</div>
+        </section>
+
+        <section class="next-card">
+          <p>复核通过后，进入世界线推演页，比较不同信息公开、沟通与资源投入方案下的后续可能性。</p>
+          <a class="primary" href="worldline-observer.html">进入世界线推演</a>
+        </section>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    const metrics = [
+      { label: "风险概率", value: "72", unit: "%", trend: "↑ 11%", tone: "amber", tag: "orange", desc: "近 7 日信号共同抬升", hot: true },
+      { label: "影响程度", value: "高", unit: "", trend: "→ 0%", tone: "red", tag: "impact", desc: "约 4200 户潜在相关" },
+      { label: "可控程度", value: "中", unit: "", trend: "↓ 6%", tone: "blue", tag: "control", desc: "取决于解释与反馈机制" },
+      { label: "置信度", value: "81", unit: "%", trend: "↑ 5%", tone: "green", tag: "confidence", desc: "证据覆盖多源但仍需复核" }
+    ];
+
+    const states = {
+      overview: {
+        title: "事件对象",
+        subtitle: "把散乱信号组织成一个可推演、可复核的 Risk Event",
+        html: `
+          <div class="facts">
+            <div class="fact"><span>事件类型</span><b>社区公共项目争议</b><p>老旧小区改造引发补偿、施工与知情权讨论。</p></div>
+            <div class="fact"><span>主要诉求</span><b>公开补偿依据，明确施工安排</b><p>同时要求开放反馈渠道和处理时限。</p></div>
+            <div class="fact"><span>最大矛盾</span><b>政策说明不足 vs 居民可验证诉求</b><p>“符合规定”不足以解释测算依据。</p></div>
+            <div class="fact"><span>下一动作</span><b>查看证据链并人工复核</b><p>复核通过后进入世界线推演。</p></div>
+          </div>`
+      },
+      evidence: {
+        title: "证据链",
+        subtitle: "每个高风险判断都要能回到来源、时间和置信度",
+        html: `
+          <div class="evidence-list">
+            <div class="evidence-row"><b>E-001</b><span>12345 热线：近 7 日相关工单增长 240%，问题集中在补偿依据与施工扰民。</span><em class="confidence">0.86</em></div>
+            <div class="evidence-row"><b>E-014</b><span>网格上报：4 次居民集中咨询，出现“希望统一说明会”的重复诉求。</span><em class="confidence">0.78</em></div>
+            <div class="evidence-row"><b>E-027</b><span>公开讨论：相关讨论 412 条，负面情绪约 67%，关键词“补偿不透明”显著上升。</span><em class="confidence">0.74</em></div>
+            <div class="evidence-row"><b>E-039</b><span>历史案例库：相似项目中，信息公开不足曾导致持续投诉和跨小区扩散。</span><em class="confidence">0.69</em></div>
+            <div class="evidence-row"><b>GAP</b><span>证据缺口：尚缺正式补偿测算说明、施工扰民缓解安排、责任部门回复时限。</span><em class="confidence">review</em></div>
+          </div>`
+      },
+      score: {
+        title: "风险评分拆解",
+        subtitle: "不只给总分，而是解释风险由哪些因子抬升",
+        html: `
+          <div class="score-grid">
+            <div class="score-card"><span>诉求聚集度</span><b>0.76 ↑</b><p>多个小区诉求开始收敛到补偿依据。</p><div class="bar"><i style="--w:76%;--tone:var(--amber)"></i></div></div>
+            <div class="score-card"><span>情绪升温速度</span><b>0.67 ↑</b><p>公开讨论负向表达快速增长。</p><div class="bar"><i style="--w:67%;--tone:var(--red)"></i></div></div>
+            <div class="score-card"><span>利益敏感度</span><b>0.82 ↑</b><p>补偿、公平与施工影响均属于高敏感议题。</p><div class="bar"><i style="--w:82%;--tone:var(--violet)"></i></div></div>
+            <div class="score-card"><span>可控程度</span><b>0.54 ↓</b><p>仍可通过解释型公告、咨询会和反馈台账降险。</p><div class="bar"><i style="--w:54%;--tone:var(--blue)"></i></div></div>
+          </div>`
+      },
+      review: {
+        title: "人工复核",
+        subtitle: "系统给出建议，责任人决定是否进入推演",
+        html: `
+          <div class="review-grid">
+            <div class="review-item"><b>建议复核重点</b><p>补偿测算依据是否可公开，历史投诉是否有闭环材料，施工扰民安排是否明确。</p></div>
+            <div class="review-item"><b>复核后动作</b><p>确认风险后进入推演沙盘；若证据不足，退回观察并补充数据源。</p></div>
+            <div class="review-item"><b>系统建议</b><p>建议维持橙色预警，优先生成“解释型公告 + 咨询会”推演方案。</p></div>
+            <div class="review-item"><b>安全边界</b><p>不得自动处置，不得追踪个人；高风险结论必须人工确认。</p></div>
+          </div>
+          <div class="decision-row">
+            <button class="primary-choice">确认并进入推演</button>
+            <button>调整风险等级</button>
+            <button>退回观察</button>
+          </div>`
+      }
+    };
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+
+    function renderMetrics() {
+      $("#metrics").innerHTML = metrics.map(m => `
+        <div class="metric ${m.hot ? "hot" : ""}" style="--tone:var(--${m.tone})">
+          <div class="metric-top"><span>${m.label}</span><span>${m.tag}</span></div>
+          <div class="metric-value"><strong>${m.value}${m.unit}</strong><span class="trend">${m.trend}</span></div>
+          <p>${m.desc}</p>
+        </div>
+      `).join("");
+    }
+
+    function setTab(tab) {
+      const state = states[tab];
+      $("#state").innerHTML = `
+        <div class="state-shell">
+          <div class="state-head"><b>${state.title}</b><span>${state.subtitle}</span></div>
+          <div class="state-body">${state.html}</div>
+        </div>
+      `;
+      $$("[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab));
+    }
+
+    function init() {
+      renderMetrics();
+      setTab("overview");
+      $$("[data-tab]").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
+    }
+
+    init();
+  </script>
+  <script src="mock/mock-api.js"></script>
+  <script src="iran-narrative-overrides.js?v=20260428-goldenpath1"></script>
+  <script src="golden-path.js?v=20260428-goldenpath1"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+{
+  "sources": [
+    {
+      "id": "local_news_public",
+      "name": "Local News Public Web",
+      "platform": "news",
+      "access_mode": "public_web",
+      "status": "active",
+      "trust": 0.82,
+      "notes": "Public news pages with original URL retention."
+    },
+    {
+      "id": "gov_notice_public",
+      "name": "Government Notice Public Web",
+      "platform": "gov_notice",
+      "access_mode": "public_web",
+      "status": "active",
+      "trust": 0.9,
+      "notes": "Public government notices and response anchors."
+    },
+    {
+      "id": "douyin_authorized_export",
+      "name": "Douyin Authorized Export",
+      "platform": "douyin",
+      "access_mode": "authorized_export",
+      "status": "active",
+      "trust": 0.68,
+      "notes": "Authorized account export or contracted platform data."
+    },
+    {
+      "id": "weibo_partner_feed",
+      "name": "Weibo Partner Feed",
+      "platform": "weibo",
+      "access_mode": "third_party_contract",
+      "status": "active",
+      "trust": 0.72,
+      "notes": "Contracted or authorized social signal feed."
+    },
+    {
+      "id": "wechat_official_authorized",
+      "name": "WeChat Official Account Authorized",
+      "platform": "wechat_official",
+      "access_mode": "official_api",
+      "status": "active",
+      "trust": 0.76,
+      "notes": "Authorized official-account content or internal article archive."
+    },
+    {
+      "id": "manual_live_upload",
+      "name": "Manual Live Clip Upload",
+      "platform": "manual",
+      "access_mode": "manual_upload",
+      "status": "active",
+      "trust": 0.64,
+      "notes": "Human uploaded screenshots, live clips, OCR, ASR, and notes."
+    },
+    {
+      "id": "xiaohongshu_unapproved",
+      "name": "Xiaohongshu Unapproved Scrape",
+      "platform": "xiaohongshu",
+      "access_mode": "private_or_bypassed",
+      "status": "active",
+      "trust": 0.2,
+      "notes": "Blocked in P0 unless an official authorization or data contract exists."
+    },
+    {
+      "id": "private_forum_login",
+      "name": "Private Login Forum",
+      "platform": "local_forum",
+      "access_mode": "private_or_bypassed",
+      "status": "active",
+      "trust": 0.2,
+      "notes": "Blocked because it requires bypassed login/session collection."
+    }
+  ]
+}

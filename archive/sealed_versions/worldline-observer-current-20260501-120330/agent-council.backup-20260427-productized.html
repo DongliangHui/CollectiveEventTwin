@@ -1,0 +1,432 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · Agent Council</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    button, a, textarea { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app { height: 100dvh; min-height: 900px; display: grid; grid-template-rows: 56px minmax(0, 1fr) 110px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 450px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark { width: 25px; height: 25px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #7bd0ff); position: relative; }
+    .brand-mark::after { content: ""; position: absolute; left: 7px; top: 3px; width: 4px; height: 20px; border-radius: 3px; background: white; transform: rotate(42deg); }
+    .mode-tabs { justify-self: center; display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 16px; background: #e8e1d6; }
+    .mode-tabs a { min-width: 64px; height: 34px; display: grid; place-items: center; padding: 0 14px; border-radius: 12px; color: var(--muted); font-weight: 800; }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .workspace {
+      min-height: 0;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr) 380px;
+      gap: 10px;
+      padding: 10px 14px;
+      overflow: hidden;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .pad { padding: 14px; }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 900; }
+    .title span, .title a { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .title a { color: var(--ink); padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
+
+    .left { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; }
+    .mainline h1 { margin: 0; font-size: 18px; line-height: 1.22; }
+    .mainline p { margin: 9px 0 0; color: var(--muted); font-size: 12px; line-height: 1.48; }
+    .timebar { display: grid; gap: 10px; margin-top: 14px; }
+    .timebar div { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; align-items: center; font-size: 11px; color: var(--muted); font-weight: 800; }
+    .timebar i { height: 5px; border-radius: 999px; background: #e5dbcd; overflow: hidden; }
+    .timebar i::before { content: ""; display: block; width: var(--v); height: 100%; background: var(--tone); border-radius: inherit; }
+    .state-list { display: grid; gap: 8px; overflow: hidden; }
+    .state-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,253,247,.66); font-size: 12px; }
+    .state-row span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .evidence-list { display: grid; gap: 7px; }
+    .evidence-list div { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.7); font-size: 11px; color: var(--muted); font-weight: 800; }
+    .evidence-list b { color: var(--ink); }
+
+    .center { display: grid; grid-template-rows: 100px 56px minmax(0, 1fr); gap: 10px; min-height: 0; height: 100%; overflow: hidden; }
+    .agent-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 10px; }
+    .agent-card {
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      padding: 8px 6px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.7);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 900;
+      transition: background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease);
+    }
+    .agent-card:hover, .agent-card.active { border-color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, var(--panel-solid)); transform: translateY(-1px); }
+    .avatar { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 10px; background: color-mix(in srgb, var(--tone) 16%, white); color: var(--tone); font-size: 12px; font-weight: 900; }
+    .agent-card small { color: var(--tone); font-size: 10px; font-weight: 900; }
+    .round-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; }
+    .round-tabs button { border: 1px solid var(--line); border-radius: 999px; background: rgba(255,253,247,.68); min-height: 34px; color: var(--muted); font-size: 12px; font-weight: 900; }
+    .round-tabs button.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .meeting {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) 58px;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .dialogue { min-height: 0; overflow: hidden; padding: 8px 14px 4px; }
+    .statement {
+      display: grid;
+      grid-template-columns: 118px 1fr 198px 54px;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(216,205,188,.78);
+      font-size: 12px;
+    }
+    .speaker { display: flex; align-items: center; gap: 8px; font-weight: 900; }
+    .speaker i { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 10px; background: color-mix(in srgb, var(--tone) 16%, white); color: var(--tone); font-style: normal; }
+    .statement p { margin: 0; color: var(--muted); line-height: 1.42; }
+    .impact-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .impact-tags span { min-height: 24px; padding: 4px 7px; border-radius: 8px; background: color-mix(in srgb, var(--tone) 10%, var(--panel-solid)); color: var(--tone); font-size: 11px; font-weight: 900; }
+    .statement time { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .round-summary { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin: 0 14px 8px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.72); color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .primary-btn, .outline-btn { min-height: 34px; display: inline-grid; place-items: center; padding: 0 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel-solid); font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .primary-btn { background: var(--ink); border-color: var(--ink); color: white; }
+
+    .right { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; }
+    .conflict-card { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.68); }
+    .conflict-card b { display: block; font-size: 13px; margin-bottom: 8px; }
+    .conflict-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .prob-list { display: grid; gap: 9px; }
+    .prob-row { display: grid; grid-template-columns: 78px 1fr 52px; gap: 8px; align-items: center; font-size: 11px; font-weight: 900; color: var(--muted); }
+    .bar { height: 6px; border-radius: 999px; background: #e7ddd0; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: var(--v); background: var(--tone); border-radius: inherit; transition: width .3s var(--ease); }
+    .stance-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .stance { padding: 8px 6px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.68); text-align: center; }
+    .stance span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .stance b { display: block; margin-top: 5px; color: var(--tone); font-size: 13px; }
+    .next-list { display: grid; gap: 7px; }
+    .next-list div { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,253,247,.68); font-size: 11px; font-weight: 800; color: var(--muted); }
+    .next-list b { color: var(--ink); }
+
+    .stress {
+      display: grid;
+      grid-template-columns: 1.1fr 3fr 390px;
+      gap: 10px;
+      padding: 0 14px 10px;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .hypothesis { display: grid; grid-template-rows: auto 1fr auto; gap: 8px; }
+    textarea { width: 100%; resize: none; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.78); outline: none; font-size: 12px; line-height: 1.35; }
+    .test-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .test-card { padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.68); text-align: left; }
+    .test-card b { display: block; font-size: 12px; line-height: 1.35; }
+    .test-card p { margin: 5px 0; color: var(--muted); font-size: 10px; line-height: 1.25; }
+    .test-card span { display: block; color: var(--tone); font-size: 11px; font-weight: 900; }
+    .final-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: end; }
+    .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 14px); min-width: 280px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,247,.96); box-shadow: var(--soft); opacity: 0; pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); font-size: 12px; font-weight: 800; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="data-hub.html">数据</a>
+        <a href="mainline-builder.html">主线</a>
+        <a href="worldline-observer.html">推演</a>
+        <a class="active" href="agent-council.html">会议</a>
+        <a href="decision-brief.html">汇报</a>
+      </nav>
+      <div class="status"><span>会议轮次 <strong id="roundStatus">1/4</strong></span><span>参与 Agent <strong>7 个</strong></span><i class="live-dot"></i></div>
+    </header>
+
+    <main class="workspace">
+      <aside class="left">
+        <section class="panel pad mainline">
+          <div class="title">当前主线与节点 <a href="worldline-observer.html">回到推演</a></div>
+          <h1>城市更新 / 老旧小区改造补偿争议</h1>
+          <p>当前节点：群体不满升级，线下聚集风险。会议目标是模拟多方主体反应，判断支点变化，并决定是否注入世界线重跑。</p>
+          <div class="timebar">
+            <div style="--v:72%;--tone:var(--red)"><span>T+72h</span><i></i><b>长期高压</b></div>
+            <div style="--v:51%;--tone:var(--amber)"><span>透明度</span><i></i><b>不足</b></div>
+            <div style="--v:63%;--tone:var(--red)"><span>外溢风险</span><i></i><b>升温</b></div>
+          </div>
+        </section>
+        <section class="panel pad">
+          <div class="title">关键支点状态 <span>当前</span></div>
+          <div class="state-list" id="stateList"></div>
+        </section>
+        <section class="panel pad">
+          <div class="title">输入证据 <span>68 条</span></div>
+          <div class="evidence-list" id="evidenceList"></div>
+        </section>
+      </aside>
+
+      <section class="center">
+        <section class="panel agent-strip" id="agentStrip"></section>
+        <section class="panel round-tabs" id="roundTabs"></section>
+        <section class="panel meeting">
+          <div class="dialogue" id="dialogue"></div>
+          <div class="round-summary">
+            <span id="roundSummary">本轮将收集各方初始反应，并把影响标签写入右侧变化面板。</span>
+            <button class="primary-btn" id="nextRound">进入下一轮</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="right">
+        <section class="panel pad">
+          <div class="title">演变变化面板 <a href="#" id="rerunBtn">重新分析</a></div>
+          <div class="conflict-card">
+            <b>当前最大矛盾</b>
+            <p id="conflictText">补偿透明度不足与居民公平预期之间出现落差，模糊回应会强化二次解读。</p>
+          </div>
+          <div class="title" style="margin-top:12px">分支概率变化 <span>相对初始</span></div>
+          <div class="prob-list" id="probList"></div>
+          <div class="title" style="margin-top:12px">主体态度变化 <span>当前轮次</span></div>
+          <div class="stance-grid" id="stanceGrid"></div>
+        </section>
+        <section class="panel pad">
+          <div class="title">支点变化 Top5 <span>影响来源</span></div>
+          <div class="next-list" id="pivotList"></div>
+        </section>
+        <section class="panel pad">
+          <div class="title">下一步建议 <span>可执行</span></div>
+          <div class="next-list" id="nextList"></div>
+        </section>
+      </aside>
+    </main>
+
+    <section class="stress">
+      <section class="panel pad hypothesis">
+        <div class="title">假设压力测试 <span>用户输入</span></div>
+        <textarea id="hypothesisInput">如果 24 小时内发布 FAQ，并明确补偿测算依据与沟通时间表，会怎样？</textarea>
+        <button class="primary-btn" id="runHypothesis">运行压力测试</button>
+      </section>
+      <section class="panel pad">
+        <div class="title">假设方案库 <span>观察各方反应与概率变化</span></div>
+        <div class="test-grid" id="testGrid"></div>
+      </section>
+      <section class="panel pad final-actions">
+        <button class="primary-btn" id="injectBtn">将结果注入世界线并重跑</button>
+        <a class="outline-btn" href="decision-brief.html">生成推演汇报</a>
+        <a class="outline-btn" href="worldline-observer.html">回到世界线画布</a>
+        <button class="outline-btn" id="saveBtn">保存会议</button>
+      </section>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const colors = { blue: "#2f6df6", green: "#18a873", amber: "#d78925", red: "#df4b54", violet: "#7f63c9" };
+    const agents = [
+      { id: "resident", name: "居民群体", code: "民", tone: "violet", stance: "核心关切", delta: "-0.08" },
+      { id: "street", name: "街道/社区", code: "街", tone: "green", stance: "执行压力", delta: "-0.07" },
+      { id: "department", name: "主管部门", code: "管", tone: "blue", stance: "政策合规", delta: "-0.01" },
+      { id: "company", name: "施工方/企业", code: "企", tone: "amber", stance: "工期成本", delta: "-0.06" },
+      { id: "media", name: "媒体/自媒体", code: "媒", tone: "red", stance: "传播扩散", delta: "-0.12" },
+      { id: "grid", name: "网格/基层", code: "网", tone: "amber", stance: "现场反馈", delta: "-0.09" },
+      { id: "market", name: "市场观察者", code: "市", tone: "blue", stance: "外溢风险", delta: "-0.02" }
+    ];
+    const rounds = [
+      { id: 0, name: "第1轮 各方初始反应", summary: "整体呈现“短期降温但长期升温风险上升”的特征，核心矛盾集中在补偿透明度不足。", conflict: "补偿透明度不足与居民公平预期之间出现落差，模糊回应会强化二次解读。", probs: [28, 26, 32, 14] },
+      { id: 1, name: "第2轮 外部信号介入", summary: "媒体和社区群放大模糊口径，居民信任进一步下降，C 线概率上升。", conflict: "外部传播把局部诉求解释为规则不透明，信息落差成为主要扩散点。", probs: [24, 27, 37, 12] },
+      { id: 2, name: "第3轮 方案响应动作", summary: "若发布具体 FAQ 与沟通时间表，A/B 分支回升，组织化表达概率下降。", conflict: "行动是否足够具体，决定居民是否从观望转向继续追问。", probs: [35, 30, 24, 11] },
+      { id: 3, name: "第4轮 概率变化与总结", summary: "会议建议把“FAQ + 小范围说明会 + 统一口径”作为首要干预组合，并写入世界线重跑。", conflict: "最小有效动作是把补偿测算依据、沟通窗口和执行责任同时公开。", probs: [41, 28, 21, 10] }
+    ];
+    const statements = {
+      resident: "模糊回应无法解决我们的核心问题，尤其是补偿依据不清。部分居民会观望，但核心质疑者会继续追问口径和时间表。",
+      street: "短期内可以降低现场压力，但如果没有明确时间表，解释成本会在明天增加，需要尽快统一口径。",
+      department: "尚未完成最终测算，贸然发布会有政策合规风险，但模糊回应会被认为态度消极。",
+      company: "担心持续争议导致停工或舆情升级，工期和成本压力增加，希望尽快明确边界。",
+      media: "模糊回应容易被二次解读，适合做话题，会推动更多爆料和对比内容。",
+      grid: "今天已经收到更多线下询问，建议尽快组织小范围说明或 FAQ，避免误解扩大。",
+      market: "区域舆情上升会影响投资信心和区域形象，关注政府后续动作是否及时、透明。"
+    };
+    const hypotheses = [
+      { title: "发布 FAQ 并明确时间表", desc: "当日内公开补偿测算依据、申诉入口和处理时限。", impact: "A线 +12%，C线 -8%", tone: "green" },
+      { title: "只发布正在核实", desc: "回应存在但缺少具体承诺，等待情绪下降。", impact: "C线 +11%，信任 -0.08", tone: "red" },
+      { title: "组织居民代表小范围说明", desc: "把争议从线上扩散转回线下沟通。", impact: "B线 +6%，C线 -5%", tone: "green" },
+      { title: "统一各部门口径", desc: "避免使用“正在核实”等模糊表述。", impact: "误读风险 -9%", tone: "blue" },
+      { title: "延迟到下周回应", desc: "等待补偿数据完全核定后再发布。", impact: "二次升温 +13%", tone: "amber" }
+    ];
+    const pivots = [
+      ["居民信任", "-0.08", "模糊回应未解释补偿口径"],
+      ["舆情扩散风险", "+0.10", "媒体二次解读概率上升"],
+      ["补偿公平感", "-0.06", "规则解释不足"],
+      ["信息透明度", "-0.05", "回应未提供新信息"],
+      ["街道沟通能力", "-0.02", "需要重新组织说明"]
+    ];
+    const evidence = [["12345 热线咨询", "32 条"], ["社区群讨论摘要", "18 条"], ["网络上报", "6 条"], ["项目公告/文件", "7 条"], ["历史类似案例", "5 条"]];
+    const states = [["居民信任", "0.42 ↓"], ["信息透明度", "0.51 ↓"], ["补偿公平感", "0.38 ↓"], ["街道沟通能力", "0.55 →"], ["施工扰民预期", "0.47 →"], ["舆情扩散风险", "0.63 ↑"]];
+    let round = 0;
+    let activeAgent = "resident";
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+
+    function toast(text) {
+      $("#toast").textContent = text;
+      $("#toast").classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => $("#toast").classList.remove("show"), 1800);
+    }
+
+    function renderAgents() {
+      $("#agentStrip").innerHTML = agents.map(a => `
+        <button class="agent-card ${activeAgent === a.id ? "active" : ""}" data-agent="${a.id}" style="--tone:${colors[a.tone]}">
+          <span class="avatar">${a.code}</span>
+          <span>${a.name}</span>
+          <small>${a.stance}</small>
+        </button>
+      `).join("");
+      $$(".agent-card").forEach(btn => btn.addEventListener("click", () => {
+        activeAgent = btn.dataset.agent;
+        renderAgents();
+        renderDialogue();
+      }));
+    }
+
+    function renderRounds() {
+      $("#roundTabs").innerHTML = rounds.map((r, i) => `<button class="${round === i ? "active" : ""}" data-round="${i}">${r.name}</button>`).join("");
+      $$("#roundTabs button").forEach(btn => btn.addEventListener("click", () => {
+        round = Number(btn.dataset.round);
+        renderAll();
+      }));
+      $("#roundStatus").textContent = `${round + 1}/4`;
+    }
+
+    function renderDialogue() {
+      const ordered = activeAgent ? agents.filter(a => a.id === activeAgent).concat(agents.filter(a => a.id !== activeAgent)) : agents;
+      $("#dialogue").innerHTML = ordered.map((a, index) => `
+        <div class="statement" style="--tone:${colors[a.tone]}">
+          <div class="speaker"><i>${a.code}</i><span>${a.name}<br><small>Agent</small></span></div>
+          <p>${statements[a.id]}</p>
+          <div class="impact-tags"><span>${round >= 1 ? "传播影响" : "初始反应"}</span><span>${a.stance}</span></div>
+          <time>10:${32 + index}</time>
+        </div>
+      `).join("");
+    }
+
+    function renderRight() {
+      const r = rounds[round];
+      $("#conflictText").textContent = r.conflict;
+      $("#roundSummary").textContent = r.summary;
+      const labels = ["A 短期缓和", "B 低烈度拉锯", "C 二次升温", "D 外部叠加"];
+      const tones = ["green", "blue", "red", "amber"];
+      $("#probList").innerHTML = labels.map((label, i) => `
+        <div class="prob-row" style="--tone:${colors[tones[i]]};--v:${r.probs[i]}%">
+          <span>${label}</span><span class="bar"><i></i></span><b>${r.probs[i]}%</b>
+        </div>
+      `).join("");
+      $("#stanceGrid").innerHTML = agents.slice(0, 4).map(a => `<div class="stance" style="--tone:${colors[a.tone]}"><span>${a.name}</span><b>${a.delta}</b></div>`).join("");
+      $("#pivotList").innerHTML = pivots.map((p, i) => `<div><span>${i + 1}</span><b>${p[0]}</b><span>${p[1]}</span></div>`).join("");
+      $("#nextList").innerHTML = [
+        ["1", "发布解释型 FAQ", "缓和优先"],
+        ["2", "组织小范围说明会", "缓和优先"],
+        ["3", "统一各部门口径", "降低误解"],
+        ["4", "监测自媒体转发倾向", "风险管控"]
+      ].map(x => `<div><span>${x[0]}</span><b>${x[1]}</b><span>${x[2]}</span></div>`).join("");
+    }
+
+    function renderStatic() {
+      $("#stateList").innerHTML = states.map(s => `<div class="state-row"><b>${s[0]}</b><span>${s[1]}</span></div>`).join("");
+      $("#evidenceList").innerHTML = evidence.map(e => `<div><b>${e[0]}</b><span>${e[1]}</span></div>`).join("");
+      $("#testGrid").innerHTML = hypotheses.map((h, i) => `
+        <button class="test-card" data-test="${i}" style="--tone:${colors[h.tone]}">
+          <b>${h.title}</b><p>${h.desc}</p><span>${h.impact}</span>
+        </button>
+      `).join("");
+      $$(".test-card").forEach(btn => btn.addEventListener("click", () => {
+        const h = hypotheses[Number(btn.dataset.test)];
+        $("#hypothesisInput").value = h.desc;
+        toast(`已载入假设：${h.title}`);
+      }));
+    }
+
+    function renderAll() {
+      renderAgents();
+      renderRounds();
+      renderDialogue();
+      renderRight();
+    }
+
+    $("#nextRound").addEventListener("click", () => {
+      round = Math.min(round + 1, rounds.length - 1);
+      renderAll();
+      toast(`已进入 ${rounds[round].name}`);
+    });
+    $("#runHypothesis").addEventListener("click", () => {
+      round = $("#hypothesisInput").value.includes("FAQ") ? 3 : 1;
+      renderAll();
+      toast("压力测试已完成，右侧概率与支点变化已刷新");
+    });
+    $("#injectBtn").addEventListener("click", () => {
+      toast("Agent Council 结果已写入世界线重跑条件");
+    });
+    $("#saveBtn").addEventListener("click", () => toast("会议记录已保存，可在汇报页引用"));
+    $("#rerunBtn").addEventListener("click", event => {
+      event.preventDefault();
+      renderRight();
+      toast("已根据当前轮次重新分析变化面板");
+    });
+
+    renderStatic();
+    renderAll();
+  </script>
+</body>
+</html>

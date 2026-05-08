@@ -1,0 +1,15 @@
+{
+  "caseId": "iran-war-escalation",
+  "points": [
+    { "id": "tehran", "name": "德黑兰", "type": "capital", "coordinates": [51.389, 35.6892], "regionId": "iran-core" },
+    { "id": "hormuz", "name": "霍尔木兹海峡", "type": "chokepoint", "coordinates": [56.25, 26.55], "regionId": "hormuz" },
+    { "id": "red-sea", "name": "红海航线", "type": "shipping-route", "coordinates": [39.9, 20.2], "regionId": "red-sea" },
+    { "id": "north-israel", "name": "以色列北部", "type": "frontline", "coordinates": [35.35, 33.1], "regionId": "north-israel" },
+    { "id": "south-lebanon", "name": "黎巴嫩南部", "type": "frontline", "coordinates": [35.55, 33.3], "regionId": "south-lebanon" },
+    { "id": "yemen", "name": "也门胡塞控制区", "type": "proxy-area", "coordinates": [44.2, 15.4], "regionId": "yemen-houthi" },
+    { "id": "qatar-base", "name": "Al Udeid 空军基地", "type": "gulf-base", "coordinates": [51.314, 25.117], "regionId": "gulf-bases" },
+    { "id": "bahrain-fifth-fleet", "name": "巴林第五舰队", "type": "gulf-base", "coordinates": [50.601, 26.208], "regionId": "gulf-bases" },
+    { "id": "fordow", "name": "Fordow 核设施", "type": "nuclear-site", "coordinates": [50.995, 34.884], "regionId": "iran-nuclear" },
+    { "id": "yazd", "name": "Yazd 铀加工设施", "type": "nuclear-site", "coordinates": [54.367, 31.897], "regionId": "iran-nuclear" }
+  ]
+}

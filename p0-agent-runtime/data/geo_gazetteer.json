@@ -1,0 +1,28 @@
+{
+  "places": [
+    {
+      "name": "Qinglan School",
+      "region_id": "campus-core",
+      "lon": 120.1348,
+      "lat": 30.2825
+    },
+    {
+      "name": "Education Bureau",
+      "region_id": "authority-response",
+      "lon": 120.1686,
+      "lat": 30.2767
+    },
+    {
+      "name": "City Center Plaza",
+      "region_id": "city-center",
+      "lon": 120.1551,
+      "lat": 30.2741
+    },
+    {
+      "name": "Local Forum District",
+      "region_id": "online-spread",
+      "lon": 120.1472,
+      "lat": 30.2891
+    }
+  ]
+}

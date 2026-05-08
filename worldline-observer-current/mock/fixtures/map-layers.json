@@ -1,0 +1,409 @@
+{
+  "caseId": "campus-death-high-intensity",
+  "config": {
+    "center": [120.1551, 30.2741],
+    "zoom": 12.4,
+    "minZoom": 10,
+    "maxZoom": 16,
+    "maxBounds": [[120.06, 30.20], [120.27, 30.35]],
+    "attribution": "OpenStreetMap contributors"
+  },
+  "riskAreas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "area-campus-core",
+        "properties": {
+          "featureId": "area-campus-core",
+          "regionId": "campus-core",
+          "featureType": "risk-area",
+          "title": "青澜中学校园与校门口高敏区",
+          "summary": "死亡事实、家属到校、现场视频和围观停留叠加，情绪先于事实细节形成高压窗口。",
+          "mainlineId": "ML-001",
+          "riskScore": 91,
+          "signalCount": 486,
+          "eventCount": 12,
+          "tone": "red",
+          "sentiment": "追问/焦虑 62%",
+          "spreadDensity": "高密度同城扩散",
+          "breakoutProbability": "58%",
+          "responseGap": "证据清单、家属核验与下一次通报时间不清",
+          "confidence": "0.82"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1348, 30.2825] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-family-gathering",
+        "properties": {
+          "featureId": "area-family-gathering",
+          "regionId": "family-gathering",
+          "featureType": "risk-area",
+          "title": "家属沟通与现场秩序点",
+          "summary": "家属代表、亲友与围观人群在校门外形成持续停留，现场沟通空间和分流方式决定情绪能否先降温。",
+          "mainlineId": "ML-001",
+          "riskScore": 84,
+          "signalCount": 126,
+          "eventCount": 7,
+          "tone": "red",
+          "sentiment": "问责/不安 68%",
+          "spreadDensity": "线下聚集向线上回传",
+          "breakoutProbability": "46%",
+          "responseGap": "固定沟通窗口和可记录纪要尚未明确",
+          "confidence": "0.78"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1329, 30.2809] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-online-spread",
+        "properties": {
+          "featureId": "area-online-spread",
+          "regionId": "online-spread",
+          "featureType": "risk-area",
+          "title": "同城短视频传播节点",
+          "summary": "同城短视频、本地论坛和媒体账号共同推高“学校压事”叙事，评论区开始把待核验线索当作事实传播。",
+          "mainlineId": "ML-001",
+          "riskScore": 79,
+          "signalCount": 214,
+          "eventCount": 9,
+          "tone": "amber",
+          "sentiment": "质疑/求证 57%",
+          "spreadDensity": "平台间搬运加速",
+          "breakoutProbability": "62%",
+          "responseGap": "短视频关键画面缺少时间、地点和完整上下文",
+          "confidence": "0.69"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1551, 30.2741] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-authority-response",
+        "properties": {
+          "featureId": "area-authority-response",
+          "regionId": "authority-response",
+          "featureType": "risk-area",
+          "title": "主管部门回应窗口",
+          "summary": "主管部门介入具备缓释作用，但需要同步给出调查主体、证据范围、家属联系人和下一次更新时间。",
+          "mainlineId": "ML-001",
+          "riskScore": 73,
+          "signalCount": 84,
+          "eventCount": 4,
+          "tone": "amber",
+          "sentiment": "观望/追问 49%",
+          "spreadDensity": "回应节点被多平台引用",
+          "breakoutProbability": "34%",
+          "responseGap": "联合调查时间表与家属核验机制不完整",
+          "confidence": "0.91"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1686, 30.2767] }
+      },
+      {
+        "type": "Feature",
+        "id": "area-privacy-risk",
+        "properties": {
+          "featureId": "area-privacy-risk",
+          "regionId": "privacy-risk",
+          "featureType": "risk-area",
+          "title": "隐私与不实搬运风险区",
+          "summary": "疑似未成年人姓名、照片、班级信息和旧视频被二次搬运，可能造成二次伤害并污染事实判断。",
+          "mainlineId": "ML-001",
+          "riskScore": 81,
+          "signalCount": 97,
+          "eventCount": 6,
+          "tone": "violet",
+          "sentiment": "担忧/制止 53%",
+          "spreadDensity": "跨圈层搬运",
+          "breakoutProbability": "49%",
+          "responseGap": "平台降权、删除、辟谣和证据留存任务未闭环",
+          "confidence": "0.64"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1624, 30.2912] }
+      }
+    ]
+  },
+  "eventPoints": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "evt-death-fact",
+        "properties": {
+          "featureId": "evt-death-fact",
+          "regionId": "campus-core",
+          "featureType": "event-point",
+          "title": "学生校内坠亡事实形成",
+          "time": "2026-05-02 09:12",
+          "source": "现场处置 / 报警记录待核",
+          "mainlineId": "ML-001",
+          "riskScore": 96,
+          "summary": "死亡事实确认后，公众情绪会先寻找责任解释，低热度不等于低风险。",
+          "tone": "red",
+          "sentiment": "震惊/追问 71%",
+          "spreadDensity": "核心点高密",
+          "breakoutProbability": "57%",
+          "responseGap": "事发前后时间线未公开",
+          "confidence": "0.86"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1348, 30.2825] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-family-arrival",
+        "properties": {
+          "featureId": "evt-family-arrival",
+          "regionId": "family-gathering",
+          "featureType": "event-point",
+          "title": "家属到校追问事实与责任",
+          "time": "2026-05-02 09:51",
+          "source": "现场回传 / 家属陈述",
+          "mainlineId": "ML-001",
+          "riskScore": 88,
+          "summary": "家属诉求集中在监控、报警急救时间线和校方是否提前知情，线下聚集风险开始形成。",
+          "tone": "red",
+          "sentiment": "问责/焦虑 69%",
+          "spreadDensity": "现场回传密集",
+          "breakoutProbability": "45%",
+          "responseGap": "家属核验安排不清",
+          "confidence": "0.78"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1329, 30.2809] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-first-video",
+        "properties": {
+          "featureId": "evt-first-video",
+          "regionId": "online-spread",
+          "featureType": "event-point",
+          "title": "校门口沟通片段被同城账号二次剪辑",
+          "time": "2026-05-02 10:22",
+          "source": "同城短视频 / 评论区",
+          "mainlineId": "ML-001",
+          "riskScore": 86,
+          "summary": "42 秒视频播放 18.6w、评论 4,280，标题和评论把情绪推向“学校是否隐瞒”。",
+          "tone": "red",
+          "sentiment": "追问/焦虑 64%",
+          "spreadDensity": "短视频高密搬运",
+          "breakoutProbability": "62%",
+          "responseGap": "画面上下文与拍摄时间未核",
+          "confidence": "0.71"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1551, 30.2741] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-live-waiting",
+        "properties": {
+          "featureId": "evt-live-waiting",
+          "regionId": "family-gathering",
+          "featureType": "event-point",
+          "title": "家属等待沟通直播切片",
+          "time": "2026-05-02 10:47",
+          "source": "快手直播 / 回放切片",
+          "mainlineId": "ML-001",
+          "riskScore": 82,
+          "summary": "回放 12 分钟、围观 2.3w，评论焦点集中在“下一次谁来说明、什么时候说明”。",
+          "tone": "amber",
+          "sentiment": "等待/追问 58%",
+          "spreadDensity": "直播围观升温",
+          "breakoutProbability": "52%",
+          "responseGap": "沟通时间表不清",
+          "confidence": "0.74"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1404, 30.2778] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-official-response",
+        "properties": {
+          "featureId": "evt-official-response",
+          "regionId": "authority-response",
+          "featureType": "event-point",
+          "title": "首轮回应被质疑笼统",
+          "time": "2026-05-02 12:05",
+          "source": "校方回应 / 本地媒体",
+          "mainlineId": "ML-001",
+          "riskScore": 74,
+          "summary": "回应未明确证据保全、调查主体和下一次更新时间，信任真空继续扩大。",
+          "tone": "amber",
+          "sentiment": "观望/质疑 55%",
+          "spreadDensity": "政务回应被引用",
+          "breakoutProbability": "38%",
+          "responseGap": "调查机制与证据清单不足",
+          "confidence": "0.88"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1686, 30.2767] }
+      },
+      {
+        "type": "Feature",
+        "id": "evt-privacy-leak",
+        "properties": {
+          "featureId": "evt-privacy-leak",
+          "regionId": "privacy-risk",
+          "featureType": "event-point",
+          "title": "疑似学生隐私与旧视频被搬运",
+          "time": "2026-05-02 11:18",
+          "source": "论坛 / 群聊截图 / 平台风控",
+          "mainlineId": "ML-001",
+          "riskScore": 81,
+          "summary": "疑似未成年人姓名、照片和班级信息被转发，需要触发平台协同处置。",
+          "tone": "violet",
+          "sentiment": "担忧/制止 53%",
+          "spreadDensity": "跨平台搬运",
+          "breakoutProbability": "49%",
+          "responseGap": "隐私处置闭环未完成",
+          "confidence": "0.64"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1624, 30.2912] }
+      }
+    ]
+  },
+  "spreadRoutes": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "route-campus-to-city",
+        "properties": {
+          "featureId": "route-campus-to-city",
+          "regionId": "online-spread",
+          "featureType": "spread-route",
+          "title": "校门口现场视频至同城传播路径",
+          "summary": "现场视频从校门口进入同城流量池，再被本地账号二次剪辑和评论放大。",
+          "mainlineId": "ML-001",
+          "status": "热度上升",
+          "relatedRoute": "Local Video Propagation",
+          "tone": "red",
+          "sentiment": "追问/质疑",
+          "spreadDensity": "高",
+          "breakoutProbability": "62%",
+          "responseGap": "画面上下文未核",
+          "confidence": "0.72"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[120.1348, 30.2825], [120.1442, 30.2798], [120.1551, 30.2741], [120.1710, 30.2695]] }
+      },
+      {
+        "type": "Feature",
+        "id": "route-campus-to-authority",
+        "properties": {
+          "featureId": "route-campus-to-authority",
+          "regionId": "authority-response",
+          "featureType": "response-route",
+          "title": "家属诉求至主管部门回应路径",
+          "summary": "家属诉求从现场沟通、属地协调进入主管部门回应窗口，可信动作决定是否降温。",
+          "mainlineId": "ML-001",
+          "status": "回应待补强",
+          "relatedRoute": "Response Credibility",
+          "tone": "amber",
+          "sentiment": "等待/观望",
+          "spreadDensity": "中高",
+          "breakoutProbability": "34%",
+          "responseGap": "核验机制不完整",
+          "confidence": "0.88"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[120.1329, 30.2809], [120.1510, 30.2780], [120.1686, 30.2767]] }
+      },
+      {
+        "type": "Feature",
+        "id": "route-city-to-national",
+        "properties": {
+          "featureId": "route-city-to-national",
+          "regionId": "online-spread",
+          "featureType": "breakout-route",
+          "title": "同城议题至全国校园安全议题路径",
+          "summary": "若出现强证据、家属长视频或媒体 KOL 介入，事件可能从同城扩散到全国公共议题。",
+          "mainlineId": "ML-001",
+          "status": "可能外溢",
+          "relatedRoute": "Narrative Escalation",
+          "tone": "violet",
+          "sentiment": "担忧/问责",
+          "spreadDensity": "中",
+          "breakoutProbability": "58%",
+          "responseGap": "事实表与隐私边界需同步公开",
+          "confidence": "0.66"
+        },
+        "geometry": { "type": "LineString", "coordinates": [[120.1551, 30.2741], [120.1810, 30.2890], [120.2120, 30.3130]] }
+      }
+    ]
+  },
+  "placeLabels": {
+    "type": "FeatureCollection",
+    "features": [
+      { "type": "Feature", "id": "label-school", "properties": { "title": "青澜中学" }, "geometry": { "type": "Point", "coordinates": [120.1348, 30.2825] } },
+      { "type": "Feature", "id": "label-gate", "properties": { "title": "校门口沟通点" }, "geometry": { "type": "Point", "coordinates": [120.1329, 30.2809] } },
+      { "type": "Feature", "id": "label-authority", "properties": { "title": "主管部门回应窗口" }, "geometry": { "type": "Point", "coordinates": [120.1686, 30.2767] } },
+      { "type": "Feature", "id": "label-platform", "properties": { "title": "同城传播节点" }, "geometry": { "type": "Point", "coordinates": [120.1551, 30.2741] } },
+      { "type": "Feature", "id": "label-media", "properties": { "title": "本地媒体账号" }, "geometry": { "type": "Point", "coordinates": [120.1710, 30.2695] } }
+    ]
+  },
+  "impactAreas": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "impact-narrative",
+        "properties": {
+          "featureId": "impact-narrative",
+          "regionId": "online-spread",
+          "featureType": "impact",
+          "title": "责任叙事固化风险",
+          "summary": "事实调查尚未完成，但“学校知情不作为”正在成为部分评论的默认解释。",
+          "mainlineId": "ML-001",
+          "riskScore": 88,
+          "signalCount": 168,
+          "tone": "red",
+          "sentiment": "质疑/问责 61%",
+          "spreadDensity": "高",
+          "breakoutProbability": "58%",
+          "responseGap": "事实表与时间线尚未补齐",
+          "confidence": "0.73"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1775, 30.2862] }
+      },
+      {
+        "type": "Feature",
+        "id": "impact-evidence-gap",
+        "properties": {
+          "featureId": "impact-evidence-gap",
+          "regionId": "campus-core",
+          "featureType": "impact",
+          "title": "关键证据缺口",
+          "summary": "监控、报警记录、家校沟通记录和学生群截图上下文仍未形成统一索引。",
+          "mainlineId": "ML-001",
+          "riskScore": 82,
+          "signalCount": 73,
+          "tone": "amber",
+          "sentiment": "追问/观望 55%",
+          "spreadDensity": "中高",
+          "breakoutProbability": "44%",
+          "responseGap": "证据保全范围不清",
+          "confidence": "0.76"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1420, 30.2860] }
+      },
+      {
+        "type": "Feature",
+        "id": "impact-privacy",
+        "properties": {
+          "featureId": "impact-privacy",
+          "regionId": "privacy-risk",
+          "featureType": "impact",
+          "title": "未成年人保护压力",
+          "summary": "疑似涉事学生和逝者隐私被转发，平台协同和内容降权需要与证据留存并行。",
+          "mainlineId": "ML-001",
+          "riskScore": 81,
+          "signalCount": 97,
+          "tone": "violet",
+          "sentiment": "担忧/制止 53%",
+          "spreadDensity": "跨圈层",
+          "breakoutProbability": "49%",
+          "responseGap": "平台处置任务未闭环",
+          "confidence": "0.64"
+        },
+        "geometry": { "type": "Point", "coordinates": [120.1624, 30.2912] }
+      }
+    ]
+  }
+}

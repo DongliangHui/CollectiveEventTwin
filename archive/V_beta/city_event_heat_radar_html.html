@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 城市事件热度态势</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --panel: rgba(255, 253, 247, .93);
+      --panel-solid: #fffdf7;
+      --ink: #111820;
+      --muted: #64707e;
+      --faint: #98a1ad;
+      --line: #d9cebd;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --violet: #7f63c9;
+      --cyan: #009fb7;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --strong: 0 18px 48px rgba(42, 34, 22, .12);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 76% 8%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #fbf8f1 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    button, a, input, select { font: inherit; color: inherit; text-decoration: none; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app {
+      height: 100vh;
+      min-width: 1440px;
+      min-height: 900px;
+      display: grid;
+      grid-template-rows: 56px 70px 84px minmax(0, 1fr) 130px 48px;
+      gap: 0;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 300px 1fr 520px;
+      align-items: center;
+      gap: 16px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216, 205, 188, .92);
+      background: rgba(255, 253, 247, .78);
+      backdrop-filter: blur(16px);
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px; height: 25px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative; flex: none;
+    }
+    .brand-mark::after {
+      content: ""; position: absolute; left: 7px; top: 3px; width: 4px; height: 20px;
+      border-radius: 3px; background: white; transform: rotate(42deg);
+    }
+    .brand small { display: block; color: var(--muted); letter-spacing: 0; font-size: 12px; margin-top: 2px; }
+    .mode-tabs {
+      justify-self: center; display: flex; gap: 4px; padding: 4px;
+      border: 1px solid var(--line); border-radius: 16px; background: #e8e1d6;
+    }
+    .mode-tabs a, .mode-tabs button {
+      min-width: 86px; height: 34px; display: grid; place-items: center; padding: 0 15px;
+      border-radius: 12px; color: var(--muted); font-weight: 900; font-size: 13px;
+    }
+    .mode-tabs .active { background: var(--ink); color: #fffdf7; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 14px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24, 168, 115, .14); }
+    .icon-btn { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-solid); }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(216,205,188,.72);
+      background: rgba(255,253,247,.62);
+      backdrop-filter: blur(10px);
+    }
+    .select, .search, .toggle-group, .tool-btn {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-solid);
+      box-shadow: 0 4px 14px rgba(42, 34, 22, .04);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .select { display: flex; align-items: center; gap: 8px; padding: 0 12px; }
+    .search { display: flex; align-items: center; gap: 9px; padding: 0 12px; max-width: 520px; }
+    .search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-weight: 800; }
+    .toggle-group { display: flex; align-items: center; gap: 4px; padding: 3px; background: #eee7da; }
+    .toggle-group button { min-width: 74px; height: 28px; border-radius: 9px; color: var(--muted); font-size: 12px; font-weight: 900; }
+    .toggle-group button.active { background: var(--ink); color: white; }
+    .tool-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; }
+    .switch { width: 38px; height: 21px; border-radius: 999px; background: var(--ink); padding: 3px; display: inline-flex; align-items: center; justify-content: flex-end; }
+    .switch i { width: 15px; height: 15px; background: white; border-radius: 50%; display: block; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      padding: 8px 16px;
+    }
+    .kpi {
+      min-width: 0;
+      position: relative;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 68px;
+      padding: 10px 12px;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .kpi-icon {
+      width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%;
+      background: color-mix(in srgb, var(--tone) 16%, var(--panel-solid)); color: var(--tone); font-size: 20px; font-weight: 950;
+    }
+    .kpi label { display: block; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .kpi strong { display: inline-block; margin-top: 5px; font-size: 25px; line-height: 1; letter-spacing: -.03em; }
+    .kpi small { display: inline-block; margin-left: 6px; color: var(--tone); font-size: 12px; font-weight: 900; }
+    .spark { width: 72px; height: 28px; }
+    .spark path { fill: none; stroke: var(--tone); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 230px minmax(680px, 1fr) 380px;
+      gap: 10px;
+      padding: 0 16px 8px;
+      overflow: hidden;
+    }
+    .panel {
+      min-width: 0; min-height: 0;
+      border: 1px solid rgba(216, 205, 188, .92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+    .panel-header { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 8px; }
+    .panel-title { display: flex; align-items: baseline; gap: 8px; min-width: 0; font-size: 14px; font-weight: 900; }
+    .panel-title span { color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .more { min-height: 24px; display: inline-grid; place-items: center; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); color: var(--ink); font-size: 11px; font-weight: 900; }
+
+    .layer-panel { display: grid; grid-template-rows: auto 1fr auto; }
+    .layer-scroll { padding: 0 12px 12px; overflow: auto; scrollbar-width: none; }
+    .layer-scroll::-webkit-scrollbar { display: none; }
+    .layer-section { padding: 10px 0 12px; border-top: 1px solid rgba(216,205,188,.65); }
+    .layer-section:first-child { border-top: 0; padding-top: 2px; }
+    .layer-section b { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--ink); font-size: 12px; }
+    .layer-section b a { color: var(--blue); font-size: 11px; }
+    .layer-row {
+      width: 100%; min-height: 28px; display: grid; grid-template-columns: 18px 18px 1fr auto; gap: 7px; align-items: center;
+      padding: 3px 0; color: var(--muted); font-size: 12px; font-weight: 900; text-align: left;
+    }
+    .layer-row .box { width: 14px; height: 14px; display: grid; place-items: center; border-radius: 4px; background: var(--blue); color: white; font-size: 10px; }
+    .layer-row.off { opacity: .48; }
+    .layer-row.off .box { background: #d6cec2; color: transparent; }
+    .layer-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tone); }
+    .layer-row small { color: var(--ink); font-size: 11px; }
+    .heat-legend { padding: 12px; border-top: 1px solid rgba(216,205,188,.65); }
+    .heat-bar { height: 9px; border-radius: 999px; background: linear-gradient(90deg, #4f9aff, #63d88c, #f5d45c, #ff8b3d, #ef4444); margin: 8px 0 4px; }
+    .heat-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; font-weight: 900; }
+
+    .map-panel { display: grid; grid-template-rows: 40px minmax(0, 1fr) 150px; overflow: hidden; }
+    .map-tabs { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid rgba(216,205,188,.72); background: rgba(255,253,247,.88); }
+    .map-tabs select, .map-tabs button { min-height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-solid); color: var(--muted); font-size: 11px; font-weight: 900; }
+    .map-tabs button.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+    .map-canvas-wrap { position: relative; min-height: 0; overflow: hidden; background: #eee8dc; }
+    .map-canvas {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(24deg, transparent 0 48%, rgba(120,95,78,.22) 49% 50%, transparent 51%),
+        linear-gradient(118deg, transparent 0 47%, rgba(91,112,126,.16) 48% 49%, transparent 50%),
+        linear-gradient(0deg, rgba(255,255,255,.12), rgba(255,255,255,.12)),
+        #efe9df;
+      background-size: 190px 130px, 220px 150px, auto, auto;
+    }
+    .map-canvas::before {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 51% 49%, rgba(239,68,68,.28), transparent 11%),
+        radial-gradient(circle at 39% 46%, rgba(215,137,37,.20), transparent 13%),
+        radial-gradient(circle at 64% 38%, rgba(127,99,201,.19), transparent 11%),
+        radial-gradient(circle at 72% 66%, rgba(24,168,115,.16), transparent 13%),
+        radial-gradient(circle at 29% 66%, rgba(47,109,246,.17), transparent 12%);
+      pointer-events: none;
+    }
+    .road { position: absolute; height: 3px; background: rgba(139, 95, 72, .34); border-radius: 99px; transform-origin: left center; }
+    .road.thin { height: 1px; background: rgba(98,112,126,.24); }
+    .river { position: absolute; left: -8%; top: 53%; width: 120%; height: 74px; transform: rotate(-9deg); border-top: 2px solid rgba(47,109,246,.18); border-bottom: 2px solid rgba(47,109,246,.15); background: rgba(47,109,246,.055); }
+    .district { position: absolute; color: rgba(68,73,80,.62); font-size: 13px; font-weight: 900; }
+    .map-note {
+      position: absolute; top: 12px; right: 12px; z-index: 6; width: 170px; padding: 10px;
+      border: 1px solid rgba(216,205,188,.9); border-radius: 12px; background: rgba(255,253,247,.88); box-shadow: var(--soft);
+      font-size: 11px; color: var(--muted); font-weight: 800;
+    }
+    .map-note b { display: block; color: var(--ink); margin-bottom: 7px; }
+    .map-mode { position: absolute; right: 12px; bottom: 12px; z-index: 6; display: flex; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,247,.88); box-shadow: var(--soft); }
+    .map-mode button { width: 68px; height: 46px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-solid); color: var(--muted); font-size: 11px; font-weight: 900; }
+    .map-mode button.active { border-color: rgba(47,109,246,.36); color: var(--blue); background: #ecf3ff; }
+    .zoom-controls { position: absolute; right: 16px; top: 42%; z-index: 6; display: grid; gap: 6px; }
+    .zoom-controls button { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-solid); font-weight: 900; box-shadow: var(--soft); }
+
+    .pin { position: absolute; z-index: 4; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; transform: translate(-50%, -50%); background: var(--tone); color: white; border: 3px solid rgba(255,255,255,.92); box-shadow: 0 0 0 12px color-mix(in srgb, var(--tone) 18%, transparent), 0 16px 30px rgba(42,34,22,.18); font-weight: 950; cursor: pointer; }
+    .pin::after { content: ""; position: absolute; inset: -12px; border: 1px solid color-mix(in srgb, var(--tone) 68%, transparent); border-radius: inherit; animation: pulse 2.2s var(--ease) infinite; }
+    .pin.cluster { width: 42px; height: 42px; font-size: 14px; }
+    .pin.active { transform: translate(-50%, -50%) scale(1.16); outline: 5px solid color-mix(in srgb, var(--tone) 16%, transparent); }
+    .pin-label { position: absolute; left: 32px; top: -2px; width: max-content; max-width: 150px; padding: 4px 7px; border: 1px solid rgba(216,205,188,.82); border-radius: 9px; background: rgba(255,253,247,.94); color: var(--ink); box-shadow: var(--soft); font-size: 11px; font-weight: 900; }
+    @keyframes pulse { 0% { transform: scale(.74); opacity: .6; } 70%, 100% { transform: scale(1.95); opacity: 0; } }
+
+    .detail-pop {
+      position: absolute; z-index: 7; right: 210px; top: 88px; width: 300px;
+      border: 1px solid rgba(216,205,188,.92); border-radius: 14px; background: rgba(255,253,247,.96); box-shadow: var(--strong); overflow: hidden;
+    }
+    .detail-pop header { padding: 12px; border-bottom: 1px solid rgba(216,205,188,.72); }
+    .detail-pop h3 { margin: 0; font-size: 15px; line-height: 1.25; }
+    .detail-pop .body { padding: 10px 12px 12px; display: grid; gap: 8px; }
+    .kv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .kv { padding: 8px; border: 1px solid rgba(216,205,188,.74); border-radius: 9px; background: rgba(250,247,240,.72); }
+    .kv label { display: block; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .kv b { display: block; margin-top: 5px; font-size: 13px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { min-height: 22px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 999px; background: rgba(216,205,188,.24); color: var(--muted); font-size: 11px; font-weight: 900; }
+    .pop-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+    .pop-actions button { min-height: 30px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-solid); font-size: 11px; font-weight: 900; }
+    .pop-actions button.primary { background: var(--blue); color: white; border-color: var(--blue); }
+
+    .timeline-panel { border-top: 1px solid rgba(216,205,188,.72); background: rgba(255,253,247,.88); }
+    .timeline-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 2px; }
+    .timeline-head b { font-size: 13px; }
+    .timeline-head span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .timeline-track { position: relative; height: 36px; margin: 4px 14px 0; border-bottom: 1px solid var(--line); }
+    .tl-dot { position: absolute; bottom: -4px; width: 6px; height: 6px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 15%, transparent); }
+    .timeline-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 8px 12px 12px; }
+    .tl-card { min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); font-size: 11px; font-weight: 900; cursor: pointer; }
+    .tl-card.active { border-color: var(--red); background: rgba(223,75,84,.06); }
+    .tl-card b { display: block; margin-bottom: 5px; font-size: 12px; }
+    .tl-card span { color: var(--muted); font-weight: 800; }
+
+    .right-stack { display: grid; grid-template-rows: 1fr 1fr 1fr; gap: 10px; min-height: 0; }
+    .rank-list, .video-list, .monitor-list { padding: 0 12px 12px; overflow: auto; scrollbar-width: none; }
+    .rank-list::-webkit-scrollbar, .video-list::-webkit-scrollbar, .monitor-list::-webkit-scrollbar { display: none; }
+    .rank-tabs { display: flex; gap: 6px; }
+    .rank-tabs button { min-height: 24px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-solid); color: var(--muted); font-size: 11px; font-weight: 900; }
+    .rank-tabs button.active { background: #ecf3ff; color: var(--blue); border-color: rgba(47,109,246,.32); }
+    .rank-row { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; min-height: 45px; border-top: 1px solid rgba(216,205,188,.72); font-size: 12px; }
+    .rank-row:first-child { border-top: 0; }
+    .rank-no { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; color: white; background: var(--tone); font-weight: 950; }
+    .rank-title b { display: block; font-size: 12px; line-height: 1.25; }
+    .rank-title span { display: block; color: var(--muted); margin-top: 3px; font-size: 10px; font-weight: 800; }
+    .rank-score { text-align: right; font-weight: 950; color: var(--tone); }
+    .rank-score small { display: block; color: var(--red); font-size: 10px; }
+
+    .video-item { display: grid; grid-template-columns: 108px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(216,205,188,.72); }
+    .video-item:first-child { border-top: 0; }
+    .thumb {
+      height: 62px; border-radius: 10px; position: relative; overflow: hidden; background:
+        linear-gradient(135deg, rgba(47,109,246,.28), rgba(20,24,29,.08)), linear-gradient(45deg, #a9b6b7, #f1dfc2);
+      border: 1px solid var(--line);
+    }
+    .thumb::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 35% 32%, rgba(255,255,255,.65), transparent 16%), linear-gradient(150deg, transparent 55%, rgba(223,75,84,.32)); }
+    .live-badge { position: absolute; right: 6px; top: 6px; z-index: 2; height: 18px; padding: 0 6px; border-radius: 5px; background: var(--red); color: white; font-size: 10px; font-weight: 950; }
+    .video-info b { display: block; font-size: 12px; line-height: 1.25; }
+    .video-info span { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.35; font-weight: 800; }
+
+    .emotion-card { display: grid; grid-template-columns: 115px 1fr; gap: 12px; padding: 0 12px 12px; }
+    .donut { width: 110px; height: 110px; border-radius: 50%; background: conic-gradient(var(--red) 0 62%, var(--amber) 62% 83%, var(--green) 83% 92%, var(--blue) 92%); display: grid; place-items: center; }
+    .donut-inner { width: 70px; height: 70px; border-radius: 50%; background: var(--panel-solid); display: grid; place-items: center; text-align: center; font-weight: 950; color: var(--red); font-size: 25px; }
+    .stance-list { display: grid; gap: 8px; align-content: center; }
+    .stance-row { display: grid; grid-template-columns: 58px 1fr 42px; gap: 8px; align-items: center; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .mini-bar { height: 7px; border-radius: 999px; background: #ece3d6; overflow: hidden; }
+    .mini-bar i { display: block; width: var(--v); height: 100%; background: var(--tone); }
+    .monitor-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(216,205,188,.72); font-size: 12px; }
+    .monitor-row:first-child { border-top: 0; }
+    .monitor-icon { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid)); color: var(--tone); font-weight: 950; }
+    .monitor-row b { display: block; font-size: 12px; }
+    .monitor-row span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .badge { min-height: 20px; display: inline-flex; align-items: center; padding: 0 7px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 13%, var(--panel-solid)); color: var(--tone); border: 1px solid color-mix(in srgb, var(--tone) 30%, var(--line)); font-size: 10px; font-weight: 950; white-space: nowrap; }
+
+    .bottom-grid { min-height: 0; display: grid; grid-template-columns: 1.08fr 1.08fr .9fr 1.28fr 1.14fr; gap: 10px; padding: 0 16px 8px; }
+    .mini-panel { padding: 10px 12px; }
+    .mini-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: 950; }
+    .mini-title a { color: var(--muted); font-size: 11px; }
+    .compact-row { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; min-height: 22px; align-items: center; font-size: 11px; }
+    .compact-row b { font-size: 11px; }
+    .compact-row span { color: var(--muted); }
+    .compact-row strong { color: var(--tone); }
+    .platform-dots { display: flex; gap: 4px; flex-wrap: wrap; }
+    .platform-dots i { width: 16px; height: 16px; display: grid; place-items: center; border-radius: 50%; background: var(--tone); color: white; font-size: 9px; font-style: normal; font-weight: 950; }
+    .source-row { display: grid; grid-template-columns: 20px 1fr auto auto; gap: 8px; align-items: center; min-height: 22px; color: var(--muted); font-size: 11px; font-weight: 900; }
+
+    .ticker { margin: 0 16px 10px; min-height: 38px; display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; padding: 7px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,247,.86); box-shadow: var(--soft); }
+    .ticker b { font-size: 13px; }
+    .ticker-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .ticker-item { min-width: 0; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 900; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .ticker-item em { font-style: normal; color: var(--red); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><div><span>WORLDLINE OBSERVER</span><small>城市态势感知</small></div></div>
+      <nav class="mode-tabs">
+        <a class="active" href="#">城市态势感知</a>
+        <a href="#">主题态势</a>
+        <a href="#">数据 / 信号</a>
+        <a href="#">主线建模</a>
+        <a href="#">世界线推演</a>
+        <a href="#">多主体研判</a>
+        <a href="#">汇报输出</a>
+      </nav>
+      <div class="status"><span class="live-dot"></span><span>实时更新</span><span>2025-05-15 11:23:45</span><button class="icon-btn">🔔</button><button class="icon-btn">?</button><button class="icon-btn">👤</button></div>
+    </header>
+
+    <section class="toolbar">
+      <div class="select">📍 杭州市 ▾</div>
+      <div class="toggle-group"><button class="active">近24小时</button><button>近7天</button><button>近30天</button></div>
+      <div class="search">🔎 <input placeholder="搜索事件、地点、话题、关键词..." /></div>
+      <div class="tool-btn">AI 趋势观察 <span class="badge" style="--tone:var(--violet)">Beta</span></div>
+      <div class="tool-btn">数据源状态：<strong style="color:var(--green)">在线 36/38</strong></div>
+      <div class="tool-btn">自动刷新 <span class="switch"><i></i></span></div>
+    </section>
+
+    <section class="kpi-row" id="kpiRow"></section>
+
+    <main class="workspace">
+      <aside class="panel layer-panel">
+        <div class="panel-header"><div class="panel-title">图层控制</div><button class="more">收起</button></div>
+        <div class="layer-scroll">
+          <div class="layer-section"><b>事件类型 <a>全选</a></b><div id="eventLayers"></div></div>
+          <div class="layer-section"><b>数据源 <a>全选</a></b><div id="sourceLayers"></div></div>
+          <div class="layer-section"><b>地图图层</b><div id="mapLayers"></div></div>
+        </div>
+        <div class="heat-legend"><b style="font-size:12px">热度强度图例</b><div class="heat-bar"></div><div class="heat-labels"><span>低</span><span>高</span></div></div>
+      </aside>
+
+      <section class="panel map-panel">
+        <div class="map-tabs"><select><option>事件类型 · 全部</option></select><button class="active">全部事件</button><button>热点事件</button><button>升温事件</button><button>视频/直播事件</button><button>我关注的</button></div>
+        <div class="map-canvas-wrap">
+          <div class="map-canvas"></div><div class="river"></div>
+          <div id="roads"></div><div id="districts"></div><div id="pins"></div>
+          <div class="map-note"><b>热度强度</b><div class="heat-bar"></div><p>圆点大小 = 事件聚合数量<br>颜色 = 热度强度<br>点击聚合点查看详情</p></div>
+          <div class="detail-pop" id="eventDetail"></div>
+          <div class="zoom-controls"><button>+</button><button>⌂</button><button>−</button></div>
+          <div class="map-mode"><button class="active">地图</button><button>卫星</button><button>热力</button></div>
+        </div>
+        <div class="timeline-panel"><div class="timeline-head"><b>城市事件时间线 <span>（近24小时）</span></b><span>全部类型 ▾　□ 仅看高热　□ 仅看苗头事件</span></div><div class="timeline-track" id="timelineTrack"></div><div class="timeline-cards" id="timelineCards"></div></div>
+      </section>
+
+      <aside class="right-stack">
+        <section class="panel"><div class="panel-header"><div class="panel-title">当前热度榜 <span>实时</span></div><button class="more">更多 ›</button></div><div class="rank-list"><div class="rank-tabs"><button class="active">综合热度</button><button>同城讨论升温</button><button>传播速度</button><button>视频/直播</button></div><div id="hotRanks"></div></div></section>
+        <section class="panel"><div class="panel-header"><div class="panel-title">视频 / 直播热点 <span>实时</span></div><button class="more">更多 ›</button></div><div class="video-list" id="videoList"></div></section>
+        <section class="panel"><div class="panel-header"><div class="panel-title">同城情绪与立场 <span>近24小时</span></div><button class="more">更多 ›</button></div><div class="emotion-card"><div class="donut"><div class="donut-inner">-62%<span style="display:block;font-size:11px;color:var(--muted)">负向</span></div></div><div class="stance-list"><div class="stance-row"><span>负面/不满</span><div class="mini-bar"><i style="--v:62%;--tone:var(--red)"></i></div><b>62%</b></div><div class="stance-row"><span>中立/观望</span><div class="mini-bar"><i style="--v:26%;--tone:var(--amber)"></i></div><b>26%</b></div><div class="stance-row"><span>正面/支持</span><div class="mini-bar"><i style="--v:9%;--tone:var(--green)"></i></div><b>9%</b></div><div class="stance-row"><span>不确定</span><div class="mini-bar"><i style="--v:3%;--tone:var(--blue)"></i></div><b>3%</b></div></div></div><div class="monitor-list" id="monitorList"></div></section>
+      </aside>
+    </main>
+
+    <section class="bottom-grid">
+      <div class="panel mini-panel"><div class="mini-title">新增高热事件 <a>更多›</a></div><div id="newHot"></div></div>
+      <div class="panel mini-panel"><div class="mini-title">传播速度榜 <a>更多›</a></div><div id="speedList"></div></div>
+      <div class="panel mini-panel"><div class="mini-title">破圈苗头 <a>更多›</a></div><div id="breakoutList"></div></div>
+      <div class="panel mini-panel"><div class="mini-title">多平台传播事件 <a>更多›</a></div><div id="platformList"></div></div>
+      <div class="panel mini-panel"><div class="mini-title">数据源状态 <a>更多›</a></div><div id="sourceStatus"></div></div>
+    </section>
+
+    <section class="ticker"><b>实时预警</b><div class="ticker-list"><div class="ticker-item">🔥 11:20 某商圈停车收费引发吐槽，10分钟内上升 <em>215%</em></div><div class="ticker-item">⚠️ 11:18 同城负向情绪连续2小时上升</div><div class="ticker-item">📹 11:15 检测到“维权聚集”相关视频热度上升</div><div class="ticker-item">🟠 11:10 3个平台传播路径正在形成</div></div></section>
+  </div>
+
+  <script>
+    const colors = { blue:'#2f6df6', green:'#18a873', amber:'#d78925', red:'#df4b54', violet:'#7f63c9', cyan:'#009fb7' };
+    const kpis = [
+      ['事件总量','2,846','较昨日 +18%','📄','blue'],['新增事件','638','较昨日 +23%','✚','green'],['当前最高热度','86,520','12:08 某商圈停车事件','🔥','red'],['视频/直播数量','1,264','较昨日 +35%','🎥','violet'],['同城讨论量','328,560','较昨日 +42%','💬','amber'],['多平台扩散事件','176','较昨日 152','⌘','green'],['破圈苗头事件','21','较昨日 16','🎯','red']
+    ];
+    const eventLayers = [['民生服务',986,'blue'],['交通出行',512,'green'],['城市管理',428,'red'],['突发事件',216,'amber'],['市场经营',198,'blue'],['社会生活',186,'violet'],['其他',320,'cyan']];
+    const sourceLayers = [['新闻媒体',128,'blue'],['微博',896,'red'],['微信公众号',732,'green'],['抖音',1264,'cyan'],['快手',498,'amber'],['小红书',356,'red'],['本地论坛/贴吧',289,'violet'],['12345热线',156,'blue'],['网格员上报',87,'green'],['视频监控(摘要)',54,'blue']];
+    const mapLayers = [['事件热力图',80,'blue'],['事件聚合点',0,'red'],['视频/直播点',0,'violet'],['传播路径',0,'amber'],['同城讨论热区',0,'green'],['区域边界',0,'blue']];
+    const pins = [
+      ['156',51,45,'red','某商圈停车收费引发吐槽'],['102',50,58,'red','业主群集中投诉'],['165',56,70,'red','同城讨论热区'],['88',66,41,'red','地铁线路拥挤争议'],['77',78,46,'red','直播围观升温'],['39',76,56,'blue','学校门口交通混乱'],['35',47,29,'blue','赛事活动聚集'],['39',34,70,'blue','居民服务讨论'],['3',27,36,'blue','社区服务点'],['3',30,58,'violet','短视频热议'],['12',63,80,'violet','直播点'],['',40,52,'green','现场反馈'],['',70,68,'green','本地论坛集中讨论'],['',38,39,'amber','投诉升温'],['',59,35,'amber','经营纠纷'],['',46,64,'cyan','视频源'],['',73,29,'cyan','直播源']
+    ];
+    const hotRanks = [
+      ['某商圈停车收费引发吐槽','拱墅区 · 武林商圈','86,520','+136%','red'],['地铁5号线拥挤严重','滨江区 · 江陵路站','58,760','+98%','amber'],['某小区物业停水停电问题','余杭区 · 闲林街道','48,321','+72%','blue'],['学校门口交通混乱','上城区 · 某中学','32,845','+65%','amber'],['临平某工地噪音扰民','临平区 · 南苑街道','26,189','+54%','violet'],['菜市场食品安全讨论','萧山区 · 市心路','18,932','+48%','green'],['西湖边游客拥挤排队时间长','西湖区 · 苏堤','17,663','+42%','amber'],['某小区电动车充电桩不足','钱塘区 · 下沙街道','15,892','+38%','cyan']
+    ];
+    const videos = [
+      ['武林商圈停车场现场直播','抖音直播 · 武林商圈','1.2w人观看','持续28分钟'],['地铁5号线拥挤现场','快手 · 江陵路站','8,732播放','12分钟前'],['小区业主维权现场视频','视频号 · 拱墅区','6,221播放','25分钟前'],['学校门口交通混乱','小红书 · 某中学','3,421播放','38分钟前']
+    ];
+    const monitors = [
+      ['物业纠纷类话题正在向公共服务类扩散','上升','#df4b54'],['从同城向周边城市扩散中','中等','#d78925'],['从行业圈层向普通公众扩散','关注','#2f6df6']
+    ];
+    const timeline = [
+      ['10:32','某商圈停车收费引发吐槽','拱墅区 · 武林商圈','热度 86,520','负向 61%','red'],['10:28','地铁5号线拥挤严重','滨江区 · 江陵路站','热度 58,760','负向 72%','amber'],['10:25','小区停水停电问题','余杭区 · 闲林街道','热度 48,321','负向 58%','blue'],['10:21','学校门口交通混乱','上城区 · 某中学','热度 32,845','负向 65%','amber'],['10:18','工地噪音扰民','临平区 · 南苑街道','热度 26,189','负向 54%','violet'],['10:15','超市食品安全讨论','萧山区 · 市心路','热度 18,932','负向 48%','green']
+    ];
+    const sources = [['新闻媒体','128','5分钟前','blue'],['微博','896','实时','red'],['微信公众号','732','1分钟前','green'],['抖音','1,264','实时','cyan'],['快手','498','2分钟前','amber'],['小红书','356','1分钟前','red'],['本地论坛','289','5分钟前','violet'],['12345热线','156','10分钟前','blue'],['网格员上报','87','3分钟前','green'],['视频监控(摘要)','54','30秒前','blue']];
+
+    function spark(color){ return `<svg class="spark" viewBox="0 0 80 30"><path style="--tone:${color}" d="M2 24 C12 20 16 21 24 15 S38 18 45 10 S56 13 64 7 S72 10 78 3"/></svg>` }
+    document.getElementById('kpiRow').innerHTML = kpis.map(k=>`<div class="kpi" style="--tone:${colors[k[4]]}"><div class="kpi-icon">${k[3]}</div><div><label>${k[0]}</label><strong>${k[1]}</strong><small>${k[2]}</small></div>${spark(colors[k[4]])}</div>`).join('');
+    function layerHtml(arr){ return arr.map(x=>`<button class="layer-row"><span class="box">✓</span><span class="dot" style="--tone:${colors[x[2]]};background:${colors[x[2]]}"></span><span>${x[0]}</span><small>${x[1]||''}</small></button>`).join('') }
+    eventLayers && (document.getElementById('eventLayers').innerHTML = layerHtml(eventLayers));
+    sourceLayers && (document.getElementById('sourceLayers').innerHTML = layerHtml(sourceLayers));
+    mapLayers && (document.getElementById('mapLayers').innerHTML = layerHtml(mapLayers));
+    document.getElementById('roads').innerHTML = Array.from({length:24},(_,i)=>`<span class="road ${i%3?'thin':''}" style="left:${(i*13)%92}%;top:${15+(i*17)%78}%;width:${120+(i*37)%260}px;transform:rotate(${[-34,-16,8,22,48][i%5]}deg)"></span>`).join('');
+    document.getElementById('districts').innerHTML = [['余杭区',38,20],['拱墅区',49,36],['西湖区',35,51],['滨江区',52,65],['萧山区',72,76],['钱塘区',76,31],['临平区',67,20]].map(d=>`<span class="district" style="left:${d[1]}%;top:${d[2]}%">${d[0]}</span>`).join('');
+    document.getElementById('pins').innerHTML = pins.map((p,i)=>`<button class="pin ${p[0]?'cluster':''} ${i===0?'active':''}" style="left:${p[1]}%;top:${p[2]}%;--tone:${colors[p[3]]}" data-title="${p[4]}">${p[0] || '•'}<span class="pin-label">${p[4]}</span></button>`).join('');
+    document.getElementById('eventDetail').innerHTML = `<header><span class="badge" style="--tone:var(--red)">当前高热</span><h3>某商圈停车收费引发吐槽</h3></header><div class="body"><div class="kv-grid"><div class="kv"><label>热度</label><b>86,520</b></div><div class="kv"><label>增速</label><b>↑136%</b></div><div class="kv"><label>同城占比</label><b>84%</b></div></div><div class="tag-row"><span class="tag">物业纠纷</span><span class="tag">服务问题</span><span class="tag">投诉集中</span></div><p style="margin:0;color:var(--muted);font-size:12px;line-height:1.45">同城讨论正在快速升温，视频/直播源增加，多个平台出现相似表达。</p><div class="pop-actions"><button>加入关注</button><button>进入主题</button><button class="primary">查看详情</button></div></div>`;
+    document.getElementById('hotRanks').innerHTML = hotRanks.map((r,i)=>`<div class="rank-row"><span class="rank-no" style="--tone:${colors[r[4]]};background:${colors[r[4]]}">${i+1}</span><div class="rank-title"><b>${r[0]}</b><span>${r[1]}</span></div><div class="rank-score" style="--tone:${colors[r[4]]};color:${colors[r[4]]}">${r[2]}<small>${r[3]}</small></div></div>`).join('');
+    document.getElementById('videoList').innerHTML = videos.map(v=>`<div class="video-item"><div class="thumb"><span class="live-badge">LIVE</span></div><div class="video-info"><b>${v[0]}</b><span>${v[1]}<br>${v[2]}　${v[3]}</span></div></div>`).join('');
+    document.getElementById('monitorList').innerHTML = monitors.map((m,i)=>`<div class="monitor-row"><span class="monitor-icon" style="--tone:${m[2]};color:${m[2]}">${i+1}</span><div><b>${m[0]}</b><span>破圈概率 ${i===0?'78%':i===1?'62%':'55%'}</span></div><span class="badge" style="--tone:${m[2]}">${m[1]}</span></div>`).join('');
+    document.getElementById('timelineTrack').innerHTML = Array.from({length:48},(_,i)=>`<span class="tl-dot" style="left:${2+i*2}%;--tone:${Object.values(colors)[i%6]};background:${Object.values(colors)[i%6]}"></span>`).join('');
+    document.getElementById('timelineCards').innerHTML = timeline.map((t,i)=>`<div class="tl-card ${i===0?'active':''}"><b>${t[0]}　${t[1]}</b><span>${t[2]}<br>${t[3]}　${t[4]}</span></div>`).join('');
+    document.getElementById('newHot').innerHTML = hotRanks.slice(0,5).map((r,i)=>`<div class="compact-row"><span class="rank-no" style="width:18px;height:18px;font-size:10px;background:${colors[i<2?'red':'amber']}">${i+1}</span><b>${r[0]}</b><strong style="--tone:${colors[i<2?'red':'amber']};color:${colors[i<2?'red':'amber']}">${r[2]}</strong></div>`).join('');
+    document.getElementById('speedList').innerHTML = hotRanks.slice(0,5).map((r,i)=>`<div class="compact-row"><span class="rank-no" style="width:18px;height:18px;font-size:10px;background:${colors[i<2?'red':'amber']}">${i+1}</span><b>${r[0]}</b><strong style="color:${colors.red}">${[3256,2180,1742,1356,1102][i]}/分钟</strong></div>`).join('');
+    document.getElementById('breakoutList').innerHTML = monitors.map((m,i)=>`<div class="compact-row"><span class="rank-no" style="width:18px;height:18px;font-size:10px;background:${colors[i===0?'red':i===1?'amber':'green']}">${i+1}</span><b>${m[0]}</b><strong>${[78,62,55][i]}%</strong></div>`).join('');
+    document.getElementById('platformList').innerHTML = hotRanks.slice(0,5).map((r,i)=>`<div class="compact-row"><span>${i+1}</span><b>${r[0]}</b><span class="platform-dots"><i style="--tone:#111;background:#111">抖</i><i style="--tone:#df4b54;background:#df4b54">微</i><i style="--tone:#18a873;background:#18a873">微</i><i style="--tone:#2f6df6;background:#2f6df6">论</i></span></div>`).join('');
+    document.getElementById('sourceStatus').innerHTML = sources.map(s=>`<div class="source-row"><span class="tiny-dot" style="--tone:${colors[s[3]]};background:${colors[s[3]]}"></span><b>${s[0]}</b><span>${s[1]}</span><span>${s[2]}</span></div>`).join('');
+  </script>
+</body>
+</html>

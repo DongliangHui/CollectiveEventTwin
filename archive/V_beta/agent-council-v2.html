@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WORLDLINE OBSERVER · 多主体处置压力测试</title>
+<style>
+:root{
+  --nav:#071526;--bg:#f5efe6;--paper:#fffdf8;--panel:rgba(255,253,248,.94);--paper2:#fbf8f1;
+  --ink:#111820;--muted:#66717d;--line:#d9cebd;
+  --blue:#2f6df6;--red:#df4b54;--green:#18a873;--amber:#d78925;--violet:#7f63c9;--cyan:#009fb7;
+  --shadow:0 10px 24px rgba(42,34,22,.075);--strong:0 18px 48px rgba(42,34,22,.13);--r:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;width:100vw;height:100vh;min-width:1480px;min-height:900px;overflow:hidden;color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;font-variant-numeric:tabular-nums;
+  background:radial-gradient(circle at 18% 8%,rgba(47,109,246,.08),transparent 30%),
+             radial-gradient(circle at 82% 6%,rgba(215,137,37,.10),transparent 28%),
+             linear-gradient(180deg,#fbf8f1 0%,var(--bg) 100%);
+}
+button,a,input,textarea,select{font:inherit;color:inherit;text-decoration:none}
+button{border:0;background:transparent;cursor:pointer}
+.app{height:100vh;display:grid;grid-template-rows:58px 72px 90px minmax(0,1fr) 76px}
+
+/* top flow */
+.topbar{display:grid;grid-template-columns:330px 1fr 150px;align-items:center;gap:18px;padding:0 18px;background:var(--nav);color:#f2f7ff;box-shadow:0 10px 30px rgba(7,21,38,.20);z-index:10}
+.brand{display:flex;gap:12px;align-items:center;font-weight:950;letter-spacing:.08em;white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7bd0ff);position:relative;box-shadow:0 0 0 6px rgba(47,109,246,.10)}
+.mark:after{content:"";position:absolute;left:8px;top:4px;width:4px;height:22px;border-radius:3px;background:#fff;transform:rotate(42deg)}
+.brand small{display:block;margin-top:2px;color:rgba(242,247,255,.62);font-size:11px;letter-spacing:0}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.flow a{height:46px;display:grid;grid-template-columns:28px 1fr;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(255,255,255,.045);color:rgba(242,247,255,.78);font-size:12px;font-weight:900;text-align:left;min-width:0}
+.flow i{width:24px;height:24px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.24);font-style:normal}
+.flow span{display:block;margin-top:1px;color:rgba(242,247,255,.48);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow .active{background:#fffdf8;color:var(--blue);box-shadow:0 12px 26px rgba(0,0,0,.24)}
+.flow .active i{background:var(--blue);border-color:var(--blue);color:#fff}
+.flow .active span{color:#5d6774}
+.top-tools{display:flex;justify-content:flex-end;align-items:center;gap:14px;font-size:19px}
+.avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#071526}
+
+/* context */
+.context{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid rgba(217,206,189,.85);background:rgba(255,253,248,.84);backdrop-filter:blur(12px)}
+.btn,.select,.mini,.outline,.primary{min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--muted);font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(42,34,22,.04)}
+.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.context h1{margin:0;font-size:20px;line-height:1.18}
+.context p{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:800}
+.hot{padding:3px 8px;border-radius:999px;background:rgba(127,99,201,.10);color:var(--violet);font-size:11px;font-weight:950}
+.meta-strip{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;font-weight:900}
+.meta-pill{height:28px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+
+/* top metrics */
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:8px 18px;border:1px solid rgba(217,206,189,.88);border-radius:15px;background:var(--paper);box-shadow:var(--shadow);overflow:hidden}
+.metric{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-right:1px solid rgba(217,206,189,.70);min-width:0}
+.metric:last-child{border-right:0}
+.ico{width:38px;height:38px;display:grid;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--tone) 14%,white);color:var(--tone);font-size:18px;font-weight:950}
+.metric label{display:block;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
+.metric strong{display:inline-block;margin-top:6px;font-size:24px;line-height:1;letter-spacing:-.04em}
+.metric small{display:inline-block;margin-left:5px;color:var(--tone);font-size:12px;font-weight:900}
+
+/* main layout */
+.main{min-height:0;display:grid;grid-template-columns:316px minmax(720px,1fr) 390px;gap:10px;padding:0 18px 8px}
+.panel{min-width:0;min-height:0;background:var(--panel);border:1px solid rgba(217,206,189,.9);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-title{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;font-weight:950}
+.panel-title span{color:var(--muted);font-size:11px;font-weight:800}
+.more{min-height:24px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper2);font-size:11px;font-weight:900;color:var(--ink)}
+
+/* left column */
+.left{display:grid;grid-template-rows:190px 1fr 186px;gap:10px}
+.context-card{padding:12px}
+.context-card h3{margin:0;font-size:14px}
+.context-card p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45;font-weight:800}
+.kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.kv{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72)}
+.kv span{display:block;color:var(--muted);font-size:10px;font-weight:900}
+.kv b{display:block;margin-top:5px;font-size:13px}
+.evidence{padding:0 12px 12px;display:grid;gap:7px;overflow:auto;scrollbar-width:none}.evidence::-webkit-scrollbar{display:none}
+.evi{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px}
+.evi b{display:block}.evi span{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:800}
+.agent-list{padding:0 12px 12px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.agent{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72);text-align:center;font-size:11px;font-weight:950}
+.agent span{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+
+/* center */
+.center{display:grid;grid-template-rows:142px minmax(0,1fr);gap:10px}
+.hypothesis{display:grid;grid-template-columns:1fr 240px;gap:12px;padding:12px}
+.hypo-main{display:grid;grid-template-rows:auto 1fr;gap:8px}
+.hypo-main textarea{width:100%;height:72px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--paper);resize:none;color:var(--ink);font-size:13px;line-height:1.45;outline:none}
+.hypo-side{display:grid;gap:8px}
+.hypo-chip{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:11px;font-weight:900;color:var(--muted)}
+.hypo-chip b{display:block;color:var(--ink);font-size:13px;margin-top:4px}
+.dialogue{display:grid;grid-template-rows:42px minmax(0,1fr);min-height:0}
+.round-tabs{display:flex;gap:6px;align-items:center;padding:0 12px;border-bottom:1px solid rgba(217,206,189,.72)}
+.round-tabs button{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:11px;font-weight:900;color:var(--muted)}
+.round-tabs .active{background:var(--ink);border-color:var(--ink);color:#fff}
+.chat{padding:12px;overflow:auto;display:grid;gap:10px;align-content:start;scrollbar-width:none}.chat::-webkit-scrollbar{display:none}
+.message{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start}
+.avatar-agent{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--tone);color:#fff;font-weight:950}
+.bubble{border:1px solid var(--line);border-radius:14px;background:rgba(255,253,248,.76);padding:10px 12px}
+.bubble-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;font-size:12px;font-weight:950}
+.bubble-head span{color:var(--muted);font-size:10px}
+.bubble p{margin:0;color:var(--ink);font-size:12px;line-height:1.48;font-weight:800}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{height:22px;display:inline-flex;align-items:center;padding:0 8px;border-radius:999px;background:color-mix(in srgb,var(--tone) 10%,white);color:var(--tone);border:1px solid color-mix(in srgb,var(--tone) 32%,var(--line));font-size:10px;font-weight:950}
+.impact-json{margin-top:8px;padding:8px;border:1px dashed rgba(102,113,125,.35);border-radius:10px;background:rgba(251,248,241,.62);font-family:Consolas,monospace;font-size:10px;line-height:1.45;color:var(--muted)}
+
+/* right */
+.right{display:grid;grid-template-rows:210px 1fr 178px;gap:10px}
+.delta-panel{padding:12px}
+.delta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.delta-card{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72)}
+.delta-card span{display:block;color:var(--muted);font-size:10px;font-weight:900}
+.delta-card b{display:block;margin-top:5px;font-size:18px}
+.delta-card small{display:block;margin-top:4px;color:var(--tone);font-size:11px;font-weight:950}
+.branch{padding:0 12px 12px;display:grid;gap:8px;overflow:auto;scrollbar-width:none}.branch::-webkit-scrollbar{display:none}
+.branch-row{display:grid;grid-template-columns:34px 1fr 62px;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72);font-size:12px}
+.branch-id{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--tone);color:#fff;font-weight:950}
+.branch-row b{display:block}.branch-row span{display:block;color:var(--muted);font-size:10px}.branch-row strong{font-size:14px;color:var(--tone)}
+.result{padding:12px}
+.result p{margin:0;color:var(--muted);font-size:12px;line-height:1.48;font-weight:800}
+.result-list{display:grid;gap:7px;margin-top:9px}
+.result-list div{display:grid;grid-template-columns:8px 1fr;gap:8px;align-items:center;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--tone)}
+
+/* bottom */
+.bottom{display:grid;grid-template-columns:1.2fr 1fr auto;gap:12px;align-items:center;padding:10px 18px;border-top:1px solid rgba(217,206,189,.82);background:rgba(255,253,248,.76)}
+.pressure{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pressure-card{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:11px;font-weight:900}
+.pressure-card span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.action-row{display:flex;gap:8px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span><div><span>WORLDLINE OBSERVER</span><small>多主体处置压力测试</small></div></div>
+    <nav class="flow">
+      <a href="#"><i>1</i><b>城市态势<span>发现城市正在发生的事</span></b></a>
+      <a href="#"><i>2</i><b>主线建模<span>确认推演输入包</span></b></a>
+      <a href="#"><i>3</i><b>世界线推演<span>生成回应路径</span></b></a>
+      <a class="active" href="#"><i>4</i><b>多主体研判<span>压力测试处置动作</span></b></a>
+      <a href="#"><i>5</i><b>回写推演<span>校准分支概率</span></b></a>
+      <a href="#"><i>6</i><b>汇报输出<span>形成阶段性建议</span></b></a>
+    </nav>
+    <div class="top-tools"><button>♧</button><button>?</button><button class="avatar">●</button></div>
+  </header>
+
+  <section class="context">
+    <button class="btn">← 返回世界线推演</button>
+    <div>
+      <h1>多主体研判：公开收费依据并开设反馈窗口 <span class="hot">Council Session CS-001</span></h1>
+      <p>模拟当事群体、同城群众、媒体/自媒体、平台机制、属地处置方和主管部门对同一处置动作的反应，并回写世界线概率。</p>
+    </div>
+    <div class="meta-strip"><span class="meta-pill">当前节点：回应动作注入点</span><span class="meta-pill">观察窗口：6h</span><button class="btn">保存研判记录</button></div>
+  </section>
+
+  <section class="metrics" id="metrics"></section>
+
+  <main class="main">
+    <aside class="left">
+      <section class="panel context-card">
+        <h3>当前主线与节点上下文</h3>
+        <p>收费规则争议 → 市民不满集中表达 → 同城讨论升温 → 视频传播放大。当前压力测试聚焦“及时回应是否能够收敛情绪和降低破圈概率”。</p>
+        <div class="kv-grid"><div class="kv"><span>主线概率</span><b>65%</b></div><div class="kv"><span>破圈苗头</span><b>58%</b></div><div class="kv"><span>主要情绪</span><b>不满/质疑</b></div><div class="kv"><span>证据缺口</span><b>3项</b></div></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">输入证据与观察变量 <span>来自世界线</span></div>
+        <div class="evidence" id="evidence"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">参与主体 <span>推荐 Agent</span></div>
+        <div class="agent-list" id="agents"></div>
+      </section>
+    </aside>
+
+    <section class="center">
+      <section class="panel hypothesis">
+        <div class="hypo-main">
+          <div class="panel-title" style="height:auto;padding:0">本轮研判假设 <span>可编辑</span></div>
+          <textarea>2小时内公开收费依据、历史收费标准和投诉反馈渠道；同步说明后续处理时限，并承诺 24 小时内回应重点诉求。</textarea>
+        </div>
+        <div class="hypo-side">
+          <div class="hypo-chip">研判目标<b>测试回应充分度</b></div>
+          <div class="hypo-chip">关键支点<b>公众信任 / 传播速度</b></div>
+          <div class="hypo-chip">输出方式<b>概率校准 + 处置建议</b></div>
+        </div>
+      </section>
+      <section class="panel dialogue">
+        <div class="round-tabs"><button class="active">第 1 轮：初始反应</button><button>第 2 轮：冲突点</button><button>第 3 轮：校准概率</button><button>结构化输出</button></div>
+        <div class="chat" id="chat"></div>
+      </section>
+    </section>
+
+    <aside class="right">
+      <section class="panel delta-panel">
+        <div class="panel-title" style="height:auto;padding:0 0 10px">演变变化面板 <span>研判后</span></div>
+        <div class="delta-grid" id="deltas"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">世界线分支概率变化 <span>回写前预览</span></div>
+        <div class="branch" id="branches"></div>
+      </section>
+      <section class="panel result">
+        <div class="panel-title" style="height:auto;padding:0 0 8px">下一步建议 <span>不是自动处置</span></div>
+        <p>多主体反应显示，及时公开收费依据可提升 A 线权重，但必须同时给出反馈窗口和处理时限，否则仍会进入 B 线持续追问。</p>
+        <div class="result-list">
+          <div><i class="dot" style="--tone:var(--green)"></i><span>保留“公开依据 + 投诉反馈”作为优先方案。</span></div>
+          <div><i class="dot" style="--tone:var(--amber)"></i><span>补充具体时间表，避免“只解释不办理”。</span></div>
+          <div><i class="dot" style="--tone:var(--blue)"></i><span>保存为 Council Result 并回写推演页。</span></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="bottom">
+    <div class="pressure">
+      <div class="pressure-card">动作充分性<span>解释 + 渠道 + 时限</span></div>
+      <div class="pressure-card">群众接受度<span>中高，仍需可验证结果</span></div>
+      <div class="pressure-card">媒体解读风险<span>下降，但保留追问</span></div>
+      <div class="pressure-card">平台放大概率<span>降低 9%</span></div>
+    </div>
+    <div class="meta-strip"><span class="meta-pill">Council Result：待回写</span><span class="meta-pill">保存时间：11:36:22</span></div>
+    <div class="action-row"><button class="outline">再次压力测试</button><button class="outline">保存研判记录</button><button class="primary">注入世界线并重跑</button><button class="primary">进入汇报输出</button></div>
+  </footer>
+</div>
+<script>
+const colors={blue:'#2f6df6',green:'#18a873',amber:'#d78925',red:'#df4b54',violet:'#7f63c9',cyan:'#009fb7'};
+const metrics=[
+  ['群众接受度','72%','+18%','群','green'],['质疑残留','34%','-12%','疑','amber'],['传播速度','-22%','下降','传','green'],
+  ['破圈概率','46%','-12%','破','blue'],['A线权重','40%','+8%','A','green'],['信息缺口','2项','-1','缺','amber']
+];
+const evidence=[
+  ['E-001','短视频吐槽与评论升温','同城讨论占比 78%，主要诉求集中在收费依据。'],
+  ['E-014','收费公示文件待补充','当前仍缺少完整收费依据和历史标准说明。'],
+  ['E-032','12345/热线反馈上升','线下反馈支持“不是单点个案”的判断。'],
+  ['GAP','关键缺口','原始视频完整性、收费依据、同城情绪代表性仍需复核。']
+];
+const agents=[
+  ['当事群体','诉求验证'],['同城群众','情绪扩散'],['媒体/自媒体','议题解释'],['平台机制','传播放大'],['属地处置方','执行可行性'],['主管部门','规范与问责']
+];
+const chat=[
+  ['当事群体','如果只公开收费依据，但没有明确退费、投诉、复核渠道，仍会继续追问。若能给出处理时限，接受度明显提高。','公众信任 +0.10','B线 -0.05','green'],
+  ['同城群众','普通市民更关心“以后会不会还这样收”。回应需要说清规则和反馈入口，否则评论区仍会围绕“解释不等于解决”继续扩散。','情绪强度 -0.14','A线 +0.08','blue'],
+  ['媒体/自媒体','公开依据会降低猜测空间，但如果文字太官方，媒体仍会寻找个案体验和对比案例进行二次解读。','误读概率 -0.07','破圈 -0.04','amber'],
+  ['平台机制','短视频热度会因明确回应而下降，但高情绪标题仍可能被推荐。建议同步发布短内容版本，降低剪辑误读。','传播速度 -0.22','D线 -0.09','violet'],
+  ['属地处置方','可执行动作是：公示收费依据、开设反馈窗口、给出24小时答复时限，并持续监测同城评论和线下反馈。','执行可行 0.78','信息缺口 -1','green'],
+  ['主管部门','如果涉及收费合规，需要明确监管口径。建议避免只让商圈单方回应，应有主管部门或属地背书。','回应充分度 +0.16','信任 +0.12','cyan']
+];
+const deltas=[
+  ['公众信任','+0.16','green'],['情绪强度','-0.14','green'],['传播速度','-0.22','green'],['破圈概率','-0.12','blue'],['信息缺口','3 → 2','amber'],['误读风险','-0.07','green']
+];
+const branches=[
+  ['A','及时回应，情绪降温','32% → 40%','green'],
+  ['B','部分回应，持续追问','30% → 28%','amber'],
+  ['C','回应缺口，责任固化','26% → 20%','red'],
+  ['D','外部圈层介入，破圈扩散','12% → 8%','violet']
+];
+document.getElementById('metrics').innerHTML=metrics.map(m=>`<div class="metric" style="--tone:${colors[m[4]]}"><div class="ico">${m[3]}</div><div><label>${m[0]}</label><strong>${m[1]}</strong><small>${m[2]}</small></div></div>`).join('');
+document.getElementById('evidence').innerHTML=evidence.map(e=>`<div class="evi"><b>${e[0]}｜${e[1]}</b><span>${e[2]}</span></div>`).join('');
+document.getElementById('agents').innerHTML=agents.map(a=>`<div class="agent">${a[0]}<span>${a[1]}</span></div>`).join('');
+document.getElementById('chat').innerHTML=chat.map(c=>`<div class="message"><div class="avatar-agent" style="--tone:${colors[c[4]]}">${c[0][0]}</div><div class="bubble"><div class="bubble-head">${c[0]}<span>Agent Response</span></div><p>${c[1]}</p><div class="tags"><span class="tag" style="--tone:${colors[c[4]]}">${c[2]}</span><span class="tag" style="--tone:${colors[c[4]]}">${c[3]}</span></div><div class="impact-json">{ affected_support_points: "${c[2]}", branch_probability_impact: "${c[3]}" }</div></div></div>`).join('');
+document.getElementById('deltas').innerHTML=deltas.map(d=>`<div class="delta-card" style="--tone:${colors[d[2]]}"><span>${d[0]}</span><b>${d[1]}</b><small>研判后变化</small></div>`).join('');
+document.getElementById('branches').innerHTML=branches.map(b=>`<div class="branch-row" style="--tone:${colors[b[3]]}"><div class="branch-id">${b[0]}</div><div><b>${b[1]}</b><span>分支概率校准</span></div><strong>${b[2]}</strong></div>`).join('');
+</script>
+</body>
+</html>

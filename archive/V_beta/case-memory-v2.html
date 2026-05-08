@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WORLDLINE OBSERVER · 复盘知识沉淀</title>
+<style>
+:root{
+  --nav:#071526;--bg:#f5efe6;--paper:#fffdf8;--panel:rgba(255,253,248,.94);--paper2:#fbf8f1;
+  --ink:#111820;--muted:#66717d;--line:#d9cebd;
+  --blue:#2f6df6;--red:#df4b54;--green:#18a873;--amber:#d78925;--violet:#7f63c9;--cyan:#009fb7;
+  --shadow:0 10px 24px rgba(42,34,22,.075);--strong:0 18px 48px rgba(42,34,22,.13);--r:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;width:100vw;height:100vh;min-width:1480px;min-height:900px;overflow:hidden;color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;font-variant-numeric:tabular-nums;
+  background:radial-gradient(circle at 18% 8%,rgba(47,109,246,.08),transparent 30%),
+             radial-gradient(circle at 82% 6%,rgba(215,137,37,.10),transparent 28%),
+             linear-gradient(180deg,#fbf8f1 0%,var(--bg) 100%);
+}
+button,a,input,textarea,select{font:inherit;color:inherit;text-decoration:none}
+button{border:0;background:transparent;cursor:pointer}
+.app{height:100vh;display:grid;grid-template-rows:58px 72px 88px minmax(0,1fr) 76px}
+
+/* top */
+.topbar{display:grid;grid-template-columns:330px 1fr 150px;align-items:center;gap:18px;padding:0 18px;background:var(--nav);color:#f2f7ff;box-shadow:0 10px 30px rgba(7,21,38,.20);z-index:10}
+.brand{display:flex;gap:12px;align-items:center;font-weight:950;letter-spacing:.08em;white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7bd0ff);position:relative;box-shadow:0 0 0 6px rgba(47,109,246,.10)}
+.mark:after{content:"";position:absolute;left:8px;top:4px;width:4px;height:22px;border-radius:3px;background:#fff;transform:rotate(42deg)}
+.brand small{display:block;margin-top:2px;color:rgba(242,247,255,.62);font-size:11px;letter-spacing:0}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.flow a{height:46px;display:grid;grid-template-columns:28px 1fr;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(255,255,255,.045);color:rgba(242,247,255,.78);font-size:12px;font-weight:900;text-align:left;min-width:0}
+.flow i{width:24px;height:24px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.24);font-style:normal}
+.flow span{display:block;margin-top:1px;color:rgba(242,247,255,.48);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow .active{background:#fffdf8;color:var(--blue);box-shadow:0 12px 26px rgba(0,0,0,.24)}
+.flow .active i{background:var(--blue);border-color:var(--blue);color:#fff}
+.flow .active span{color:#5d6774}
+.top-tools{display:flex;justify-content:flex-end;align-items:center;gap:14px;font-size:19px}
+.avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#071526}
+
+/* context */
+.context{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid rgba(217,206,189,.85);background:rgba(255,253,248,.84);backdrop-filter:blur(12px)}
+.btn,.select,.mini,.outline,.primary{min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--muted);font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(42,34,22,.04)}
+.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.context h1{margin:0;font-size:20px;line-height:1.18}
+.context p{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:800}
+.hot{padding:3px 8px;border-radius:999px;background:rgba(24,168,115,.10);color:var(--green);font-size:11px;font-weight:950}
+.meta-strip{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;font-weight:900}
+.meta-pill{height:28px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:8px 18px;border:1px solid rgba(217,206,189,.88);border-radius:15px;background:var(--paper);box-shadow:var(--shadow);overflow:hidden}
+.metric{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-right:1px solid rgba(217,206,189,.70);min-width:0}
+.metric:last-child{border-right:0}
+.ico{width:38px;height:38px;display:grid;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--tone) 14%,white);color:var(--tone);font-size:18px;font-weight:950}
+.metric label{display:block;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
+.metric strong{display:inline-block;margin-top:6px;font-size:24px;line-height:1;letter-spacing:-.04em}
+.metric small{display:inline-block;margin-left:5px;color:var(--tone);font-size:12px;font-weight:900}
+
+/* common */
+.main{min-height:0;display:grid;grid-template-columns:318px minmax(740px,1fr) 392px;gap:10px;padding:0 18px 8px}
+.panel{min-width:0;min-height:0;background:var(--panel);border:1px solid rgba(217,206,189,.9);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-title{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;font-weight:950}
+.panel-title span{color:var(--muted);font-size:11px;font-weight:800}
+.more{min-height:24px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper2);font-size:11px;font-weight:900;color:var(--ink)}
+
+/* left */
+.left{display:grid;grid-template-rows:210px 1fr 186px;gap:10px}
+.summary{padding:12px}
+.summary h3{margin:0;font-size:14px}
+.summary p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.48;font-weight:800}
+.kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.kv{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72)}
+.kv span{display:block;color:var(--muted);font-size:10px;font-weight:900}
+.kv b{display:block;margin-top:5px;font-size:13px}
+.case-chain{padding:0 12px 12px;display:grid;gap:7px;overflow:auto;scrollbar-width:none}.case-chain::-webkit-scrollbar{display:none}
+.chain-row{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72);font-size:12px}
+.chain-index{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--tone);color:#fff;font-size:11px;font-weight:950}
+.chain-row b{display:block}.chain-row span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.task-list{padding:0 12px 12px;display:grid;gap:7px}
+.task{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px}
+.task b{display:flex;justify-content:space-between;gap:8px}.task span{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+/* center */
+.center{display:grid;grid-template-rows:42px minmax(0,1fr);min-height:0}
+.tabsbar{display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(217,206,189,.72)}
+.tabs{display:flex;gap:6px}.tabs button{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font-size:11px;font-weight:900}.tabs .active{background:var(--ink);border-color:var(--ink);color:#fff}
+.workspace{overflow:auto;padding:14px;scrollbar-width:none}.workspace::-webkit-scrollbar{display:none}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:10px}
+.full{grid-column:1/-1}
+.card{padding:13px;border:1px solid rgba(217,206,189,.9);border-radius:14px;background:rgba(255,253,248,.88);box-shadow:0 6px 16px rgba(42,34,22,.04)}
+.card h3{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+.card h3:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tone)}
+.card p,.card li{color:var(--ink);font-size:12px;line-height:1.6;font-weight:800}
+.card p{margin:0}.card ul{margin:0;padding-left:18px}
+.timeline-chart{height:210px;position:relative;border:1px solid var(--line);border-radius:12px;background:repeating-linear-gradient(0deg,rgba(217,206,189,.32) 0 1px,transparent 1px 42px),rgba(251,248,241,.62);overflow:hidden}
+.timeline-chart svg{position:absolute;inset:0;width:100%;height:100%}
+.chart-label{position:absolute;left:12px;color:var(--muted);font-size:11px;font-weight:900}
+.path-map{height:210px;position:relative;border:1px solid var(--line);border-radius:12px;background:rgba(251,248,241,.62);overflow:hidden}
+.path-map svg{position:absolute;inset:0;width:100%;height:100%}
+.path-node{position:absolute;width:118px;min-height:42px;padding:7px;border:1px solid var(--line);border-radius:11px;background:var(--paper);font-size:11px;font-weight:950;text-align:center}
+.path-node.hot{border-color:rgba(223,75,84,.35);background:rgba(223,75,84,.06)}
+.compare{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.compare-card{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(251,248,241,.62)}
+.compare-card span{display:block;color:var(--muted);font-size:10px;font-weight:900}
+.compare-card b{display:block;margin-top:5px;font-size:16px}
+.table{display:grid;gap:7px}
+.row{display:grid;grid-template-columns:1.2fr .75fr .75fr .7fr;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(251,248,241,.62);font-size:12px;font-weight:900}
+.row span{color:var(--muted)}
+.badge{height:22px;padding:0 7px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tone) 12%,white);color:var(--tone);border:1px solid color-mix(in srgb,var(--tone) 32%,var(--line));font-size:10px;font-weight:950}
+.patterns{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pattern{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(251,248,241,.62)}
+.pattern b{font-size:13px}.pattern p{margin-top:6px;color:var(--muted)}
+
+/* right */
+.right{display:grid;grid-template-rows:210px 1fr 190px;gap:10px}
+.calibration{padding:12px}
+.calib-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.calib-card{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72)}
+.calib-card span{display:block;color:var(--muted);font-size:10px;font-weight:900}.calib-card b{display:block;margin-top:5px;font-size:16px}
+.update-list,.pattern-list,.review-list{padding:0 12px 12px;display:grid;gap:8px;overflow:auto;scrollbar-width:none}.update-list::-webkit-scrollbar,.pattern-list::-webkit-scrollbar,.review-list::-webkit-scrollbar{display:none}
+.update{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72);font-size:12px}
+.update b{display:flex;justify-content:space-between}.update span{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.pattern-item{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px}
+.pattern-icon{width:24px;height:24px;border-radius:8px;background:var(--tone);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:950}
+.pattern-item span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.review-note{padding:9px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px;color:var(--muted);line-height:1.45;font-weight:800}
+.review-note b{color:var(--ink)}
+
+/* bottom */
+.bottom{display:grid;grid-template-columns:1.2fr 1fr auto;gap:12px;align-items:center;padding:10px 18px;border-top:1px solid rgba(217,206,189,.82);background:rgba(255,253,248,.76)}
+.flow-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.flow-card{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:11px;font-weight:900}
+.flow-card span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.action-row{display:flex;gap:8px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span><div><span>WORLDLINE OBSERVER</span><small>复盘知识沉淀</small></div></div>
+    <nav class="flow">
+      <a href="#"><i>1</i><b>城市态势<span>事件发现</span></b></a>
+      <a href="#"><i>2</i><b>主线建模<span>结构确认</span></b></a>
+      <a href="#"><i>3</i><b>世界线推演<span>路径概率</span></b></a>
+      <a href="#"><i>4</i><b>多主体研判<span>反应校准</span></b></a>
+      <a href="#"><i>5</i><b>汇报输出<span>处置建议</span></b></a>
+      <a class="active" href="#"><i>6</i><b>复盘沉淀<span>反哺系统模型</span></b></a>
+    </nav>
+    <div class="top-tools"><button>♧</button><button>?</button><button class="avatar">●</button></div>
+  </header>
+
+  <section class="context">
+    <button class="btn">← 返回汇报输出</button>
+    <div>
+      <h1>复盘知识沉淀：停车收费争议与同城情绪升温 <span class="hot">Case Memory CM-001</span></h1>
+      <p>复盘不是给一线用户看的最终报告，而是把案例特征、前因信号、扩散路径、动作效果和预测偏差沉淀为系统学习材料。</p>
+    </div>
+    <div class="meta-strip"><span class="meta-pill">状态：待入库</span><span class="meta-pill">用途：模型校准</span><button class="btn">导出复盘样本</button></div>
+  </section>
+
+  <section class="metrics" id="metrics"></section>
+
+  <main class="main">
+    <aside class="left">
+      <section class="panel summary">
+        <h3>案例复盘摘要</h3>
+        <p>该案例从短视频吐槽与同城评论升温开始，经历主题聚合、主线建模、回应动作压力测试，最终通过公开收费依据与反馈渠道进入降温路径。</p>
+        <div class="kv-grid"><div class="kv"><span>案例ID</span><b>CM-001</b></div><div class="kv"><span>主题</span><b>公共服务</b></div><div class="kv"><span>最终路径</span><b>A线</b></div><div class="kv"><span>预测命中</span><b>部分命中</b></div></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">案例链路 <span>从信号到处置</span></div>
+        <div class="case-chain" id="caseChain"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">入库任务 <span>系统侧</span></div>
+        <div class="task-list" id="tasks"></div>
+      </section>
+    </aside>
+
+    <section class="panel center">
+      <div class="tabsbar">
+        <div class="tabs"><button class="active">复盘总览</button><button>信号模板</button><button>扩散路径</button><button>模型校准</button><button>动作效果</button></div>
+        <div class="meta-strip"><span class="meta-pill">仅后台 / 分析人员</span><span class="meta-pill">不作为一线处置输出</span></div>
+      </div>
+      <div class="workspace">
+        <div class="grid">
+          <section class="card" style="--tone:var(--blue)">
+            <h3>一、预测与现实结果对比</h3>
+            <div class="compare">
+              <div class="compare-card"><span>预测主路径</span><b>A线 40%</b></div>
+              <div class="compare-card"><span>实际路径</span><b>A/B 之间</b></div>
+              <div class="compare-card"><span>命中度</span><b>0.74</b></div>
+              <div class="compare-card"><span>偏差类型</span><b>低估拉锯</b></div>
+            </div>
+            <p style="margin-top:10px">系统正确识别“公开依据 + 反馈渠道”会降低破圈概率，但低估了“解释后仍持续追问办理结果”的 B 线拉锯强度。</p>
+          </section>
+
+          <section class="card" style="--tone:var(--green)">
+            <h3>二、情绪与传播变化曲线</h3>
+            <div class="timeline-chart">
+              <svg viewBox="0 0 420 210" preserveAspectRatio="none">
+                <polyline points="0,170 45,150 90,105 135,82 180,58 225,66 270,88 315,110 360,132 420,146" fill="none" stroke="#df4b54" stroke-width="3"/>
+                <polyline points="0,185 45,172 90,142 135,116 180,92 225,78 270,86 315,98 360,122 420,138" fill="none" stroke="#2f6df6" stroke-width="3"/>
+                <polyline points="0,190 45,184 90,170 135,158 180,142 225,128 270,120 315,124 360,136 420,150" fill="none" stroke="#18a873" stroke-width="3"/>
+              </svg>
+              <span class="chart-label" style="top:20px">红：负向情绪</span>
+              <span class="chart-label" style="top:44px">蓝：传播速度</span>
+              <span class="chart-label" style="top:68px">绿：信任恢复</span>
+            </div>
+          </section>
+
+          <section class="card" style="--tone:var(--amber)">
+            <h3>三、扩散路径沉淀</h3>
+            <div class="path-map">
+              <svg viewBox="0 0 520 210" preserveAspectRatio="none">
+                <path d="M70 110 C140 70 190 70 250 72" stroke="#2f6df6" stroke-width="2.5" fill="none"/>
+                <path d="M250 72 C330 60 380 48 455 38" stroke="#df4b54" stroke-width="2.5" fill="none"/>
+                <path d="M250 72 C340 110 390 118 455 132" stroke="#d78925" stroke-width="2.5" fill="none"/>
+                <path d="M250 72 C330 160 390 160 455 174" stroke="#18a873" stroke-width="2.5" fill="none"/>
+              </svg>
+              <div class="path-node hot" style="left:20px;top:88px">短视频<br>首发吐槽</div>
+              <div class="path-node" style="left:205px;top:50px">同城评论<br>情绪聚合</div>
+              <div class="path-node" style="right:28px;top:20px">跨平台搬运</div>
+              <div class="path-node" style="right:28px;top:112px">本地论坛讨论</div>
+              <div class="path-node" style="right:28px;bottom:18px">反馈窗口降温</div>
+            </div>
+          </section>
+
+          <section class="card" style="--tone:var(--violet)">
+            <h3>四、前因信号模板</h3>
+            <div class="table">
+              <div class="row"><b>高互动短视频 + 价格不满</b><span>前因信号</span><span>权重 +0.08</span><span class="badge" style="--tone:var(--blue)">保留</span></div>
+              <div class="row"><b>评论中“依据/透明/投诉”集中出现</b><span>诉求聚合</span><span>权重 +0.12</span><span class="badge" style="--tone:var(--green)">增强</span></div>
+              <div class="row"><b>同城占比超过 70%</b><span>本地压力</span><span>权重 +0.10</span><span class="badge" style="--tone:var(--green)">增强</span></div>
+              <div class="row"><b>二次剪辑强情绪标题</b><span>噪声/误导</span><span>权重 -0.06</span><span class="badge" style="--tone:var(--red)">降权</span></div>
+            </div>
+          </section>
+
+          <section class="card full" style="--tone:var(--red)">
+            <h3>五、可复用模式与误判样本</h3>
+            <div class="patterns">
+              <div class="pattern"><b>模式 A：价格争议 → 公共服务诉求</b><p>当价格不满与“依据透明”同时出现，容易从消费吐槽转为公共服务讨论。</p></div>
+              <div class="pattern"><b>模式 B：及时回应可降温，但需办理时限</b><p>只解释规则不能完全收敛情绪，必须给出反馈渠道和时限。</p></div>
+              <div class="pattern"><b>误判样本：高互动不等于主流情绪</b><p>部分高互动账号放大负向表达，后续应提升同城样本代表性校验权重。</p></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <section class="panel calibration">
+        <div class="panel-title" style="height:auto;padding:0 0 10px">模型校准建议 <span>自动生成</span></div>
+        <div class="calib-grid" id="calibGrid"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">待更新知识项 <span>规则 / 权重 / 模板</span></div>
+        <div class="update-list" id="updates"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">复盘审阅意见 <span>人工确认</span></div>
+        <div class="review-list" id="reviewNotes"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="bottom">
+    <div class="flow-summary">
+      <div class="flow-card">案例样本<span>CM-001 / 已清洗</span></div>
+      <div class="flow-card">前因模板<span>4条待入库</span></div>
+      <div class="flow-card">动作效果<span>2条增强</span></div>
+      <div class="flow-card">误判样本<span>1条降权</span></div>
+      <div class="flow-card">模型校准<span>待审批</span></div>
+    </div>
+    <div class="meta-strip"><span class="meta-pill">不会直接展示给一线用户</span><span class="meta-pill">反哺：信号权重 / 相似案例召回 / Agent 校准</span></div>
+    <div class="action-row"><button class="outline">保存草稿</button><button class="outline">提交审阅</button><button class="primary">确认入库并更新模型</button></div>
+  </footer>
+</div>
+
+<script>
+const colors={blue:'#2f6df6',green:'#18a873',amber:'#d78925',red:'#df4b54',violet:'#7f63c9',cyan:'#009fb7'};
+const metrics=[
+  ['案例命中度','0.74','部分命中','命','green'],
+  ['前因信号模板','4','待入库','因','blue'],
+  ['扩散路径样本','3','可复用','扩','violet'],
+  ['有效处置动作','2','增强权重','动','green'],
+  ['误判/噪声样本','1','需降权','误','red'],
+  ['模型更新项','6','待审批','模','amber']
+];
+const chain=[
+  ['1','弱信号出现','短视频吐槽与同城评论初始升温。','blue'],
+  ['2','主题聚合','收费依据诉求与服务体验不满聚合。','violet'],
+  ['3','主线确认','形成“收费规则争议 → 同城情绪升温”主线。','amber'],
+  ['4','动作测试','公开依据 + 反馈窗口被 Agent Council 评估为优先动作。','green'],
+  ['5','现实结果','情绪明显降温，但办理结果仍被持续追问。','red']
+];
+const tasks=[
+  ['更新信号权重','将“同城占比 + 诉求词集中”权重上调。'],
+  ['新增相似案例模板','保存公共服务价格争议类案例。'],
+  ['标注误判样本','高互动二次剪辑不等同主流情绪。'],
+  ['校准 Agent 反应','同城群众 Agent 增加“解释后仍看办理结果”倾向。']
+];
+const calib=[
+  ['信号权重','+0.08','green'],['传播模型','调整','blue'],['相似召回','新增模板','violet'],['噪声识别','-0.06','red']
+];
+const updates=[
+  ['前因模板','价格不满 + 依据透明诉求 → 公共服务议题化'],
+  ['动作效果','公开依据 + 反馈窗口 + 时限，对 A 线加权'],
+  ['误判样本','高互动二次剪辑标题，降低代表性权重'],
+  ['Agent 校准','同城群众对“只解释不办理”的耐受度下调'],
+  ['案例召回','公共服务价格争议类案例加入相似召回库']
+];
+const notes=[
+  ['审阅建议','该案例适合作为“事前发现弱信号 → 事中回应动作测试”的标准样本。'],
+  ['边界提示','不要把线上热度直接等同于线下风险，需要保留同城样本代表性校验。'],
+  ['待确认','是否将“2小时回应窗口”固化为规则，需要更多案例验证。']
+];
+document.querySelector('.metrics').innerHTML=metrics.map(m=>`<div class="metric" style="--tone:${colors[m[4]]}"><div class="ico">${m[3]}</div><div><label>${m[0]}</label><strong>${m[1]}</strong><small>${m[2]}</small></div></div>`).join('');
+document.getElementById('caseChain').innerHTML=chain.map(c=>`<div class="chain-row" style="--tone:${colors[c[3]]}"><div class="chain-index">${c[0]}</div><div><b>${c[1]}</b><span>${c[2]}</span></div><button class="more">查看</button></div>`).join('');
+document.getElementById('tasks').innerHTML=tasks.map(t=>`<div class="task"><b>${t[0]}<button class="more">执行</button></b><span>${t[1]}</span></div>`).join('');
+document.getElementById('calibGrid').innerHTML=calib.map(c=>`<div class="calib-card" style="--tone:${colors[c[2]]}"><span>${c[0]}</span><b>${c[1]}</b></div>`).join('');
+document.getElementById('updates').innerHTML=updates.map((u,i)=>`<div class="update"><b>${u[0]}<button class="more">${i<3?'更新':'入库'}</button></b><span>${u[1]}</span></div>`).join('');
+document.getElementById('reviewNotes').innerHTML=notes.map(n=>`<div class="review-note"><b>${n[0]}：</b>${n[1]}</div>`).join('');
+</script>
+</body>
+</html>

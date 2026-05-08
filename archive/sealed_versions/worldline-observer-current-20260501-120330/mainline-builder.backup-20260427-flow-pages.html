@@ -1,0 +1,652 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WORLDLINE OBSERVER · 主线建模工作台</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 253, 247, .9);
+      --panel-solid: #fffdf7;
+      --ink: #14181d;
+      --muted: #5f6874;
+      --line: #d8cdbc;
+      --blue: #2f6df6;
+      --green: #18a873;
+      --amber: #d78925;
+      --red: #df4b54;
+      --soft: 0 10px 24px rgba(42, 34, 22, .07);
+      --r: 14px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100vh;
+      min-height: 900px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(215, 137, 37, .08), transparent 28%),
+        radial-gradient(circle at 80% 4%, rgba(47, 109, 246, .07), transparent 30%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    button, a { font: inherit; color: inherit; }
+    button { border: 0; background: transparent; cursor: pointer; }
+    a { text-decoration: none; }
+    button:active, a:active { transform: translateY(1px) scale(.99); }
+
+    .app { height: 100vh; min-height: 900px; display: grid; grid-template-rows: 56px 92px 1fr 78px; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 260px 1fr 500px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(216,205,188,.92);
+      background: rgba(255,253,247,.76);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; }
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), #7bd0ff);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 4px;
+      height: 20px;
+      border-radius: 3px;
+      background: white;
+      transform: rotate(42deg);
+    }
+    .mode-tabs {
+      justify-self: center;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #e8e1d6;
+    }
+    .mode-tabs a, .mode-tabs button {
+      min-width: 68px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0 15px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .mode-tabs .active { background: var(--ink); color: white; box-shadow: var(--soft); }
+    .status { display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .status strong { color: var(--green); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(24,168,115,.14); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr .95fr .95fr 1fr 1.1fr;
+      gap: 8px;
+      padding: 10px 14px;
+    }
+    .metric {
+      min-height: 72px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.78);
+    }
+    .metric label { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .metric b { display: block; margin-top: 6px; color: var(--tone); font-size: 24px; line-height: 1; }
+    .metric p { margin: 6px 0 0; color: var(--muted); font-size: 11px; font-weight: 800; }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr) 376px;
+      gap: 10px;
+      padding: 0 14px 10px;
+    }
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .pad { padding: 14px; }
+    .title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 900; }
+    .title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+
+    .source-stack { display: grid; gap: 9px; }
+    .source-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.62);
+      text-align: left;
+      transition: background .22s var(--ease), border-color .22s var(--ease);
+    }
+    .source-card.active, .source-card:hover { border-color: var(--ink); background: var(--panel-solid); }
+    .source-card b { font-size: 13px; }
+    .source-card small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .source-card em { color: var(--tone); font-style: normal; font-weight: 900; }
+    .tag-bank { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .tag-bank button {
+      min-height: 26px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,247,.7);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .tag-bank button.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+    .center { display: grid; grid-template-rows: 132px minmax(0, 1fr) 142px; gap: 10px; }
+    .retrieval {
+      display: grid;
+      grid-template-columns: 1.2fr .9fr .9fr;
+      gap: 10px;
+      padding: 12px 14px;
+    }
+    .query-box { display: grid; gap: 8px; }
+    .query {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.72);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .query-hints { display: flex; flex-wrap: wrap; gap: 6px; }
+    .query-hints button, .mini-btn {
+      min-height: 26px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-solid);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .query-hints button.active, .mini-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .recommend-list { display: grid; gap: 7px; }
+    .recommend-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 28px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .recommend-row b { color: var(--ink); }
+    .recommend-row span:last-child { color: var(--tone); font-weight: 900; }
+
+    .builder {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 0;
+    }
+    .candidate-list { border-right: 1px solid var(--line); padding: 12px; overflow: hidden; }
+    .candidate-list .title { margin-bottom: 8px; }
+    .mainline-card {
+      width: 100%;
+      display: grid;
+      gap: 6px;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,247,.65);
+      text-align: left;
+    }
+    .mainline-card.active { border-color: var(--ink); background: var(--panel-solid); }
+    .mainline-card header { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: 13px; font-weight: 900; }
+    .mainline-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .state { display: inline-grid; place-items: center; min-height: 22px; padding: 0 7px; border: 1px solid var(--tone); border-radius: 999px; color: var(--tone); font-size: 10px; font-weight: 900; }
+
+    .map-area { position: relative; min-height: 0; padding: 14px; overflow: hidden; }
+    .logic-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .logic-title b { font-size: 14px; }
+    .logic-title span { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .logic-canvas {
+      position: relative;
+      height: calc(100% - 30px);
+      min-height: 350px;
+      border: 1px solid rgba(216,205,188,.86);
+      border-radius: 14px;
+      background:
+        linear-gradient(rgba(216,205,188,.24) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(216,205,188,.24) 1px, transparent 1px),
+        rgba(255,253,247,.44);
+      background-size: 28px 28px;
+      overflow: hidden;
+    }
+    .logic-canvas svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .node {
+      position: absolute;
+      width: 124px;
+      min-height: 62px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-solid);
+      box-shadow: 0 6px 16px rgba(42,34,22,.06);
+      transition: transform .22s var(--ease), border-color .22s var(--ease), opacity .22s var(--ease);
+    }
+    .node:hover, .node.active { transform: translateY(-2px); border-color: var(--ink); }
+    .node.weak { opacity: .62; }
+    .node b { display: block; font-size: 12px; line-height: 1.25; }
+    .node span { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.35; font-weight: 800; }
+    .node .score { position: absolute; right: 8px; top: 8px; color: var(--tone); font-size: 11px; font-weight: 900; }
+    .node.seed { left: 26px; top: 138px; --tone: var(--red); }
+    .node.signal-a { left: 158px; top: 58px; --tone: var(--red); }
+    .node.signal-b { left: 158px; top: 222px; --tone: var(--amber); }
+    .node.pivot-a { left: 294px; top: 58px; --tone: var(--red); }
+    .node.pivot-b { left: 294px; top: 222px; --tone: var(--amber); }
+    .node.gap { left: 158px; top: 330px; --tone: var(--blue); }
+    .node.confirm { right: 26px; top: 138px; --tone: var(--green); }
+    .legend { position: absolute; left: 14px; bottom: 12px; display: flex; gap: 10px; color: var(--muted); font-size: 11px; font-weight: 900; }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; background: var(--tone); }
+
+    .suggestions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 0;
+    }
+    .suggest-card {
+      padding: 12px;
+      border: 1px solid rgba(216,205,188,.92);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+      overflow: hidden;
+    }
+    .suggest-card .title { margin-bottom: 8px; }
+    .suggest-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; min-height: 28px; border-bottom: 1px solid rgba(216,205,188,.64); color: var(--muted); font-size: 11px; font-weight: 800; }
+    .suggest-row:last-child { border-bottom: 0; }
+    .suggest-row b { color: var(--ink); }
+    .suggest-row button { min-height: 22px; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-solid); color: var(--ink); font-size: 10px; font-weight: 900; }
+
+    .detail-panel { display: grid; grid-template-rows: 1fr auto; }
+    .detail { min-height: 0; padding: 14px; overflow: hidden; }
+    .detail h2 { margin: 0; font-size: 18px; line-height: 1.25; }
+    .detail-meta { display: flex; justify-content: space-between; gap: 8px; margin: 8px 0 12px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .explain, .evidence, .gaps, .manual { padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--line); }
+    .explain b, .evidence b, .gaps b, .manual b { display: block; margin-bottom: 7px; font-size: 13px; }
+    .explain p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .chain-row, .gap-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      min-height: 29px;
+      align-items: center;
+      border-bottom: 1px solid rgba(216,205,188,.66);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .chain-row:last-child, .gap-row:last-child { border-bottom: 0; }
+    .chain-row span:last-child, .gap-row span:last-child { color: var(--tone); font-weight: 900; }
+    .manual { display: grid; gap: 8px; }
+    .manual textarea {
+      width: 100%;
+      min-height: 78px;
+      resize: none;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,253,247,.72);
+      padding: 10px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+      line-height: 1.45;
+      outline: none;
+    }
+    .confirm-box {
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,253,247,.56);
+    }
+    .confirm-box button {
+      width: 100%;
+      min-height: 38px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: white;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .confirm-box p { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.4; font-weight: 800; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin: 0 14px 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--soft);
+    }
+    .flow-step { display: grid; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .flow-step b { color: var(--ink); font-size: 12px; }
+    .flow-step.active b { color: var(--green); }
+    .flow a { min-height: 34px; display: grid; place-items: center; padding: 0 14px; border-radius: 10px; background: var(--ink); color: white; font-size: 12px; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span>WORLDLINE OBSERVER</span></div>
+      <nav class="mode-tabs" aria-label="Demo navigation">
+        <a href="risk-dashboard.html">驾驶舱</a>
+        <a href="signal-factory.html">信号</a>
+        <button class="active">主线</button>
+        <a href="worldline-observer.html">推演</a>
+      </nav>
+      <div class="status"><span>主线建模批次：batch-20260425-001</span><span>候选主线：<strong>5 已发现</strong></span><span class="live-dot"></span></div>
+    </header>
+
+    <section class="metrics">
+      <div class="metric" style="--tone:var(--blue)"><label><span>接入数据源</span><span>source</span></label><b>11</b><p>热线、网格、媒体、视频等</p></div>
+      <div class="metric" style="--tone:var(--amber)"><label><span>已打标数据</span><span>tagged</span></label><b>8,426</b><p>地点 / 语义 / 人群 / 情绪</p></div>
+      <div class="metric" style="--tone:var(--red)"><label><span>候选主线</span><span>candidate</span></label><b>5</b><p>系统自动成线，等待确认</p></div>
+      <div class="metric" style="--tone:var(--green)"><label><span>已加入草稿</span><span>draft</span></label><b id="draftCount">7</b><p>人工可补充、剔除、合并</p></div>
+      <div class="metric" style="--tone:var(--amber)"><label><span>证据缺口</span><span>gap</span></label><b>3</b><p>官方回应、线下反馈、视频点位</p></div>
+      <div class="metric" style="--tone:var(--green)"><label><span>可进入推演</span><span>ready</span></label><b>1</b><p>主线逻辑已闭合</p></div>
+    </section>
+
+    <main class="workspace">
+      <aside class="panel pad">
+        <div class="title">数据源数据管理 <span>先看数据从哪里来</span></div>
+        <div class="source-stack" id="sourceStack"></div>
+        <div class="tag-bank" id="tagBank"></div>
+      </aside>
+
+      <section class="center">
+        <section class="panel retrieval">
+          <div class="query-box">
+            <div class="title">相似数据抓取 <span>选中一条后自动扩展</span></div>
+            <div class="query" id="queryText">以 SIG-001 为种子：补偿标准不一致</div>
+            <div class="query-hints" id="queryHints"></div>
+          </div>
+          <div>
+            <div class="title">系统自动推荐 <span>按相似度排序</span></div>
+            <div class="recommend-list" id="recommendList"></div>
+          </div>
+          <div>
+            <div class="title">当前抓取策略 <span>可切换</span></div>
+            <div class="recommend-list" id="strategyList"></div>
+          </div>
+        </section>
+
+        <section class="panel builder">
+          <aside class="candidate-list">
+            <div class="title">主线池 <span>系统候选 / 人工草稿</span></div>
+            <div id="mainlineList"></div>
+          </aside>
+          <section class="map-area">
+            <div class="logic-title"><b id="logicTitle">城市更新补偿争议主线</b><span>系统路径：信号聚合 → 支点提取 → 证据缺口 → 人工确认</span></div>
+            <div class="logic-canvas">
+              <svg viewBox="0 0 920 420" aria-hidden="true">
+                <path d="M116 176 C190 80, 250 76, 340 82" stroke="#d8cdbc" stroke-width="3" fill="none"/>
+                <path d="M116 176 C190 270, 252 278, 342 252" stroke="#d8cdbc" stroke-width="3" fill="none"/>
+                <path d="M338 82 C430 76, 520 84, 612 176" stroke="#d8cdbc" stroke-width="3" fill="none"/>
+                <path d="M342 252 C442 260, 520 246, 612 176" stroke="#d8cdbc" stroke-width="3" fill="none"/>
+                <path d="M232 354 C360 340, 498 276, 612 176" stroke="#d8cdbc" stroke-width="2" stroke-dasharray="8 8" fill="none"/>
+              </svg>
+              <button class="node seed active" data-node="seed"><span class="score">0.86</span><b>起点信号</b><span>补偿标准不一致在两个社区重复出现</span></button>
+              <button class="node signal-a" data-node="signal-a"><span class="score">3条</span><b>同渠道证据</b><span>12345 工单与社区群讨论同题聚合</span></button>
+              <button class="node signal-b" data-node="signal-b"><span class="score">2条</span><b>相邻信号</b><span>施工围挡附近短视频评论集中质疑</span></button>
+              <button class="node pivot-a" data-node="pivot-a"><span class="score">↑</span><b>支点：补偿标准</b><span>口径差异是当前主矛盾</span></button>
+              <button class="node pivot-b" data-node="pivot-b"><span class="score">→</span><b>支点：施工扰民</b><span>作为情绪扩散辅助支点</span></button>
+              <button class="node gap" data-node="gap"><span class="score">缺</span><b>证据缺口</b><span>缺少街道回应、现场反馈、公告版本</span></button>
+              <button class="node confirm" data-node="confirm"><span class="score">待确认</span><b>确认成主线</b><span>补齐缺口后进入 World State</span></button>
+              <div class="legend"><span><i style="--tone:var(--red)"></i>核心矛盾</span><span><i style="--tone:var(--amber)"></i>辅助支点</span><span><i style="--tone:var(--blue)"></i>证据缺口</span><span><i style="--tone:var(--green)"></i>可推演输入</span></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="suggestions">
+          <div class="suggest-card">
+            <div class="title">系统补证建议 <span>让主线闭环</span></div>
+            <div id="evidenceSuggest"></div>
+          </div>
+          <div class="suggest-card">
+            <div class="title">可能关联数据 <span>可一键加入草稿</span></div>
+            <div id="relatedSuggest"></div>
+          </div>
+          <div class="suggest-card">
+            <div class="title">合并与排除建议 <span>避免重复成线</span></div>
+            <div id="mergeSuggest"></div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel detail-panel">
+        <section class="detail" id="detail"></section>
+        <section class="confirm-box">
+          <button id="confirmBtn">确认主线并生成推演输入</button>
+          <p>确认后会把主线、支点、证据缺口和人工备注写入 World State，供下一页平行世界推演使用。</p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="flow">
+      <div class="flow-step active"><b>1 数据源治理</b><span>接入、字段、标签、可信度</span></div>
+      <div class="flow-step active"><b>2 相似数据抓取</b><span>同渠道、同标签、关键词、区域</span></div>
+      <div class="flow-step active"><b>3 主线建模</b><span>系统成线 + 人工组线</span></div>
+      <div class="flow-step"><b>4 推演输入确认</b><span>主线逻辑闭合后进入推演</span></div>
+      <a href="worldline-observer.html">进入世界线推演</a>
+    </section>
+  </div>
+
+  <script>
+    const sources = [
+      { id: "hotline", name: "12345 热线工单", count: "2,148", health: "A", tone: "blue", desc: "地点字段完整，主题分类稳定" },
+      { id: "grid", name: "网格上报", count: "1,672", health: "A", tone: "green", desc: "现场反馈及时，可信度较高" },
+      { id: "social", name: "社区群与论坛", count: "3,516", health: "B", tone: "amber", desc: "情绪信号丰富，重复率较高" },
+      { id: "video", name: "短视频与无人机画面", count: "486", health: "B", tone: "amber", desc: "需要点位校正与画面复核" },
+      { id: "media", name: "媒体与公告", count: "604", health: "A", tone: "blue", desc: "适合补齐官方解释链" }
+    ];
+    const tags = ["城市更新", "补偿标准", "施工扰民", "信息公开", "热线咨询", "同区域", "近24小时", "高相似度"];
+    const mainlines = [
+      { id: "ML-001", name: "城市更新补偿争议主线", state: "待确认", tone: "red", desc: "由补偿口径、施工扰民、历史投诉三类支点形成", score: "0.82" },
+      { id: "ML-002", name: "园区劳资压力主线", state: "草稿", tone: "amber", desc: "工资日期咨询与企业回应缺失形成早期聚合", score: "0.71" },
+      { id: "ML-003", name: "校园周边安全主线", state: "观察", tone: "blue", desc: "家长群讨论升温，但现场证据不足", score: "0.64" },
+      { id: "ML-004", name: "枢纽晚高峰滞留主线", state: "待补证", tone: "amber", desc: "视频异常与热线地点尚未完全对齐", score: "0.58" }
+    ];
+    const nodeDetails = {
+      seed: {
+        title: "起点信号：补偿标准不一致",
+        text: "系统将该信号识别为主线起点，因为它同时具备高弱信号评分、同区域重复出现、热线与社区讨论双通道命中三个特征。",
+        evidence: [["SIG-001", "12345 工单", "可信度 A"], ["SIG-014", "社区群讨论", "可信度 B"], ["SIG-021", "历史投诉", "可信度 B"]],
+        gaps: [["街道补偿口径说明", "缺失"], ["现场施工反馈", "待核验"]]
+      },
+      "signal-a": {
+        title: "同渠道证据：热线与社区群聚合",
+        text: "该节点说明系统成线不是单点判断，而是多个来源在同一主题下出现相似表达。用户可继续按同渠道抓取更多数据。",
+        evidence: [["热线工单", "同区 3 条", "A"], ["社区群摘要", "同题 4 条", "B"]],
+        gaps: [["重复转发去重", "处理中"], ["地理位置归一", "已完成"]]
+      },
+      "signal-b": {
+        title: "相邻信号：施工围挡评论集中质疑",
+        text: "它不是主矛盾，但可能解释情绪为什么扩散。系统建议作为辅助支点加入主线，而不是单独成线。",
+        evidence: [["短视频评论", "评论集中", "C"], ["网格记录", "点位相近", "B"]],
+        gaps: [["画面点位校正", "待补证"], ["线下反馈", "缺失"]]
+      },
+      "pivot-a": {
+        title: "核心支点：补偿标准",
+        text: "该支点承载当前最大的矛盾。若用户确认补偿口径存在差异，它将成为进入推演的主要状态变量。",
+        evidence: [["补偿口径", "多版本表达", "B"], ["咨询量", "12h 上升", "A"]],
+        gaps: [["官方版本", "缺失"], ["涉事人群规模", "估算中"]]
+      },
+      "pivot-b": {
+        title: "辅助支点：施工扰民",
+        text: "该支点解释风险扩散路径，当前变化方向持平。系统建议保留，但不把它设为主触发条件。",
+        evidence: [["施工围挡", "评论升温", "C"], ["网格反馈", "未见异常", "B"]],
+        gaps: [["现场复核", "建议补充"], ["时间段对齐", "待确认"]]
+      },
+      gap: {
+        title: "证据缺口：主线还不能直接确认",
+        text: "系统认为当前主线逻辑基本成立，但还缺少可解释闭环。补齐官方回应和现场反馈后，才能作为高可信 World State 输入。",
+        evidence: [["已有关联信号", "7 条", "可用"], ["缺口项", "3 项", "待补"]],
+        gaps: [["街道回应", "优先补"], ["公告版本", "优先补"], ["现场画面", "次优先"]]
+      },
+      confirm: {
+        title: "确认成主线：进入推演前的人工关口",
+        text: "确认不是接受系统结论，而是把主线名称、关键支点、证据链、缺口和人工备注一起固化，形成可追溯输入。",
+        evidence: [["主线结构", "已生成", "可追溯"], ["人工备注", "待填写", "必要"]],
+        gaps: [["进入推演", "待确认"]]
+      }
+    };
+    let activeSource = "hotline";
+    let activeTag = "城市更新";
+    let activeMainline = "ML-001";
+    let activeNode = "seed";
+    let draftCount = 7;
+    const colors = { red: "#df4b54", amber: "#d78925", blue: "#2f6df6", green: "#18a873" };
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+
+    function renderSources() {
+      $("#sourceStack").innerHTML = sources.map(s => `
+        <button class="source-card ${activeSource === s.id ? "active" : ""}" data-source="${s.id}" style="--tone:${colors[s.tone]}">
+          <span><b>${s.name}</b><small>${s.desc}</small></span>
+          <span><em>${s.count}</em><small>健康 ${s.health}</small></span>
+        </button>
+      `).join("");
+      $("#tagBank").innerHTML = tags.map(tag => `<button class="${activeTag === tag ? "active" : ""}" data-tag="${tag}">${tag}</button>`).join("");
+      $$(".source-card").forEach(btn => btn.addEventListener("click", () => {
+        activeSource = btn.dataset.source;
+        renderAll();
+      }));
+      $$("#tagBank button").forEach(btn => btn.addEventListener("click", () => {
+        activeTag = btn.dataset.tag;
+        $("#queryText").textContent = `按标签抓取：${activeTag}`;
+        renderAll();
+      }));
+    }
+
+    function renderRetrieval() {
+      const source = sources.find(s => s.id === activeSource);
+      $("#queryHints").innerHTML = ["同渠道", "同标签", "关键词", "同区域", "同时间窗"].map((x, index) => `<button class="${index === 0 ? "active" : ""}">${x}</button>`).join("");
+      $("#recommendList").innerHTML = [
+        [`${source.name} 相似数据`, "14 条", "red"],
+        [`${activeTag} 同标签数据`, "23 条", "amber"],
+        ["同区域近 12 小时", "8 条", "blue"],
+        ["可并入当前主线", "5 条", "green"]
+      ].map(x => `<div class="recommend-row" style="--tone:${colors[x[2]]}"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+      $("#strategyList").innerHTML = [
+        ["当前策略", `${source.name} + ${activeTag}`],
+        ["相似度阈值", "0.68 以上"],
+        ["去重方式", "同源转发降权"],
+        ["加入位置", "主线草稿篮"]
+      ].map(x => `<div class="recommend-row"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+    }
+
+    function renderMainlines() {
+      $("#mainlineList").innerHTML = mainlines.map(m => `
+        <button class="mainline-card ${activeMainline === m.id ? "active" : ""}" data-mainline="${m.id}" style="--tone:${colors[m.tone]}">
+          <header><span>${m.name}</span><span class="state" style="--tone:${colors[m.tone]}">${m.state}</span></header>
+          <p>${m.desc}</p>
+          <p>成线置信度 ${m.score} · 线索 7 · 支点 3</p>
+        </button>
+      `).join("");
+      $$(".mainline-card").forEach(btn => btn.addEventListener("click", () => {
+        activeMainline = btn.dataset.mainline;
+        $("#logicTitle").textContent = mainlines.find(m => m.id === activeMainline).name;
+        renderAll();
+      }));
+    }
+
+    function renderDetail() {
+      const d = nodeDetails[activeNode] || nodeDetails.seed;
+      $("#detail").innerHTML = `
+        <div class="title">主线解释 <span>${activeNode}</span></div>
+        <h2>${d.title}</h2>
+        <div class="detail-meta"><span>当前主线：${mainlines.find(m => m.id === activeMainline).name}</span><span class="state" style="--tone:var(--red)">人工待确认</span></div>
+        <div class="explain"><b>系统为什么这样成线？</b><p>${d.text}</p></div>
+        <div class="evidence"><b>形成路径与证据</b>${d.evidence.map(x => `<div class="chain-row" style="--tone:var(--green)"><span>${x[0]} · ${x[1]}</span><span>${x[2]}</span></div>`).join("")}</div>
+        <div class="gaps"><b>还需要什么支撑？</b>${d.gaps.map(x => `<div class="gap-row" style="--tone:var(--amber)"><span>${x[0]}</span><span>${x[1]}</span></div>`).join("")}</div>
+        <div class="manual"><b>人工补充条件</b><textarea id="manualNote">例如：按“补偿标准 + 街道回应 + 同区域”继续抓取，补齐官方口径后再确认主线。</textarea></div>
+      `;
+    }
+
+    function renderSuggestions() {
+      $("#evidenceSuggest").innerHTML = [
+        ["补街道官方回应", "优先"],
+        ["补现场网格反馈", "优先"],
+        ["补公告版本对比", "建议"]
+      ].map(x => `<div class="suggest-row"><b>${x[0]}</b><button data-add>${x[1]}</button></div>`).join("");
+      $("#relatedSuggest").innerHTML = [
+        ["SIG-005 施工围挡质疑", "加入"],
+        ["SIG-018 信息公开讨论", "加入"],
+        ["SIG-024 历史投诉回流", "加入"]
+      ].map(x => `<div class="suggest-row"><b>${x[0]}</b><button data-add>${x[1]}</button></div>`).join("");
+      $("#mergeSuggest").innerHTML = [
+        ["ML-004 可拆出交通支线", "拆分"],
+        ["SIG-021 与历史投诉重复", "降权"],
+        ["论坛转发样本重复率高", "排除"]
+      ].map(x => `<div class="suggest-row"><b>${x[0]}</b><button>${x[1]}</button></div>`).join("");
+      $$("[data-add]").forEach(btn => btn.addEventListener("click", () => {
+        draftCount += 1;
+        $("#draftCount").textContent = draftCount;
+        btn.textContent = "已加入";
+        btn.disabled = true;
+      }));
+    }
+
+    function bindNodes() {
+      $$(".node").forEach(node => node.addEventListener("click", () => {
+        activeNode = node.dataset.node;
+        $$(".node").forEach(item => item.classList.toggle("active", item.dataset.node === activeNode));
+        renderDetail();
+      }));
+    }
+
+    function renderAll() {
+      renderSources();
+      renderRetrieval();
+      renderMainlines();
+      renderDetail();
+      renderSuggestions();
+      bindNodes();
+    }
+
+    $("#confirmBtn").addEventListener("click", () => {
+      $("#confirmBtn").textContent = "已生成 World State 输入";
+      $("#confirmBtn").style.background = "var(--green)";
+    });
+    renderAll();
+  </script>
+</body>
+</html>

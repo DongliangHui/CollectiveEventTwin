@@ -1,0 +1,35 @@
+{
+  "caseId": "p0-network-signal-loop",
+  "points": [
+    {
+      "id": "SIG-P0-001",
+      "name": "school-accountability (3 records)",
+      "type": "event-point",
+      "coordinates": [
+        120.1348,
+        30.2825
+      ],
+      "regionId": "campus-core"
+    },
+    {
+      "id": "SIG-P0-002",
+      "name": "Weibo topic shifts to school responsibility",
+      "type": "event-point",
+      "coordinates": [
+        120.1472,
+        30.2891
+      ],
+      "regionId": "online-spread"
+    },
+    {
+      "id": "SIG-P0-003",
+      "name": "public-risk (2 records)",
+      "type": "event-point",
+      "coordinates": [
+        120.1686,
+        30.2767
+      ],
+      "regionId": "authority-response"
+    }
+  ]
+}

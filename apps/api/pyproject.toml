@@ -1,0 +1,30 @@
+[project]
+name = "collective-event-twin-api"
+version = "0.1.0"
+description = "Production-oriented P0 API for CollectiveEventTwin Worldline Observer."
+requires-python = ">=3.11"
+dependencies = [
+  "alembic>=1.13.3",
+  "fastapi>=0.115.0",
+  "opentelemetry-api>=1.27.0",
+  "psycopg[binary]>=3.2.2",
+  "pydantic>=2.11,<3.0.0",
+  "pydantic-settings>=2.5.2",
+  "python-json-logger>=2.0.7",
+  "sqlalchemy>=2.0.35",
+  "temporalio>=1.7.0",
+  "uvicorn[standard]>=0.30.6",
+]
+
+[project.optional-dependencies]
+test = [
+  "httpx>=0.27.2",
+  "pytest>=8.3.3",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

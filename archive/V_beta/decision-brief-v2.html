@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WORLDLINE OBSERVER · 汇报输出</title>
+<style>
+:root{
+  --nav:#071526;--bg:#f5efe6;--paper:#fffdf8;--panel:rgba(255,253,248,.94);--paper2:#fbf8f1;
+  --ink:#111820;--muted:#66717d;--line:#d9cebd;
+  --blue:#2f6df6;--red:#df4b54;--green:#18a873;--amber:#d78925;--violet:#7f63c9;--cyan:#009fb7;
+  --shadow:0 10px 24px rgba(42,34,22,.075);--strong:0 18px 48px rgba(42,34,22,.13);--r:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;width:100vw;height:100vh;min-width:1480px;min-height:900px;overflow:hidden;color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;font-variant-numeric:tabular-nums;
+  background:radial-gradient(circle at 18% 8%,rgba(47,109,246,.08),transparent 30%),
+             radial-gradient(circle at 82% 6%,rgba(215,137,37,.10),transparent 28%),
+             linear-gradient(180deg,#fbf8f1 0%,var(--bg) 100%);
+}
+button,a,input,textarea,select{font:inherit;color:inherit;text-decoration:none}
+button{border:0;background:transparent;cursor:pointer}
+.app{height:100vh;display:grid;grid-template-rows:58px 72px 88px minmax(0,1fr) 76px}
+
+/* top */
+.topbar{display:grid;grid-template-columns:330px 1fr 150px;align-items:center;gap:18px;padding:0 18px;background:var(--nav);color:#f2f7ff;box-shadow:0 10px 30px rgba(7,21,38,.20);z-index:10}
+.brand{display:flex;gap:12px;align-items:center;font-weight:950;letter-spacing:.08em;white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7bd0ff);position:relative;box-shadow:0 0 0 6px rgba(47,109,246,.10)}
+.mark:after{content:"";position:absolute;left:8px;top:4px;width:4px;height:22px;border-radius:3px;background:#fff;transform:rotate(42deg)}
+.brand small{display:block;margin-top:2px;color:rgba(242,247,255,.62);font-size:11px;letter-spacing:0}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.flow a{height:46px;display:grid;grid-template-columns:28px 1fr;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(255,255,255,.045);color:rgba(242,247,255,.78);font-size:12px;font-weight:900;text-align:left;min-width:0}
+.flow i{width:24px;height:24px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.24);font-style:normal}
+.flow span{display:block;margin-top:1px;color:rgba(242,247,255,.48);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow .active{background:#fffdf8;color:var(--blue);box-shadow:0 12px 26px rgba(0,0,0,.24)}
+.flow .active i{background:var(--blue);border-color:var(--blue);color:#fff}
+.flow .active span{color:#5d6774}
+.top-tools{display:flex;justify-content:flex-end;align-items:center;gap:14px;font-size:19px}
+.avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#071526}
+
+/* header */
+.context{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid rgba(217,206,189,.85);background:rgba(255,253,248,.84);backdrop-filter:blur(12px)}
+.btn,.select,.mini,.outline,.primary{min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--muted);font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(42,34,22,.04)}
+.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.context h1{margin:0;font-size:20px;line-height:1.18}
+.context p{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:800}
+.hot{padding:3px 8px;border-radius:999px;background:rgba(47,109,246,.10);color:var(--blue);font-size:11px;font-weight:950}
+.meta-strip{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;font-weight:900}
+.meta-pill{height:28px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:8px 18px;border:1px solid rgba(217,206,189,.88);border-radius:15px;background:var(--paper);box-shadow:var(--shadow);overflow:hidden}
+.metric{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-right:1px solid rgba(217,206,189,.70);min-width:0}
+.metric:last-child{border-right:0}
+.ico{width:38px;height:38px;display:grid;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--tone) 14%,white);color:var(--tone);font-size:18px;font-weight:950}
+.metric label{display:block;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
+.metric strong{display:inline-block;margin-top:6px;font-size:24px;line-height:1;letter-spacing:-.04em}
+.metric small{display:inline-block;margin-left:5px;color:var(--tone);font-size:12px;font-weight:900}
+
+/* common */
+.main{min-height:0;display:grid;grid-template-columns:316px minmax(740px,1fr) 392px;gap:10px;padding:0 18px 8px}
+.panel{min-width:0;min-height:0;background:var(--panel);border:1px solid rgba(217,206,189,.9);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-title{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;font-weight:950}
+.panel-title span{color:var(--muted);font-size:11px;font-weight:800}
+.more{min-height:24px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper2);font-size:11px;font-weight:900;color:var(--ink)}
+
+/* left */
+.left{display:grid;grid-template-rows:200px 1fr 194px;gap:10px}
+.summary{padding:12px}
+.summary h3{margin:0;font-size:14px}
+.summary p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.48;font-weight:800}
+.kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.kv{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72)}
+.kv span{display:block;color:var(--muted);font-size:10px;font-weight:900}
+.kv b{display:block;margin-top:5px;font-size:13px}
+.trace{padding:0 12px 12px;display:grid;gap:7px;overflow:auto;scrollbar-width:none}.trace::-webkit-scrollbar{display:none}
+.trace-row{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72);font-size:12px}
+.trace-index{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--tone);color:#fff;font-size:11px;font-weight:950}
+.trace-row b{display:block}.trace-row span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.tasks{padding:0 12px 12px;display:grid;gap:7px}
+.task{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px}
+.task b{display:flex;justify-content:space-between;gap:8px}.task span{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+/* center report */
+.center{display:grid;grid-template-rows:42px minmax(0,1fr);min-height:0}
+.report-toolbar{display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(217,206,189,.72)}
+.tabs{display:flex;gap:6px}.tabs button{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font-size:11px;font-weight:900}.tabs .active{background:var(--ink);border-color:var(--ink);color:#fff}
+.report-wrap{overflow:auto;padding:16px;scrollbar-width:none}.report-wrap::-webkit-scrollbar{display:none}
+.report{max-width:920px;margin:0 auto;background:#fffefb;border:1px solid rgba(217,206,189,.9);box-shadow:var(--strong);border-radius:16px;padding:24px 28px 28px}
+.report-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;border-bottom:2px solid #e7ded1;padding-bottom:16px;margin-bottom:18px}
+.report h2{margin:0;font-size:25px;line-height:1.22}
+.report .sub{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.5;font-weight:800}
+.report-stamp{flex:0 0 auto;text-align:right;color:var(--muted);font-size:12px;font-weight:900}
+.report-stamp b{display:block;color:var(--blue);font-size:18px;margin-bottom:5px}
+.section{padding:14px 0;border-bottom:1px solid #e9e0d4}
+.section:last-child{border-bottom:0}
+.section h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px}
+.section h3:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tone)}
+.section p,.section li{color:var(--ink);font-size:13px;line-height:1.68;font-weight:800}
+.section p{margin:0}.section ul{margin:0;padding-left:20px}
+.note{padding:10px 12px;border:1px solid rgba(47,109,246,.22);border-radius:12px;background:rgba(47,109,246,.055);color:var(--muted);font-size:12px;line-height:1.55;font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.info-card{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(251,248,241,.62)}
+.info-card span{display:block;color:var(--muted);font-size:11px;font-weight:900}
+.info-card b{display:block;margin-top:6px;font-size:15px}
+.branch-list{display:grid;gap:8px}.branch{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:12px;background:rgba(251,248,241,.62)}
+.branch-id{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--tone);color:#fff;font-weight:950}
+.branch b{display:block}.branch span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.branch strong{color:var(--tone);font-size:15px}
+.action-table{display:grid;gap:7px}.action{display:grid;grid-template-columns:1fr 72px 74px 82px;gap:8px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:12px;background:rgba(251,248,241,.62);font-size:12px;font-weight:900}
+.action span{color:var(--muted)}.badge{height:22px;padding:0 7px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tone) 12%,white);color:var(--tone);border:1px solid color-mix(in srgb,var(--tone) 32%,var(--line));font-size:10px;font-weight:950}
+
+/* right */
+.right{display:grid;grid-template-rows:210px 1fr 188px;gap:10px}
+.audit{padding:12px}
+.audit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.audit-card{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72)}
+.audit-card span{display:block;color:var(--muted);font-size:10px;font-weight:900}.audit-card b{display:block;margin-top:5px;font-size:16px}
+.version-list,.output-list,.uncertainty{padding:0 12px 12px;display:grid;gap:8px;overflow:auto;scrollbar-width:none}.version-list::-webkit-scrollbar,.output-list::-webkit-scrollbar,.uncertainty::-webkit-scrollbar{display:none}
+.version{padding:9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,253,248,.72);font-size:12px}.version.active{border-color:var(--blue);background:rgba(47,109,246,.06)}
+.version b{display:flex;justify-content:space-between}.version span{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.output{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px}
+.output i{width:26px;height:26px;border-radius:8px;background:var(--tone);color:#fff;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:950}
+.output span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.risknote{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:12px;color:var(--muted);line-height:1.45;font-weight:800}
+.risknote b{color:var(--ink)}
+
+/* bottom */
+.bottom{display:grid;grid-template-columns:1.2fr 1fr auto;gap:12px;align-items:center;padding:10px 18px;border-top:1px solid rgba(217,206,189,.82);background:rgba(255,253,248,.76)}
+.flow-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.flow-card{padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,253,248,.72);font-size:11px;font-weight:900}
+.flow-card span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.action-row{display:flex;gap:8px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span><div><span>WORLDLINE OBSERVER</span><small>汇报输出</small></div></div>
+    <nav class="flow">
+      <a href="#"><i>1</i><b>城市态势<span>发现城市正在发生的事</span></b></a>
+      <a href="#"><i>2</i><b>主线建模<span>确认推演输入</span></b></a>
+      <a href="#"><i>3</i><b>世界线推演<span>推演响应路径</span></b></a>
+      <a href="#"><i>4</i><b>多主体研判<span>校准分支概率</span></b></a>
+      <a class="active" href="#"><i>5</i><b>汇报输出<span>阶段性研判与建议</span></b></a>
+      <a href="#"><i>6</i><b>复盘沉淀<span>反哺系统模型</span></b></a>
+    </nav>
+    <div class="top-tools"><button>♧</button><button>?</button><button class="avatar">●</button></div>
+  </header>
+
+  <section class="context">
+    <button class="btn">← 返回多主体研判</button>
+    <div>
+      <h1>阶段性研判与处置建议：停车收费争议与同城情绪升温 <span class="hot">Brief RPT-001</span></h1>
+      <p>本页不输出最终定性，只汇总概率、趋势、置信度、关键观察变量和可执行建议，供人工研判与处置参考。</p>
+    </div>
+    <div class="meta-strip"><span class="meta-pill">状态：草稿</span><span class="meta-pill">置信度：中高</span><button class="btn">导出 PDF</button></div>
+  </section>
+
+  <section class="metrics" id="metrics"></section>
+
+  <main class="main">
+    <aside class="left">
+      <section class="panel summary">
+        <h3>输入来源摘要</h3>
+        <p>本简报汇集主题态势、数据/信号、证据复核、主线建模、世界线推演与 Agent Council 压力测试结果。</p>
+        <div class="kv-grid"><div class="kv"><span>主线</span><b>ML-001</b></div><div class="kv"><span>World State</span><b>WS-001</b></div><div class="kv"><span>Council</span><b>CS-001</b></div><div class="kv"><span>观察窗口</span><b>6h/24h</b></div></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">证据与推演链路 <span>可追溯</span></div>
+        <div class="trace" id="trace"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">后续监测任务 <span>建议派发</span></div>
+        <div class="tasks" id="tasks"></div>
+      </section>
+    </aside>
+
+    <section class="panel center">
+      <div class="report-toolbar">
+        <div class="tabs"><button class="active">阶段性简报</button><button>详细证据</button><button>处置清单</button><button>审阅记录</button></div>
+        <div class="meta-strip"><span class="meta-pill">自动生成 11:42</span><span class="meta-pill">人工待审阅</span></div>
+      </div>
+      <div class="report-wrap">
+        <article class="report">
+          <header class="report-head">
+            <div>
+              <h2>阶段性研判与处置建议</h2>
+              <p class="sub">主题：武林商圈停车收费引发吐槽｜当前阶段：同城讨论升温 + 回应窗口｜简报编号：RPT-20250515-001</p>
+            </div>
+            <div class="report-stamp"><b>Draft</b><span>不是最终定性<br>需人工确认</span></div>
+          </header>
+
+          <section class="section" style="--tone:var(--blue)">
+            <h3>一、阶段性概率判断</h3>
+            <div class="note">系统倾向认为：该主题已从单点吐槽进入“收费依据诉求 + 同城情绪升温 + 视频传播放大”的阶段。若能在回应窗口内公开收费依据并给出反馈渠道，A 线“情绪降温”概率上升；若回应模糊或延迟，B/C 线概率仍会保持。</div>
+          </section>
+
+          <section class="section" style="--tone:var(--green)">
+            <h3>二、世界线分支概率</h3>
+            <div class="branch-list">
+              <div class="branch" style="--tone:var(--green)"><div class="branch-id">A</div><div><b>及时回应，情绪降温</b><span>公开收费依据 + 反馈窗口 + 明确处理时限</span></div><strong>40%</strong></div>
+              <div class="branch" style="--tone:var(--amber)"><div class="branch-id">B</div><div><b>部分回应，持续追问</b><span>解释部分规则，但未覆盖核心诉求</span></div><strong>28%</strong></div>
+              <div class="branch" style="--tone:var(--red)"><div class="branch-id">C</div><div><b>回应缺口，责任叙事固化</b><span>回应不足导致“解释不等于解决”的讨论持续</span></div><strong>20%</strong></div>
+              <div class="branch" style="--tone:var(--violet)"><div class="branch-id">D</div><div><b>外部圈层介入，破圈扩散</b><span>从停车收费转为公共服务议题</span></div><strong>8%</strong></div>
+            </div>
+          </section>
+
+          <section class="section" style="--tone:var(--violet)">
+            <h3>三、多主体研判结论</h3>
+            <div class="grid3">
+              <div class="info-card"><span>群众接受度</span><b>72% ↑18%</b></div>
+              <div class="info-card"><span>传播速度</span><b>-22%</b></div>
+              <div class="info-card"><span>破圈概率</span><b>46% ↓12%</b></div>
+            </div>
+            <p style="margin-top:10px">Agent Council 显示，及时公开收费依据可以降低猜测空间，但必须同时提供反馈渠道和处理时限，否则仍可能进入持续追问路径。</p>
+          </section>
+
+          <section class="section" style="--tone:var(--amber)">
+            <h3>四、建议处置动作</h3>
+            <div class="action-table">
+              <div class="action"><b>公开收费依据与历史收费标准</b><span>优先级 P0</span><span class="badge" style="--tone:var(--green)">缓和</span><span>2小时内</span></div>
+              <div class="action"><b>开设反馈窗口并承诺处理时限</b><span>优先级 P0</span><span class="badge" style="--tone:var(--green)">缓和</span><span>2-6小时</span></div>
+              <div class="action"><b>同步发布短内容解释版本</b><span>优先级 P1</span><span class="badge" style="--tone:var(--blue)">降误读</span><span>6小时内</span></div>
+              <div class="action"><b>持续监测高互动评论和跨平台搬运</b><span>优先级 P1</span><span class="badge" style="--tone:var(--amber)">观察</span><span>24小时</span></div>
+            </div>
+          </section>
+
+          <section class="section" style="--tone:var(--red)">
+            <h3>五、不确定性说明</h3>
+            <ul>
+              <li>原始视频完整性仍需继续核验，避免二次剪辑导致判断偏差。</li>
+              <li>收费依据文件尚未被完整纳入证据链，当前建议以“补充文件 + 公开解释”为前提。</li>
+              <li>同城情绪代表性仍需继续采样，不能将少数高互动账号视为整体民意。</li>
+            </ul>
+          </section>
+
+          <section class="section" style="--tone:var(--blue)">
+            <h3>六、后续观察变量</h3>
+            <div class="grid2">
+              <div class="info-card"><span>6小时内</span><b>负向评论是否回落</b></div>
+              <div class="info-card"><span>6小时内</span><b>公开视频是否继续搬运</b></div>
+              <div class="info-card"><span>24小时内</span><b>媒体/自媒体是否介入</b></div>
+              <div class="info-card"><span>24小时内</span><b>反馈窗口是否被有效使用</b></div>
+            </div>
+          </section>
+        </article>
+      </div>
+    </section>
+
+    <aside class="right">
+      <section class="panel audit">
+        <div class="panel-title" style="height:auto;padding:0 0 10px">报告质量检查 <span>发布前</span></div>
+        <div class="audit-grid" id="auditGrid"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">版本与审阅 <span>Draft history</span></div>
+        <div class="version-list" id="versions"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title">输出与闭环 <span>Actions</span></div>
+        <div class="output-list" id="outputs"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="bottom">
+    <div class="flow-summary">
+      <div class="flow-card">主线确认<span>ML-001 / 65%</span></div>
+      <div class="flow-card">世界线推演<span>A线回升至40%</span></div>
+      <div class="flow-card">多主体研判<span>群众接受度72%</span></div>
+      <div class="flow-card">建议动作<span>4项 P0/P1</span></div>
+      <div class="flow-card">闭环状态<span>待人工审阅</span></div>
+    </div>
+    <div class="meta-strip"><span class="meta-pill">可导出：PDF / DOCX / Markdown</span><span class="meta-pill">可回写：案例库 / 监测任务</span></div>
+    <div class="action-row"><button class="outline">保存草稿</button><button class="outline">提交审阅</button><button class="primary">导出正式简报</button><button class="primary">进入复盘沉淀</button></div>
+  </footer>
+</div>
+
+<script>
+const colors={blue:'#2f6df6',green:'#18a873',amber:'#d78925',red:'#df4b54',violet:'#7f63c9',cyan:'#009fb7'};
+const metrics=[
+  ['阶段判断','同城升温','置信 中高','判','blue'],
+  ['A线概率','40%','+8%','A','green'],
+  ['群众接受度','72%','+18%','群','green'],
+  ['破圈概率','46%','-12%','破','blue'],
+  ['待复核缺口','3项','未关闭','缺','amber'],
+  ['建议动作','4项','P0 2项','动','violet']
+];
+const trace=[
+  ['1','主题态势','视频/直播与同城评论升温，负向情绪 62%。','blue'],
+  ['2','数据/信号','汇集短视频、直播、评论、热线、公告等 48 条信号。','violet'],
+  ['3','证据复核','确认内容真实性中等、情绪代表性较高、传播影响上升。','amber'],
+  ['4','主线建模','形成“收费规则争议 → 同城情绪升温 → 视频扩散放大”主线。','green'],
+  ['5','世界线/研判','A线概率经多主体压力测试从32%提升到40%。','red']
+];
+const tasks=[
+  ['监测同城负向评论','负责人：舆情岗｜窗口：6小时'],
+  ['补充收费依据文件','负责人：主管部门｜窗口：2小时'],
+  ['复核原始视频完整性','负责人：数据复核｜窗口：6小时'],
+  ['跟踪反馈窗口使用情况','负责人：属地｜窗口：24小时']
+];
+const audit=[
+  ['概率表达','已使用','green'],['确定性表述','未出现','green'],['不确定性说明','已列出','green'],
+  ['证据缺口','3项','amber'],['人工审阅','待完成','amber'],['敏感边界','已提示','blue']
+];
+const versions=[
+  ['v0.3 当前草稿','由 Agent Council 回写生成｜11:42'],
+  ['v0.2 推演版本','加入 A/B/C/D 世界线概率｜11:28'],
+  ['v0.1 主线版本','来自主线建模确认页｜11:05']
+];
+const outputs=[
+  ['PDF','导出正式简报','blue'],['DOC','生成可编辑文档','green'],['MD','导出 Markdown','violet'],['TASK','生成监测任务','amber'],['CASE','回写案例库','red']
+];
+document.getElementById('metrics').innerHTML=metrics.map(m=>`<div class="metric" style="--tone:${colors[m[4]]}"><div class="ico">${m[3]}</div><div><label>${m[0]}</label><strong>${m[1]}</strong><small>${m[2]}</small></div></div>`).join('');
+document.getElementById('trace').innerHTML=trace.map(t=>`<div class="trace-row" style="--tone:${colors[t[3]]}"><div class="trace-index">${t[0]}</div><div><b>${t[1]}</b><span>${t[2]}</span></div><button class="more">查看</button></div>`).join('');
+document.getElementById('tasks').innerHTML=tasks.map(t=>`<div class="task"><b>${t[0]}<button class="more">派发</button></b><span>${t[1]}</span></div>`).join('');
+document.getElementById('auditGrid').innerHTML=audit.map(a=>`<div class="audit-card" style="--tone:${colors[a[2]]}"><span>${a[0]}</span><b>${a[1]}</b></div>`).join('');
+document.getElementById('versions').innerHTML=versions.map((v,i)=>`<div class="version ${i===0?'active':''}"><b>${v[0]}<button class="more">打开</button></b><span>${v[1]}</span></div>`).join('');
+document.getElementById('outputs').innerHTML=outputs.map(o=>`<div class="output" style="--tone:${colors[o[2]]}"><i>${o[0]}</i><div><b>${o[1]}</b><span>可在导出后人工确认</span></div><button class="more">执行</button></div>`).join('');
+</script>
+</body>
+</html>
