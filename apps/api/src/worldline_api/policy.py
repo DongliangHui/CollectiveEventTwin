@@ -24,6 +24,7 @@ SENSITIVE_PATTERNS = [
     re.compile(r"class\s*\d+[-\w]*", re.IGNORECASE),
     re.compile(r"\b1[3-9]\d{9}\b"),
     re.compile(r"\b\d{17}[\dXx]\b"),
+    re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
 ]
 
 
@@ -48,4 +49,3 @@ def sensitivity_level(text: str, explicit: str | None = None) -> str:
     if explicit:
         return explicit
     return "sensitive_person_minor" if mask_sensitive_text(text) != text else "normal"
-

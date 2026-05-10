@@ -35,6 +35,8 @@ import type { ComponentType } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { ApiDrivenProductPage } from "./p0-pages/ApiDrivenProductPage";
+import { S1FoundationConsole, type S1ConsoleMode } from "./FoundationConsole";
+import { S2SourceConsole } from "./S2SourceConsole";
 import {
   api,
   AuditLog,
@@ -1593,7 +1595,7 @@ function AuditPage({ bundle }: { bundle: CaseBundle }) {
 export function AdminConsole() {
   const queryClient = useQueryClient();
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"intake" | "signals" | "evidence" | "mainline" | "worldline" | "council" | "brief" | "audit">("intake");
+  const [activeTab, setActiveTab] = useState<S1ConsoleMode | "sources" | "intake" | "signals" | "evidence" | "mainline" | "worldline" | "council" | "brief" | "audit">("foundation");
   const healthQuery = useQuery({ queryKey: ["health"], queryFn: api.health, retry: false });
   const casesQuery = useQuery({ queryKey: ["cases"], queryFn: api.listCases });
   const bundleQuery = useQuery({
@@ -1659,7 +1661,7 @@ export function AdminConsole() {
         </aside>
         <main className="admin-stage">
           <nav className="admin-tabs">
-            {["intake", "signals", "evidence", "mainline", "worldline", "council", "brief", "audit"].map((tab) => (
+            {["foundation", "reviews", "ops", "sources", "intake", "signals", "evidence", "mainline", "worldline", "council", "brief", "audit"].map((tab) => (
               <button key={tab} className={activeTab === tab ? "active" : ""} onClick={() => setActiveTab(tab as typeof activeTab)} type="button">
                 {adminTabZh(tab)}
               </button>
@@ -1667,7 +1669,15 @@ export function AdminConsole() {
           </nav>
           {bundleQuery.isLoading ? <SkeletonPanel rows={8} /> : null}
           {bundleQuery.isError ? <InlineError title="调试数据不可用" message={(bundleQuery.error as Error).message} /> : null}
-          {bundle ? <AdminPanel tab={activeTab} bundle={bundle} action={action} /> : <EmptyPanel label="请先 Seed 或选择案例" />}
+          {(["foundation", "reviews", "ops"] as string[]).includes(activeTab) ? (
+            <S1FoundationConsole mode={activeTab as S1ConsoleMode} />
+          ) : activeTab === "sources" ? (
+            <S2SourceConsole />
+          ) : bundle ? (
+            <AdminPanel tab={activeTab} bundle={bundle} action={action} />
+          ) : (
+            <EmptyPanel label="请先 Seed 或选择案例" />
+          )}
         </main>
       </div>
     </div>
@@ -2259,7 +2269,7 @@ const textZh: Record<string, string> = {
   "Service providers give inconsistent response windows": "服务方给出的恢复窗口不一致",
   "Authorized sample shows family questions, emergency vehicles, and bystander discussion at the campus gate.": "授权样本显示校门口存在家属追问、急救车辆和围观讨论。",
   "Manual statements point to prior feedback and school awareness dispute; context still needs verification.": "人工陈述指向此前反馈和校方知情争议，背景仍需核验。",
-  "Comments include minor name: Zhang and class 7-3, creating secondary harm risk.": "评论包含未成年人姓名与班级信息，存在二次伤害风险。",
+  "Comments include minor identity and class metadata, creating secondary harm risk.": "评论包含未成年人姓名与班级信息，存在二次伤害风险。",
   "Public response does not explain evidence preservation, family communication, or the next update time.": "公开回应未说明证据保全、家属沟通机制和下一次更新时间。",
   "Residents question recovery time, repair responsibility, and transparent compensation rules.": "居民集中询问恢复时间、维修责任和补偿规则。",
   "Property office, street office, and utility provider statements differ on timing and responsibility.": "物业、街道和供水单位对时间与责任的说法不一致。",
@@ -2480,6 +2490,10 @@ function branchLabel(node: WorldlineNode): string {
 
 function adminTabZh(tab: string): string {
   const map: Record<string, string> = {
+    foundation: "S1 基础",
+    reviews: "S1 Review",
+    ops: "S1 Ops",
+    sources: "S2 Sources",
     intake: "接入",
     signals: "信号",
     evidence: "证据",

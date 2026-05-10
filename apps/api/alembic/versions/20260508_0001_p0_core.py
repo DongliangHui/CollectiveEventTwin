@@ -21,9 +21,25 @@ def _json_type():
     return sa.JSON().with_variant(postgresql.JSONB(), "postgresql")
 
 
+def _json_default(bind):
+    if bind.dialect.name == "postgresql":
+        return sa.text("'{}'::jsonb")
+    return sa.text("'{}'")
+
+
+def _bool_false(bind):
+    if bind.dialect.name == "postgresql":
+        return sa.text("false")
+    return sa.text("0")
+
+
 def upgrade() -> None:
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     json_type = _json_type()
+    json_default = _json_default(bind)
+    bool_false = _bool_false(bind)
 
     op.create_table(
         "cases",
@@ -32,7 +48,7 @@ def upgrade() -> None:
         sa.Column("title", sa.String(length=240), nullable=False),
         sa.Column("scenario_type", sa.String(length=80), nullable=False),
         sa.Column("status", sa.String(length=40), nullable=False, server_default="active"),
-        sa.Column("payload", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column("payload", json_type, nullable=False, server_default=json_default),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
@@ -51,9 +67,9 @@ def upgrade() -> None:
         sa.Column("access_mode", sa.String(length=80), nullable=False),
         sa.Column("status", sa.String(length=40), nullable=False),
         sa.Column("trust", sa.Float(), nullable=False, server_default="0.5"),
-        sa.Column("accepted", sa.Boolean(), nullable=False, server_default=sa.text("false")),
+        sa.Column("accepted", sa.Boolean(), nullable=False, server_default=bool_false),
         sa.Column("blocked_reason", sa.String(length=160), nullable=True),
-        sa.Column("payload", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column("payload", json_type, nullable=False, server_default=json_default),
         *common,
     )
 
@@ -67,8 +83,8 @@ def upgrade() -> None:
         sa.Column("priority", sa.String(length=20), nullable=False),
         sa.Column("region_id", sa.String(length=100), nullable=False),
         sa.Column("status", sa.String(length=60), nullable=False),
-        sa.Column("scores", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
-        sa.Column("payload", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column("scores", json_type, nullable=False, server_default=json_default),
+        sa.Column("payload", json_type, nullable=False, server_default=json_default),
         *common,
     )
 
@@ -84,7 +100,7 @@ def upgrade() -> None:
         sa.Column("credibility", sa.String(length=20), nullable=False),
         sa.Column("status", sa.String(length=60), nullable=False),
         sa.Column("sensitivity", sa.String(length=80), nullable=False),
-        sa.Column("payload", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column("payload", json_type, nullable=False, server_default=json_default),
         *common,
     )
 
@@ -94,7 +110,7 @@ def upgrade() -> None:
         ("world_states", [sa.Column("title", sa.String(length=240), nullable=False)]),
         ("worldline_nodes", [sa.Column("title", sa.String(length=240), nullable=False), sa.Column("branch", sa.String(length=40), nullable=False), sa.Column("probability", sa.Integer(), nullable=False), sa.Column("risk", sa.Integer(), nullable=False)]),
         ("council_sessions", [sa.Column("node_id", sa.String(length=100), nullable=False), sa.Column("hypothesis", sa.Text(), nullable=False)]),
-        ("reports", [sa.Column("title", sa.String(length=240), nullable=False), sa.Column("human_confirmed", sa.Boolean(), nullable=False, server_default=sa.text("false"))]),
+        ("reports", [sa.Column("title", sa.String(length=240), nullable=False), sa.Column("human_confirmed", sa.Boolean(), nullable=False, server_default=bool_false)]),
         ("tasks", [sa.Column("title", sa.String(length=240), nullable=False), sa.Column("owner", sa.String(length=120), nullable=False), sa.Column("due_label", sa.String(length=80), nullable=False)]),
         ("workflow_runs", [sa.Column("workflow_name", sa.String(length=120), nullable=False), sa.Column("workflow_id", sa.String(length=160), nullable=False)]),
     ]:
@@ -104,7 +120,7 @@ def upgrade() -> None:
             sa.Column("case_id", sa.String(length=80), sa.ForeignKey("cases.id"), nullable=False, index=True),
             *extra,
             sa.Column("status", sa.String(length=60), nullable=False),
-            sa.Column("payload", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
+            sa.Column("payload", json_type, nullable=False, server_default=json_default),
             *common,
         )
 
@@ -117,7 +133,7 @@ def upgrade() -> None:
         sa.Column("object_type", sa.String(length=80), nullable=False),
         sa.Column("object_id", sa.String(length=120), nullable=False),
         sa.Column("reason", sa.String(length=240), nullable=True),
-        sa.Column("payload", json_type, nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column("payload", json_type, nullable=False, server_default=json_default),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
 

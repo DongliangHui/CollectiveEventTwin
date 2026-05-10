@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { api } from "../api";
 import type { MapLayers, PageMetric, PageSection, PageView, ProductPageName } from "../api";
@@ -69,17 +69,17 @@ const cityMapTabs: Array<{ id: CityMapFilter; label: string }> = [
 const pageOrder: ProductPageName[] = ["city", "risk", "data", "evidence", "mainline", "worldline", "council", "brief", "memory", "library", "config"];
 
 const pageLabels: Record<ProductPageName, { label: string; helper: string }> = {
-  city: { label: "城市动态", helper: "全域发现" },
+  city: { label: "城市态势", helper: "全域发现" },
   risk: { label: "主题态势", helper: "热点聚合" },
-  data: { label: "数据", helper: "检索抓取" },
-  evidence: { label: "证据", helper: "复核脱敏" },
-  mainline: { label: "主线", helper: "结构确认" },
-  worldline: { label: "推演", helper: "分支概率" },
-  council: { label: "研判", helper: "多主体压力测试" },
-  brief: { label: "汇报", helper: "任务闭环" },
-  memory: { label: "复盘", helper: "经验沉淀" },
+  data: { label: "数据检索", helper: "信号抽取" },
+  evidence: { label: "证据复核", helper: "脱敏闭环" },
+  mainline: { label: "主线建模", helper: "结构确认" },
+  worldline: { label: "世界线推演", helper: "路径概率" },
+  council: { label: "多主体研判", helper: "反应校准" },
+  brief: { label: "汇报输出", helper: "任务闭环" },
+  memory: { label: "复盘沉淀", helper: "知识入库" },
   library: { label: "案例库", helper: "相似召回" },
-  config: { label: "配置", helper: "规则参数" }
+  config: { label: "配置中心", helper: "回归发布" }
 };
 
 const toneColor: Record<string, string> = {
@@ -112,7 +112,7 @@ const zhText: Record<string, string> = {
   "Service providers give inconsistent response windows": "服务方给出的恢复窗口不一致",
   "Authorized sample shows family questions, emergency vehicles, and bystander discussion at the campus gate.": "授权样本显示校门口存在家属追问、急救车辆和围观讨论。",
   "Manual statements point to prior feedback and school awareness dispute; context still needs verification.": "人工陈述指向此前反馈和校方知情争议，背景仍需核验。",
-  "Comments include minor name: Zhang and class 7-3, creating secondary harm risk.": "评论包含未成年人姓名与班级信息，存在二次伤害风险。",
+  "Comments include minor identity and class metadata, creating secondary harm risk.": "评论包含未成年人姓名与班级信息，存在二次伤害风险。",
   "Public response does not explain evidence preservation, family communication, or the next update time.": "公开回应未说明证据保全、家属沟通机制和下一次更新时间。",
   "Residents question recovery time, repair responsibility, and transparent compensation rules.": "居民集中询问恢复时间、维修责任和补偿规则。",
   "Property office, street office, and utility provider statements differ on timing and responsibility.": "物业、街道和供水单位对时间与责任的说法不一致。",
@@ -242,13 +242,95 @@ const zhText: Record<string, string> = {
 
 export function ApiDrivenProductPage({ caseId, page }: ApiDrivenProductPageProps) {
   const queryClient = useQueryClient();
+  const cityId = "xian";
   const pageQuery = useQuery({
     queryKey: ["p0-page", caseId, page],
-    queryFn: () => api.getPageView(caseId, page)
+    queryFn: () => api.getPageView(caseId, page),
+    enabled: page !== "city" && page !== "risk" && page !== "data" && page !== "evidence" && page !== "mainline" && page !== "worldline" && page !== "council" && page !== "brief" && page !== "memory" && page !== "library" && page !== "config"
   });
-  const mapQuery = useQuery({
-    queryKey: ["map-layers", caseId],
-    queryFn: () => api.getMapLayers(caseId),
+  const cityOverviewQuery = useQuery({
+    queryKey: ["city-overview", cityId],
+    queryFn: () => api.getCityOverviewPage(cityId),
+    enabled: page === "city"
+  });
+  const cityMapQuery = useQuery({
+    queryKey: ["city-map-layers", cityId],
+    queryFn: () => api.getCityMapLayers(cityId),
+    enabled: page === "city"
+  });
+  const topicSituationQuery = useQuery({
+    queryKey: ["topic-situation", cityId],
+    queryFn: () => api.getFirstTopicSituationPage(cityId),
+    enabled: page === "risk"
+  });
+  const signalWorkbenchQuery = useQuery({
+    queryKey: ["signal-workbench", cityId],
+    queryFn: () => api.getFirstSignalWorkbenchPage(cityId),
+    enabled: page === "data"
+  });
+  const evidenceReviewQuery = useQuery({
+    queryKey: ["evidence-review", cityId],
+    queryFn: () => api.getFirstEvidenceReviewPage(cityId),
+    enabled: page === "evidence"
+  });
+  const mainlineBuilderQuery = useQuery({
+    queryKey: ["mainline-builder", cityId],
+    queryFn: () => api.getFirstMainlineBuilderPage(cityId),
+    enabled: page === "mainline"
+  });
+  const worldlineSimulationQuery = useQuery({
+    queryKey: ["worldline-simulation", cityId],
+    queryFn: () => api.getFirstWorldlineSimulationPage(cityId),
+    enabled: page === "worldline"
+  });
+  const councilQuery = useQuery({
+    queryKey: ["council-session", cityId],
+    queryFn: () => api.getFirstCouncilPage(cityId),
+    enabled: page === "council"
+  });
+  const reportBriefQuery = useQuery({
+    queryKey: ["report-brief", cityId],
+    queryFn: () => api.getFirstReportBriefPage(cityId),
+    enabled: page === "brief"
+  });
+  const retrospectiveMemoryQuery = useQuery({
+    queryKey: ["retrospective-memory", cityId],
+    queryFn: () => api.getFirstRetrospectiveMemoryPage(cityId),
+    enabled: page === "memory"
+  });
+  const caseLibraryQuery = useQuery({
+    queryKey: ["case-library", cityId],
+    queryFn: () => api.getFirstCaseLibraryPage(cityId),
+    enabled: page === "library"
+  });
+  const configAdminQuery = useQuery({
+    queryKey: ["config-admin", cityId],
+    queryFn: () => api.getFirstConfigAdminPage(cityId),
+    enabled: page === "config"
+  });
+  useQuery({
+    queryKey: ["city-events", cityId],
+    queryFn: () => api.listCityEvents(cityId),
+    enabled: page === "city"
+  });
+  useQuery({
+    queryKey: ["city-rankings", cityId, "heat"],
+    queryFn: () => api.listCityEventRankings(cityId, "heat"),
+    enabled: page === "city"
+  });
+  useQuery({
+    queryKey: ["city-source-health", cityId],
+    queryFn: () => api.getCitySourceHealthView(cityId),
+    enabled: page === "city"
+  });
+  useQuery({
+    queryKey: ["city-media-evidence", cityId],
+    queryFn: () => api.listCityMediaEvidence(cityId),
+    enabled: page === "city"
+  });
+  useQuery({
+    queryKey: ["city-timeline", cityId],
+    queryFn: () => api.getCityTimeline(cityId),
     enabled: page === "city"
   });
   const action = useMutation({
@@ -256,33 +338,49 @@ export function ApiDrivenProductPage({ caseId, page }: ApiDrivenProductPageProps
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["p0-page", caseId] });
       await queryClient.invalidateQueries({ queryKey: ["case-bundle", caseId] });
-      await queryClient.invalidateQueries({ queryKey: ["map-layers", caseId] });
+      await queryClient.invalidateQueries({ queryKey: ["city-overview", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["city-map-layers", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["city-events", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["city-rankings", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["topic-situation", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["signal-workbench", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["evidence-review", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["mainline-builder", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["worldline-simulation", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["council-session", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["report-brief", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["retrospective-memory", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["case-library", cityId] });
+      await queryClient.invalidateQueries({ queryKey: ["config-admin", cityId] });
     }
   });
+  const activeQuery = page === "city" ? cityOverviewQuery : page === "risk" ? topicSituationQuery : page === "data" ? signalWorkbenchQuery : page === "evidence" ? evidenceReviewQuery : page === "mainline" ? mainlineBuilderQuery : page === "worldline" ? worldlineSimulationQuery : page === "council" ? councilQuery : page === "brief" ? reportBriefQuery : page === "memory" ? retrospectiveMemoryQuery : page === "library" ? caseLibraryQuery : page === "config" ? configAdminQuery : pageQuery;
 
-  if (pageQuery.isLoading) {
+  if (activeQuery.isLoading) {
     return <LoadingPage caseId={caseId} page={page} />;
   }
 
-  if (pageQuery.isError || !pageQuery.data) {
+  if (activeQuery.isError || !activeQuery.data) {
     return (
       <div className="cet-react-page" data-testid={`product-${page}-page`}>
         <TopNav caseId={caseId} page={page} nav={[]} />
         <section className="cet-error">
           <AlertTriangle size={18} />
           <b>页面数据不可用</b>
-          <p>{(pageQuery.error as Error | undefined)?.message ?? "页面 API 未返回数据。"}</p>
+          <p>{(activeQuery.error as Error | undefined)?.message ?? "页面 API 未返回数据。"}</p>
         </section>
       </div>
     );
   }
 
-  const view = pageQuery.data;
+  const view = page === "risk" || page === "data" || page === "evidence" || page === "mainline" || page === "worldline" || page === "council" || page === "brief" || page === "memory" || page === "library" || page === "config" ? { ...activeQuery.data, case_id: caseId } : activeQuery.data;
   return (
     <div className={`cet-react-page cet-page-${page}`} data-testid={`product-${page}-page`}>
       <TopNav caseId={caseId} page={page} nav={view.nav} />
       {page === "city" ? (
-        <CityPage view={view} mapLayers={mapQuery.data} pending={action.isPending} runAction={(fn) => action.mutate(fn)} />
+        <CityPage cityId={cityId} view={view} mapLayers={cityMapQuery.data} pending={action.isPending} runAction={(fn) => action.mutate(fn)} />
+      ) : page === "memory" || page === "library" || page === "config" ? (
+        <S7BStaticReferencePage view={view} pending={action.isPending} runAction={(fn) => action.mutate(fn)} />
       ) : (
         <StructuredPage view={view} pending={action.isPending} runAction={(fn) => action.mutate(fn)} />
       )}
@@ -291,22 +389,24 @@ export function ApiDrivenProductPage({ caseId, page }: ApiDrivenProductPageProps
 }
 
 function TopNav({ caseId, page, nav }: { caseId: string; page: ProductPageName; nav: PageView["nav"] }) {
-  const navMap = new Map(nav.map((item) => [item.page, item.label]));
+  const navItems = Array.isArray(nav) ? nav : [];
+  const navMap = new Map(navItems.map((item) => [item.page, item.label]));
+  void navMap;
   return (
     <header className="cet-topbar">
       <Link to="/cases/$caseId/$page" params={{ caseId, page: "city" }} className="cet-brand">
         <span className="cet-brand-mark" />
         <span>
           WORLDLINE OBSERVER
-          <small>城市事件世界线</small>
+          <small>城市态势感知</small>
         </span>
       </Link>
-      <nav className="cet-nav" aria-label="P0 产品流程">
+      <nav className="cet-nav" aria-label="P0 浜у搧娴佺▼">
         {pageOrder.map((item, index) => (
           <Link key={item} to="/cases/$caseId/$page" params={{ caseId, page: item }} className={item === page ? "active" : ""}>
             <i>{index + 1}</i>
             <b>
-              {navMap.get(item) || pageLabels[item].label}
+              {pageLabels[item].label}
               <span>{pageLabels[item].helper}</span>
             </b>
           </Link>
@@ -320,7 +420,7 @@ function TopNav({ caseId, page, nav }: { caseId: string; page: ProductPageName; 
   );
 }
 
-function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; mapLayers?: MapLayers; pending: boolean; runAction: (fn: () => Promise<unknown>) => void }) {
+function CityPage({ cityId, view, mapLayers, pending, runAction }: { cityId: string; view: PageView; mapLayers?: MapLayers; pending: boolean; runAction: (fn: () => Promise<unknown>) => void }) {
   const [rankMode, setRankMode] = useState<CityRankMode>("heat");
   const [mapMode, setMapMode] = useState<CityMapMode>("map");
   const [mapFilter, setMapFilter] = useState<CityMapFilter>("all");
@@ -352,10 +452,45 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
   const videoItems = buildVideoItems(top);
   const rankedTop = rankCitySignals(top, rankMode);
   const selectSignal = useCallback((id: string) => {
-    if (id) setSelectedSignalId(id);
-  }, []);
-  const toggleEventType = (label: string) => setActiveEventTypes((current) => toggleSetValue(current, label));
-  const toggleSource = (label: string) => setActiveSources((current) => toggleSetValue(current, label));
+    if (id) {
+      setSelectedSignalId(id);
+      runAction(() => api.getCityEvent(id));
+    }
+  }, [runAction]);
+  const persistMapState = (nextMode: CityMapMode, nextFilter: CityMapFilter, nextEventTypes: Set<string>, nextSources: Set<string>, reason: string) => {
+    runAction(() => api.updateCityMapState(cityId, {
+      layer_mode: nextMode,
+      filters: {
+        map_filter: nextFilter,
+        event_types: Array.from(nextEventTypes),
+        sources: Array.from(nextSources),
+        rank_mode: rankMode
+      },
+      reason
+    }));
+  };
+  const changeRankMode = (mode: CityRankMode) => {
+    setRankMode(mode);
+    runAction(() => api.listCityEventRankings(cityId, mode));
+  };
+  const changeMapMode = (mode: CityMapMode) => {
+    setMapMode(mode);
+    persistMapState(mode, mapFilter, activeEventTypes, activeSources, "city map layer mode changed");
+  };
+  const changeMapFilter = (filter: CityMapFilter) => {
+    setMapFilter(filter);
+    persistMapState(mapMode, filter, activeEventTypes, activeSources, "city map filter changed");
+  };
+  const toggleEventType = (label: string) => {
+    const next = toggleSetValue(activeEventTypes, label);
+    setActiveEventTypes(next);
+    persistMapState(mapMode, mapFilter, next, activeSources, "city event type filter changed");
+  };
+  const toggleSource = (label: string) => {
+    const next = toggleSetValue(activeSources, label);
+    setActiveSources(next);
+    persistMapState(mapMode, mapFilter, activeEventTypes, next, "city source filter changed");
+  };
 
   return (
     <>
@@ -382,7 +517,7 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
             <div className="cet-layer-title"><span>事件类型</span><b>{activeEventTypes.size}/{eventCategories.length}</b></div>
             {eventCategories.map((item) => (
               <button className={`cet-layer-row cet-event-layer ${activeEventTypes.has(item.label) ? "active" : ""}`} type="button" key={item.label} onClick={() => toggleEventType(item.label)}>
-                <span className="cet-check">{activeEventTypes.has(item.label) ? "✓" : ""}</span>
+                <span className="cet-check">{activeEventTypes.has(item.label) ? "?" : ""}</span>
                 <b>{item.label}</b>
                 <em>{item.count}</em>
               </button>
@@ -392,7 +527,7 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
             <div className="cet-layer-title"><span>数据源</span><b>在线 {activeSources.size}/{sourceRows.length}</b></div>
             {sourceRows.map((item) => (
               <button className={`cet-layer-row ${activeSources.has(item.label) ? "active" : ""}`} type="button" key={item.label} onClick={() => toggleSource(item.label)}>
-                <span className="cet-check">{activeSources.has(item.label) ? "✓" : ""}</span>
+                <span className="cet-check">{activeSources.has(item.label) ? "?" : ""}</span>
                 <SourceLogo label={item.label} />
                 <b>{item.label}</b>
                 <em>{item.value}</em>
@@ -404,7 +539,7 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
         <section className="cet-map-panel">
           <div className="cet-map-tabs">
             {cityMapTabs.map((item) => (
-              <button type="button" className={mapFilter === item.id ? "active" : ""} key={item.id} onClick={() => setMapFilter(item.id)}>{item.label}</button>
+              <button type="button" className={mapFilter === item.id ? "active" : ""} key={item.id} onClick={() => changeMapFilter(item.id)}>{item.label}</button>
             ))}
           </div>
           <div className={`cet-map-canvas map-mode-${mapMode}`}>
@@ -420,7 +555,7 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
                 <small><i className="dot-click" />点击聚合查看详情</small>
               </div>
             </div>
-            <MapModeControls center={mapLayers?.config.center ?? [120.1551, 30.2741]} mode={mapMode} onChange={setMapMode} />
+            <MapModeControls center={mapLayers?.config.center ?? [108.9398, 34.3416]} mode={mapMode} onChange={changeMapMode} />
           </div>
           <TimelinePanel signals={top} selectedSignalId={selectedId} onSelectSignal={selectSignal} />
         </section>
@@ -436,7 +571,7 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
                   role="tab"
                   aria-selected={rankMode === tab.id}
                   key={tab.id}
-                  onClick={() => setRankMode(tab.id)}
+                  onClick={() => changeRankMode(tab.id)}
                 >
                   {tab.label}
                 </button>
@@ -450,14 +585,25 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
                   <div>
                     <b>{textField(item, "title")}</b>
                     <span className="cet-rank-meta">
-                      {textField(item, "region_id")} · {textField(item, "priority")}
+                      {textField(item, "region_id")} 路 {textField(item, "priority")}
                       <em className="cet-media-tag">{index % 2 === 0 ? "视频" : "直播"}</em>
                     </span>
                   </div>
                   <strong>{cityRankMetric(item, index, rankMode)}<small>{cityRankDelta(item, index, rankMode)}</small></strong>
+                  <button
+                    type="button"
+                    className="cet-row-action"
+                    disabled={pending || !idOf(item)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      runAction(() => api.createTopicFromCityEvent(idOf(item)));
+                    }}
+                  >
+                    Topic
+                  </button>
                 </article>
               ))}
-              <div className="cet-rank-formula">热度指数 = 综合互动量 × 传播速度 × 同城占比 × 来源权重</div>
+              <div className="cet-rank-formula">热度指数 = 综合互动量 x 传播速度 x 同城占比 x 来源权重</div>
             </div>
           </section>
 
@@ -468,9 +614,9 @@ function CityPage({ view, mapLayers, pending, runAction }: { view: PageView; map
                 <article className={`cet-video-card ${item.id === selectedId ? "selected" : ""}`} key={`${item.title}-${index}`} role="button" tabIndex={0} onClick={() => selectSignal(item.id)}>
                   <div className="cet-video-thumb">直播</div>
                   <div>
-                    <b>{item.title}{index < 3 ? <em>🔥</em> : null}</b>
+                    <b>{item.title}{index < 3 ? <em>热</em> : null}</b>
                     <p>{item.summary}</p>
-                    <span>{item.source} · {item.metric}<small>{item.updated}</small></span>
+                    <span>{item.source} 路 {item.metric}<small>{item.updated}</small></span>
                   </div>
                 </article>
               ))}
@@ -589,12 +735,12 @@ function heatClass(value: number) {
 }
 
 function amapInfoWindowHtml(props: Record<string, unknown>) {
-  const title = escapeHtml(String(props.displayTitle || props.title || "城市聚合事件"));
-  const region = escapeHtml(String(props.region || props.region_id || "杭州同城"));
+  const title = escapeHtml(String(props.displayTitle || props.title || "鍩庡競鑱氬悎浜嬩欢"));
+  const region = escapeHtml(String(props.region || props.region_id || "西安同城"));
   const count = escapeHtml(String(props.eventCount || props.rank || "1"));
   const heat = escapeHtml(formatNumber(Number(props.onlineHeat || props.riskScore || 0) * 920 || 86520));
   const risk = escapeHtml(`${Math.round(Number(props.riskScore || 0)) || 86}%`);
-  return `<div class="cet-amap-info-window"><span>聚合 ${count}</span><b>${title}</b><p>${region} · 热度 ${heat} · 风险 ${risk}</p></div>`;
+  return `<div class="cet-amap-info-window"><span>聚合 ${count}</span><b>${title}</b><p>${region} ? 热度 ${heat} ? 风险 ${risk}</p></div>`;
 }
 
 function escapeHtml(value: string) {
@@ -708,9 +854,9 @@ function OfficialAmapMap({
         const marker = new MarkerCtor({
           position: coordinates,
           anchor: "center",
-          content: `<button type="button" class="cet-amap-cluster-marker ${heatClass(Number(props.riskScore || 0))} ${count > 1 ? "cluster" : "single"} ${signalId && signalId === selectedSignalId ? "selected" : ""}" aria-label="${escapeHtml(String(props.displayTitle || props.title || "事件聚合"))}"><span>${count > 1 ? escapeHtml(String(count)) : ""}</span></button>`,
+          content: `<button type="button" class="cet-amap-cluster-marker ${heatClass(Number(props.riskScore || 0))} ${count > 1 ? "cluster" : "single"} ${signalId && signalId === selectedSignalId ? "selected" : ""}" aria-label="${escapeHtml(String(props.displayTitle || props.title || "浜嬩欢鑱氬悎"))}"><span>${count > 1 ? escapeHtml(String(count)) : ""}</span></button>`,
           offset: new PixelCtor(-16, -16),
-          title: String(props.displayTitle || props.title || "事件聚合")
+          title: String(props.displayTitle || props.title || "浜嬩欢鑱氬悎")
         });
         marker.on?.("click", () => {
           if (signalId) onSelectSignal(signalId);
@@ -780,9 +926,9 @@ function MapLibreGaodeMap({ layers, events }: { layers?: MapLayers; events: unkn
     const selectFeature = (properties: Record<string, unknown>) => {
       const confidenceRaw = Number(properties.confidence || 0);
       setSelectedEvent({
-        title: String(properties.displayTitle || properties.title || "城市聚合事件"),
+        title: String(properties.displayTitle || properties.title || "鍩庡競鑱氬悎浜嬩欢"),
         summary: String(properties.summary || "用于主题热度、证据复核、主线建模与世界线推演的城市事件信号。"),
-        region: String(properties.region || properties.region_id || "杭州同城"),
+        region: String(properties.region || properties.region_id || "西安同城"),
         rank: String(properties.eventCount || properties.rank || "1"),
         heat: formatNumber(Number(properties.onlineHeat || properties.riskScore || 0) * 920 || 86520),
         risk: `${Math.round(Number(properties.riskScore || 0)) || 86}`,
@@ -852,8 +998,8 @@ function MapLibreGaodeMap({ layers, events }: { layers?: MapLayers; events: unkn
         element.type = "button";
         element.className = `cet-map-number-marker ${heatClass(Number(properties.riskScore || 0))}`;
         element.textContent = String(properties.eventCount || properties.rank || "");
-        element.title = String(properties.displayTitle || properties.title || "城市聚合事件");
-        element.setAttribute("aria-label", `事件聚合 ${element.textContent}`);
+        element.title = String(properties.displayTitle || properties.title || "鍩庡競鑱氬悎浜嬩欢");
+        element.setAttribute("aria-label", `浜嬩欢鑱氬悎 ${element.textContent}`);
         element.addEventListener("click", (event) => {
           event.stopPropagation();
           selectFeature(properties);
@@ -905,7 +1051,7 @@ function MapLibreGaodeMap({ layers, events }: { layers?: MapLayers; events: unkn
         <aside className="cet-map-event-detail">
           <div className="cet-detail-head">
             <div>
-              <span>聚合 {selectedEvent.rank}</span>
+              <span>鑱氬悎 {selectedEvent.rank}</span>
               <b>{selectedEvent.title}</b>
               <p>{selectedEvent.summary}</p>
             </div>
@@ -914,26 +1060,26 @@ function MapLibreGaodeMap({ layers, events }: { layers?: MapLayers; events: unkn
           <div className="cet-detail-metrics">
             {[
               ["类型", selectedEvent.type],
-              ["地点", selectedEvent.region],
+              ["区域", selectedEvent.region],
               ["时间", selectedEvent.time],
               ["风险", selectedEvent.risk],
-              ["可信", selectedEvent.confidence],
+              ["置信度", selectedEvent.confidence],
               ["状态", selectedEvent.status],
-              ["扩散", selectedEvent.spread],
+              ["传播", selectedEvent.spread],
               ["热度", selectedEvent.heat]
             ].map((row) => <div className="cet-detail-kv" key={row[0]}><span>{row[0]}</span><b>{row[1]}</b></div>)}
           </div>
           <div className="cet-detail-rows">
             {[
               ["来源", selectedEvent.source],
-              ["原始内容", selectedEvent.raw],
+              ["原始摘要", selectedEvent.raw],
               ["AI 摘要", selectedEvent.summary],
-              ["关联主线", selectedEvent.mainline]
+              ["主线", selectedEvent.mainline]
             ].map((row) => <div className="cet-detail-row" key={row[0]}><b>{row[0]}</b><span>{row[1]}</span></div>)}
           </div>
           <div className="cet-detail-actions">
-            <button type="button">加入主线</button>
-            <button type="button">查看数据包</button>
+            <button type="button">进入主线</button>
+            <button type="button">加入证据复核</button>
           </div>
         </aside>
       ) : null}
@@ -944,9 +1090,9 @@ function MapLibreGaodeMap({ layers, events }: { layers?: MapLayers; events: unkn
 function mapEventFromProperties(properties: Record<string, unknown>): SelectedMapEvent {
   const confidenceRaw = Number(properties.confidence || 0);
   return {
-    title: String(properties.displayTitle || properties.title || "城市聚合事件"),
+    title: String(properties.displayTitle || properties.title || "鍩庡競鑱氬悎浜嬩欢"),
     summary: String(properties.summary || "用于主题热度、证据复核、主线建模与世界线推演的城市事件信号。"),
-    region: String(properties.region || properties.region_id || "杭州同城"),
+    region: String(properties.region || properties.region_id || "西安同城"),
     rank: String(properties.eventCount || properties.rank || "1"),
     heat: formatNumber(Number(properties.onlineHeat || properties.riskScore || 0) * 920 || 86520),
     risk: `${Math.round(Number(properties.riskScore || 0)) || 86}%`,
@@ -1136,7 +1282,7 @@ function MapLibreGaodeMapV2({
         <aside className="cet-map-event-detail">
           <div className="cet-detail-head">
             <div>
-              <span>聚合 {selectedEvent.rank}</span>
+              <span>鑱氬悎 {selectedEvent.rank}</span>
               <b>{selectedEvent.title}</b>
               <p>{selectedEvent.summary}</p>
             </div>
@@ -1145,26 +1291,26 @@ function MapLibreGaodeMapV2({
           <div className="cet-detail-metrics">
             {[
               ["类型", selectedEvent.type],
-              ["地点", selectedEvent.region],
+              ["区域", selectedEvent.region],
               ["时间", selectedEvent.time],
               ["风险", selectedEvent.risk],
-              ["可信", selectedEvent.confidence],
+              ["置信度", selectedEvent.confidence],
               ["状态", selectedEvent.status],
-              ["扩散", selectedEvent.spread],
+              ["传播", selectedEvent.spread],
               ["热度", selectedEvent.heat]
             ].map((row) => <div className="cet-detail-kv" key={row[0]}><span>{row[0]}</span><b>{row[1]}</b></div>)}
           </div>
           <div className="cet-detail-rows">
             {[
               ["来源", selectedEvent.source],
-              ["原始内容", selectedEvent.raw],
+              ["原始摘要", selectedEvent.raw],
               ["AI 摘要", selectedEvent.summary],
-              ["关联主线", selectedEvent.mainline]
+              ["主线", selectedEvent.mainline]
             ].map((row) => <div className="cet-detail-row" key={row[0]}><b>{row[0]}</b><span>{row[1]}</span></div>)}
           </div>
           <div className="cet-detail-actions">
-            <button type="button">加入主线</button>
-            <button type="button">查看数据包</button>
+            <button type="button">进入主线</button>
+            <button type="button">加入证据复核</button>
           </div>
         </aside>
       ) : null}
@@ -1186,7 +1332,250 @@ function AmapFallback({ center, mode = "map" }: { center: number[]; mode?: CityM
   return <div className={`cet-amap-fallback mode-${mode}`} aria-hidden="true">{tiles.map((tileItem) => <img key={`${tileItem.x}-${tileItem.y}`} src={tileItem.url} alt="" />)}</div>;
 }
 
+function S7BStaticReferencePage({ view, pending, runAction }: { view: PageView; pending: boolean; runAction: (fn: () => Promise<unknown>) => void }) {
+  const primary = record(view.raw, "primary_data") as JsonObject;
+  if (view.page === "memory") {
+    const retrospective = record(primary, "retrospective") as JsonObject;
+    const report = record(primary, "report") as JsonObject;
+    const items = arrayFrom(primary, "knowledge_items");
+    const entries = arrayFrom(primary, "case_library_entries");
+    const sourceRefs = Array.isArray(retrospective.source_refs) ? retrospective.source_refs : [];
+    const retrospectiveId = textField(view.raw, "retrospective_id");
+    const reviewId = textField(view.raw, "review_id");
+    return (
+      <S7BFrame
+        view={view}
+        eyebrow="Case Memory"
+        title={view.title}
+        subtitle={view.subtitle ?? "复盘知识从已发布报告抽取，审批通过后才进入案例库。"}
+        status={`状态：${textField(retrospective, "status") || "draft"}`}
+        ctaLabel="提交审批并发布入库"
+        pending={pending || !retrospectiveId}
+        onCta={() => retrospectiveId && runAction(async () => {
+          let nextReviewId = reviewId;
+          if (!nextReviewId) {
+            const review = await api.submitRetrospectiveReview(retrospectiveId);
+            nextReviewId = review.data.review_id;
+          }
+          await api.updateReview(nextReviewId, "pass", ["Retrospective memory is evidence-referenced and case-library ready."], []);
+          await api.gateCheck(nextReviewId);
+          return api.publishRetrospective(retrospectiveId);
+        })}
+        metrics={[
+          { label: "知识条目", value: items.length, tone: "green", helper: "来自报告断言与任务" },
+          { label: "来源引用", value: sourceRefs.length, tone: "blue", helper: "report / evidence / task" },
+          { label: "案例库条目", value: entries.length, tone: "violet", helper: "审批后生成" },
+          { label: "报告状态", value: textField(report, "status") || "--", tone: "amber", helper: textField(report, "id") },
+          { label: "复盘版本", value: textField(retrospective, "version") || "v1", tone: "cyan", helper: retrospectiveId },
+          { label: "水印", value: boolField(retrospective, "synthetic_watermark") ? "synthetic" : "production", tone: "red", helper: "继承报告输入" }
+        ]}
+      >
+        <aside className="s7b-left">
+          <section className="s7b-panel s7b-summary">
+            <h3>案例复盘摘要</h3>
+            <p>{textField(retrospective, "summary") || view.title}</p>
+            <div className="s7b-kv-grid">
+              <S7BKV label="复盘ID" value={retrospectiveId || "--"} />
+              <S7BKV label="报告ID" value={textField(report, "id") || "--"} />
+              <S7BKV label="知识状态" value={textField(retrospective, "status") || "--"} />
+              <S7BKV label="证据引用" value={String(sourceRefs.length)} />
+            </div>
+          </section>
+          <S7BListPanel title="案例链路" helper="从报告到知识" items={sourceRefs.slice(0, 7)} render={(item, index) => (
+            <article className="s7b-chain-row" key={`${textField(item, "object_type")}-${textField(item, "object_id")}-${index}`}>
+              <i>{index + 1}</i>
+              <div><b>{textField(item, "object_type")}</b><span>{textField(item, "object_id")}</span></div>
+              <strong>{textField(item, "object_version") || "ref"}</strong>
+            </article>
+          )} />
+          <S7BListPanel title="入库任务" helper="系统侧" items={entries.length ? entries : items.slice(0, 3)} render={(item, index) => (
+            <article className="s7b-task" key={idOf(item) || index}><b>{entries.length ? "已发布案例条目" : "待审批知识条目"}<span>{textField(item, "status")}</span></b><span>{textField(item, "title") || textField(item, "content")}</span></article>
+          )} />
+        </aside>
+        <section className="s7b-panel s7b-center">
+          <div className="s7b-tabs"><button className="active" type="button">复盘总览</button><button type="button">信号模板</button><button type="button">扩散路径</button><button type="button">模型校准</button></div>
+          <div className="s7b-workspace">
+            <div className="s7b-grid">
+              <section className="s7b-card full"><h3>知识条目</h3><div className="s7b-table">{items.map((item, index) => <S7BRow key={idOf(item) || index} title={textField(item, "content")} cells={[textField(item, "status"), `${arrayFrom(item as JsonObject, "source_refs").length} refs`, idOf(item)]} />)}</div></section>
+              <section className="s7b-card"><h3>预测与现实对比</h3><p>复盘服务只记录来自报告、断言、任务和证据的可追溯知识，不直接改写生产规则。</p><div className="s7b-compare"><S7BKV label="来源报告" value={textField(report, "status")} /><S7BKV label="发布出口" value={entries.length ? "已入库" : "待审批"} /></div></section>
+              <section className="s7b-card"><h3>扩散路径沉淀</h3><div className="s7b-path"><span>报告</span><i /><span>复盘</span><i /><span>知识</span><i /><span>案例库</span></div></section>
+            </div>
+          </div>
+        </section>
+        <aside className="s7b-right">
+          <S7BListPanel title="模型校准点" helper="Review gated" items={items.slice(0, 5)} render={(item, index) => (
+            <article className="s7b-pattern" key={idOf(item) || index}><b>知识 {index + 1}<button type="button">待审</button></b><span>{textField(item, "content")}</span></article>
+          )} />
+          <S7BListPanel title="复核记录" helper="证据引用" items={sourceRefs.slice(0, 5)} render={(item, index) => (
+            <article className="s7b-review-note" key={`${textField(item, "object_id")}-${index}`}><b>{textField(item, "object_type")}</b><span>{textField(item, "object_id")}</span></article>
+          )} />
+        </aside>
+      </S7BFrame>
+    );
+  }
+
+  if (view.page === "library") {
+    const entries = arrayFrom(primary, "entries");
+    const applications = arrayFrom(primary, "applications");
+    const firstEntry = entries[0] as JsonObject | undefined;
+    const entryId = textField(view.raw, "first_entry_id") || idOf(firstEntry);
+    const targetCaseId = textField(view.raw, "target_case_id") || view.case_id;
+    return (
+      <S7BFrame
+        view={view}
+        eyebrow="Knowledge Library"
+        title="主题 / 案例库"
+        subtitle="只展示已审批复盘知识，供相似案例召回和应用建议使用。"
+        status={`案例 ${entries.length}`}
+        ctaLabel="应用到当前案例"
+        pending={pending || !entryId}
+        onCta={() => entryId && runAction(() => api.applyCaseLibraryEntry(entryId, { case_id: targetCaseId, object_type: "case", object_id: targetCaseId, reason: "Applied from React case library page." }))}
+        metrics={[
+          { label: "案例条目", value: entries.length, tone: "blue", helper: "active library entries" },
+          { label: "应用记录", value: applications.length, tone: "green", helper: "persisted applications" },
+          { label: "可用条目", value: entries.filter((item) => textField(item, "status") === "active").length, tone: "violet", helper: "review passed" },
+          { label: "标签数", value: uniqueTags(entries).length, tone: "amber", helper: "from knowledge" },
+          { label: "冲突记录", value: applications.filter((item) => textField(item, "status") === "blocked_conflict").length, tone: "red", helper: "conflict summary" },
+          { label: "数据源", value: "PostgreSQL", tone: "cyan", helper: "no frontend fixture" }
+        ]}
+      >
+        <aside className="s7b-left">
+          <section className="s7b-panel s7b-searchbox"><h3>检索与筛选</h3><input readOnly value="information gap / evidence refs / retrospective" /><div className="s7b-chipline">{uniqueTags(entries).slice(0, 6).map((tag) => <span key={tag}>{tag}</span>)}</div></section>
+          <S7BListPanel title="主题分类树" helper="来自条目标签" items={uniqueTags(entries).slice(0, 8)} render={(tag, index) => <article className="s7b-tree-row" key={String(tag)}><i>{index + 1}</i><div><b>{String(tag)}</b><span>案例库标签</span></div><strong>{entries.filter((item) => arrayFrom(item as JsonObject, "tags").includes(tag)).length}</strong></article>} />
+          <S7BListPanel title="当前主题组" helper="推荐" items={entries.slice(0, 3)} render={(item, index) => <article className={`s7b-topic-card ${index === 0 ? "active" : ""}`} key={idOf(item)}><b>{textField(item, "title")}</b><span>{arrayFrom(item as JsonObject, "tags").join(" / ")}</span></article>} />
+        </aside>
+        <section className="s7b-panel s7b-center">
+          <div className="s7b-tabs"><button className="active" type="button">相似案例</button><button type="button">前因模板</button><button type="button">扩散路径</button><button type="button">处置动作</button></div>
+          <div className="s7b-library-grid">{entries.map((item, index) => <article className="s7b-case-card" key={idOf(item) || index}><div><h3>{textField(item, "title")}</h3><span>{Math.max(58, 88 - index * 4)}%</span></div><p>{arrayFrom(item as JsonObject, "tags").join(" / ") || "retrospective"}</p><div className="s7b-tagline">{arrayFrom(item as JsonObject, "source_refs").slice(0, 3).map((ref, refIndex) => <span key={`${textField(ref, "object_id")}-${refIndex}`}>{textField(ref, "object_type")}</span>)}</div><button type="button" disabled={pending} onClick={() => runAction(() => api.getCaseLibraryEntry(idOf(item)))}>打开</button></article>)}</div>
+        </section>
+        <aside className="s7b-right">
+          <section className="s7b-panel s7b-detail"><h3>{textField(firstEntry, "title") || "案例详情"}</h3><p>案例详情来自 `case_library_entries`，包含知识条目、复盘、报告和证据引用。</p><div className="s7b-kv-grid"><S7BKV label="条目ID" value={entryId || "--"} /><S7BKV label="状态" value={textField(firstEntry, "status") || "--"} /><S7BKV label="来源引用" value={String(arrayFrom(firstEntry ?? {}, "source_refs").length)} /><S7BKV label="应用记录" value={String(applications.length)} /></div></section>
+          <S7BListPanel title="可复用模式" helper="Patterns" items={entries.slice(0, 4)} render={(item) => <article className="s7b-pattern" key={idOf(item)}><b>{textField(item, "title")}<button type="button">应用</button></b><span>{arrayFrom(item as JsonObject, "tags").join(" / ")}</span></article>} />
+        </aside>
+      </S7BFrame>
+    );
+  }
+
+  const versions = arrayFrom(primary, "versions");
+  const releases = arrayFrom(primary, "releases");
+  const versionId = textField(view.raw, "first_config_version_id") || idOf(versions[0]);
+  const releaseId = textField(view.raw, "first_release_id") || idOf(releases[0]);
+  return (
+    <S7BFrame
+      view={view}
+      eyebrow="Admin Config"
+      title="数据源与模型配置"
+      subtitle="配置变更必须版本化、回归、审批、发布，并保留可回滚影响范围。"
+      status={`版本 ${versions.length}`}
+      ctaLabel="运行回归并发布"
+      pending={pending || !versionId}
+      onCta={() => versionId && runAction(async () => {
+        await api.runConfigRegression(versionId);
+        const review = await api.submitConfigApproval(versionId, "Config regression passed from React admin page.");
+        await api.updateReview(review.data.review_id, "pass", ["Config regression passed and impact scope is explicit."], []);
+        await api.gateCheck(review.data.review_id);
+        return api.publishConfigVersion(versionId);
+      })}
+      metrics={[
+        { label: "配置版本", value: versions.length, tone: "blue", helper: "draft / published" },
+        { label: "发布记录", value: releases.length, tone: "green", helper: "append-only" },
+        { label: "待审批", value: versions.filter((item) => textField(item, "status") === "approval_pending").length, tone: "amber", helper: "review gate" },
+        { label: "可回滚", value: releases.filter((item) => textField(item, "status") === "rollback_available").length, tone: "violet", helper: "impact scoped" },
+        { label: "回归失败", value: versions.filter((item) => textField(item, "status") === "regression_failed").length, tone: "red", helper: "blocked" },
+        { label: "数据源", value: "PostgreSQL", tone: "cyan", helper: "no frontend config state" }
+      ]}
+    >
+      <aside className="s7b-left">
+        <section className="s7b-panel s7b-summary"><h3>系统接入状态</h3><p>配置中心读取 `config_versions`、`config_releases`、`workflow_runs` 与 Review Gate，不展示前端-only 配置。</p><div className="s7b-kv-grid"><S7BKV label="当前版本" value={versionId || "--"} /><S7BKV label="发布记录" value={String(releases.length)} /><S7BKV label="回归状态" value={textField(versions[0], "status") || "--"} /><S7BKV label="回滚点" value={String(releases.length)} /></div></section>
+        <S7BListPanel title="配置版本" helper="按状态" items={versions.slice(0, 8)} render={(item) => <article className="s7b-source-row" key={idOf(item)}><i>{textField(item, "config_type").slice(0, 1) || "C"}</i><div><b>{textField(item, "config_type")}</b><span>{textField(item, "version")}</span></div><strong>{textField(item, "status")}</strong></article>} />
+      </aside>
+      <section className="s7b-panel s7b-center">
+        <div className="s7b-tabs"><button className="active" type="button">数据源治理</button><button type="button">标签体系</button><button type="button">模型权重</button><button type="button">版本审计</button></div>
+        <div className="s7b-workspace"><div className="s7b-grid"><section className="s7b-card full"><h3>配置版本状态</h3><div className="s7b-table">{versions.map((item) => <S7BRow key={idOf(item)} title={`${textField(item, "config_type")} ${textField(item, "version")}`} cells={[textField(item, "status"), `${arrayFrom(item as JsonObject, "input_refs").length} refs`, textField(item, "regression_workflow_run_id") || "no regression"]} />)}</div></section><section className="s7b-card"><h3>影响范围</h3><p>{JSON.stringify(record(versions[0], "impact_scope"))}</p></section><section className="s7b-card"><h3>回滚验证</h3><button className="s7b-primary" disabled={pending || !releaseId} type="button" onClick={() => releaseId && runAction(() => api.rollbackConfigRelease(releaseId))}>回滚最近发布</button></section></div></div>
+      </section>
+      <aside className="s7b-right">
+        <S7BListPanel title="发布记录" helper="Release" items={releases.slice(0, 6)} render={(item) => <article className="s7b-pattern" key={idOf(item)}><b>{idOf(item)}<button type="button">{textField(item, "status")}</button></b><span>{JSON.stringify(record(item, "impact_scope"))}</span></article>} />
+      </aside>
+    </S7BFrame>
+  );
+}
+
+function S7BFrame({
+  view,
+  eyebrow,
+  title,
+  subtitle,
+  status,
+  ctaLabel,
+  pending,
+  onCta,
+  metrics,
+  children
+}: {
+  view: PageView;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  status: string;
+  ctaLabel: string;
+  pending: boolean;
+  onCta: () => void;
+  metrics: PageMetric[];
+  children: ReactNode;
+}) {
+  return (
+    <div className={`s7b-app s7b-${view.page}`}>
+      <section className="s7b-context">
+        <Link className="s7b-btn" to="/cases/$caseId/$page" params={{ caseId: view.case_id, page: previousS7BPage(view.page) }}>返回上一页</Link>
+        <div>
+          <h1>{title} <span>{eyebrow}</span></h1>
+          <p>{subtitle}</p>
+        </div>
+        <div className="s7b-meta-strip"><span>{status}</span><span>PostgreSQL</span><button type="button" disabled={pending} onClick={onCta}>{ctaLabel}</button></div>
+      </section>
+      <MetricStrip metrics={metrics} />
+      <main className="s7b-main">{children}</main>
+      <footer className="s7b-bottom">
+        <div className="s7b-flow-summary">
+          <S7BFlow label="数据来源" value="FastAPI / PostgreSQL" />
+          <S7BFlow label="审计" value="mutation 全记录" />
+          <S7BFlow label="检查门禁" value="Review Gate" />
+          <S7BFlow label="页面参照" value="静态设计页 body" />
+          <S7BFlow label="下一步" value={pageLabels[nextPage(view.page)].label} />
+        </div>
+        <Link className="s7b-primary" to="/cases/$caseId/$page" params={{ caseId: view.case_id, page: nextPage(view.page) }}>进入{pageLabels[nextPage(view.page)].label}</Link>
+      </footer>
+    </div>
+  );
+}
+
+function S7BKV({ label, value }: { label: string; value: string }) {
+  return <div className="s7b-kv"><span>{label}</span><b>{value}</b></div>;
+}
+
+function S7BFlow({ label, value }: { label: string; value: string }) {
+  return <div className="s7b-flow-card">{label}<span>{value}</span></div>;
+}
+
+function S7BListPanel({ title, helper, items, render }: { title: string; helper: string; items: unknown[]; render: (item: unknown, index: number) => ReactNode }) {
+  return <section className="s7b-panel"><div className="s7b-panel-title">{title}<span>{helper}</span></div><div className="s7b-list">{items.length ? items.map(render) : <div className="cet-empty"><Database size={16} />暂无数据</div>}</div></section>;
+}
+
+function S7BRow({ title, cells }: { title: string; cells: string[] }) {
+  return <article className="s7b-row"><b>{title}</b>{cells.map((cell, index) => <span key={`${cell}-${index}`}>{cell || "--"}</span>)}</article>;
+}
+
+function previousS7BPage(page: ProductPageName): ProductPageName {
+  if (page === "memory") return "brief";
+  if (page === "library") return "memory";
+  if (page === "config") return "library";
+  return "city";
+}
+
 function StructuredPage({ view, pending, runAction }: { view: PageView; pending: boolean; runAction: (fn: () => Promise<unknown>) => void }) {
+  const actions = Array.isArray(view.actions) ? view.actions : [];
+  const sections = Array.isArray(view.sections) ? view.sections : [];
+  const metrics = Array.isArray(view.metrics) ? view.metrics : [];
   return (
     <>
       <section className="cet-page-head">
@@ -1196,7 +1585,7 @@ function StructuredPage({ view, pending, runAction }: { view: PageView; pending:
           {view.subtitle ? <p>{view.subtitle}</p> : null}
         </div>
         <div className="cet-head-actions">
-          {view.actions
+          {actions
             .filter((action) => action.to_page)
             .map((action) => (
               <Link key={action.id} className="cet-outline" to="/cases/$caseId/$page" params={{ caseId: view.case_id, page: action.to_page! }}>
@@ -1204,13 +1593,13 @@ function StructuredPage({ view, pending, runAction }: { view: PageView; pending:
               </Link>
             ))}
           <Link className="cet-primary" to="/cases/$caseId/$page" params={{ caseId: view.case_id, page: nextPage(view.page) }}>
-            下一步：{pageLabels[nextPage(view.page)].label}
+            涓嬩竴姝ワ細{pageLabels[nextPage(view.page)].label}
           </Link>
         </div>
       </section>
-      <MetricStrip metrics={view.metrics} />
+      <MetricStrip metrics={metrics} />
       <main className={`cet-structured-grid cet-structured-${view.page}`}>
-        {view.sections.map((section) => (
+        {sections.map((section) => (
           <section className={`cet-section section-${section.id}`} key={section.id}>
             <header>
               <div><span>{section.kind}</span><h2>{section.title}</h2></div>
@@ -1232,39 +1621,40 @@ function SectionAction({ view, section, pending, runAction }: { view: PageView; 
 
 function SectionBody({ view, section, pending, runAction }: { view: PageView; section: PageSection; pending: boolean; runAction: (fn: () => Promise<unknown>) => void }) {
   const items = section.items ?? [];
-  if (!items.length) return <div className="cet-empty"><Database size={16} />暂无数据</div>;
+  if (!items.length) return <div className="cet-empty"><Database size={16} />鏆傛棤鏁版嵁</div>;
   if (section.kind === "sources") {
-    return <div className="cet-source-cards">{items.map((item) => <article className={!boolField(item, "accepted") ? "blocked" : ""} key={idOf(item)}><Layers size={15} /><b>{textField(item, "name")}</b><span>{textField(item, "access_mode")} · trust {numberField(item, "trust")}</span>{!boolField(item, "accepted") ? <em>{textField(item, "blocked_reason")}</em> : null}</article>)}</div>;
+    return <div className="cet-source-cards">{items.map((item, index) => <article className={!boolField(item, "accepted") ? "blocked" : ""} key={idOf(item) || textField(item, "label") || index}><Layers size={15} /><b>{textField(item, "name") || textField(item, "label")}</b><span>{textField(item, "access_mode") || "source"} 路 trust {numberField(item, "trust") ?? numberField(item, "count") ?? "--"}</span>{!boolField(item, "accepted") && textField(item, "blocked_reason") ? <em>{textField(item, "blocked_reason")}</em> : null}</article>)}</div>;
   }
   if (section.kind === "evidence") {
     const canConfirm = view.page === "evidence";
-    return <div className="cet-record-list">{items.map((item) => <EvidenceRecord key={idOf(item)} item={item} pending={pending} runAction={runAction} canConfirm={canConfirm} />)}</div>;
+    const reviewId = textField(view.raw, "evidence_review_id");
+    return <div className="cet-record-list">{items.map((item) => <EvidenceRecord key={idOf(item)} item={item} pending={pending} runAction={runAction} canConfirm={canConfirm} reviewId={reviewId} />)}</div>;
   }
   if (section.kind === "agents") {
     return <div className="cet-agent-grid">{items.map((item) => <article key={textField(item, "role")}><Users size={16} /><h3>{textField(item, "role")}</h3><p>{textField(item, "stance")}</p><small>{textField(item, "reaction")}</small>{arrayField(item, "blocked_claims").length ? <em>{arrayField(item, "blocked_claims").join(" / ")}</em> : null}</article>)}</div>;
   }
   if (section.kind === "nodes") {
-    return <div className="cet-branch-grid">{items.map((item) => <article key={idOf(item)}><GitBranch size={16} /><b>{textField(item, "branch")} · {textField(item, "title")}</b><p>概率 {numberField(item, "probability")}% · 风险 {numberField(item, "risk")}</p></article>)}</div>;
+    return <div className="cet-branch-grid">{items.map((item) => <article key={idOf(item)}><GitBranch size={16} /><b>{textField(item, "branch")} 路 {textField(item, "title")}</b><p>姒傜巼 {numberField(item, "probability")}% 路 椋庨櫓 {numberField(item, "risk")}</p></article>)}</div>;
   }
   if (section.kind === "tasks") {
-    return <div className="cet-record-list">{items.map((item) => <article className="cet-record" key={idOf(item)}><CheckCircle2 size={16} /><div><b>{textField(item, "title") || text(item)}</b><p>{textField(item, "owner")} · {textField(item, "due_label")} · {textField(item, "status")}</p></div>{idOf(item) ? <button type="button" disabled={pending} onClick={() => runAction(() => api.updateTask(idOf(item), "in_progress", "started from React product page"))}>更新</button> : null}</article>)}</div>;
+    return <div className="cet-record-list">{items.map((item) => <article className="cet-record" key={idOf(item)}><CheckCircle2 size={16} /><div><b>{textField(item, "title") || text(item)}</b><p>{textField(item, "owner")} 路 {textField(item, "due_label")} 路 {textField(item, "status")}</p></div>{idOf(item) ? <button type="button" disabled={pending} onClick={() => runAction(() => api.updateTask(idOf(item), "in_progress", "started from React product page"))}>鏇存柊</button> : null}</article>)}</div>;
   }
   if (section.kind === "timeline" || section.kind === "chips" || section.kind === "filters" || typeof items[0] === "string") {
     return <div className="cet-chip-grid">{items.map((item, index) => <span key={`${text(item)}-${index}`}>{text(item)}</span>)}</div>;
   }
-  return <div className="cet-card-grid">{items.map((item, index) => <article key={idOf(item) || index}><RadioTower size={16} /><b>{textField(item, "title") || textField(item, "name") || textField(item, "label") || text(item)}</b><p>{textField(item, "summary") || textField(item, "status")}</p><small>{idOf(item) || textField(item, "category")}</small></article>)}</div>;
+  return <div className="cet-card-grid">{items.map((item, index) => <article key={idOf(item) || index}><RadioTower size={16} /><b>{textField(item, "title") || textField(item, "name") || textField(item, "label") || textField(item, "statement") || text(item)}</b><p>{textField(item, "summary") || textField(item, "validation_status") || textField(item, "status")}</p><small>{idOf(item) || textField(item, "category")}</small></article>)}</div>;
 }
 
-function EvidenceRecord({ item, pending, runAction, canConfirm }: { item: unknown; pending: boolean; runAction: (fn: () => Promise<unknown>) => void; canConfirm: boolean }) {
+function EvidenceRecord({ item, pending, runAction, canConfirm, reviewId }: { item: unknown; pending: boolean; runAction: (fn: () => Promise<unknown>) => void; canConfirm: boolean; reviewId?: string }) {
   return (
     <article className="cet-record">
       <ShieldCheck size={16} />
       <div>
         <b>{textField(item, "title")}</b>
         <p>{textField(item, "excerpt")}</p>
-        <small>{idOf(item)} · {textField(item, "source")} · {textField(item, "status")}</small>
+        <small>{idOf(item)} 路 {textField(item, "source")} 路 {textField(item, "status")}</small>
       </div>
-      {canConfirm ? <button type="button" disabled={pending || !idOf(item)} onClick={() => runAction(() => api.updateEvidence(idOf(item), "confirmed_fact", "confirmed from React evidence review"))}>&#x786e;&#x8ba4;&#x4e8b;&#x5b9e;</button> : null}
+      {canConfirm ? <button type="button" disabled={pending || (!idOf(item) && !reviewId)} onClick={() => runAction(() => reviewId ? api.updateEvidenceReview(reviewId, { status: "confirmed", reason: "confirmed from React evidence review workbench" }) : api.updateEvidence(idOf(item), "confirmed_fact", "confirmed from React evidence review"))}>&#x786e;&#x8ba4;&#x4e8b;&#x5b9e;</button> : null}
     </article>
   );
 }
@@ -1283,7 +1673,7 @@ function MetricStrip({ metrics }: { metrics: PageMetric[] }) {
 }
 
 function MetricIcon({ label }: { label: string }) {
-  const Icon = label.includes("事件总量")
+  const Icon = label.includes("浜嬩欢鎬婚噺")
     ? FileText
     : label.includes("新增")
       ? PlusCircle
@@ -1304,14 +1694,14 @@ function MetricIcon({ label }: { label: string }) {
 function TimelinePanel({ signals, selectedSignalId, onSelectSignal }: { signals: unknown[]; selectedSignalId: string | null; onSelectSignal: (id: string) => void }) {
   return (
     <section className="cet-timeline-panel">
-      <header><b>城市事件时间线 <span>（近24小时）</span></b><small>只展示高热、升温、视频/直播与破圈苗头</small></header>
+      <header><b>城市事件时间线<span>（近24小时）</span></b><small>只展示高热、升温、视频/直播与破圈苗头。</small></header>
       <div className="cet-timeline-line">{signals.slice(0, 12).map((item, index) => <i key={idOf(item) || index} style={{ left: `${4 + index * 8}%` }}><span>{timeFor(index)}</span></i>)}</div>
       <div className="cet-timeline-cards">
         {signals.slice(0, 6).map((item, index) => (
           <article className={idOf(item) === selectedSignalId ? "active" : ""} key={idOf(item) || index} role="button" tabIndex={0} onClick={() => onSelectSignal(idOf(item))}>
             <b>{timeFor(index)}</b>
             <strong>{textField(item, "title")}</strong>
-            <span>{textField(item, "region_id")} · 视频 {index + 1} · 直播 {index % 2}</span>
+            <span>{textField(item, "region_id")} ? 视频 {index + 1} ? 直播 {index % 2}</span>
             <small><span>热度 {Math.round(score(item, "onlineHeat") || 80)}</span><b>+{Math.max(18, Math.round(score(item, "mainlineRisk") || 42))}%</b><Sparkline index={index} /></small>
           </article>
         ))}
@@ -1402,8 +1792,34 @@ function LoadingPage({ caseId, page }: { caseId: string; page: ProductPageName }
 
 function handleAction(view: PageView, actionId: string, run: (fn: () => Promise<unknown>) => void) {
   if (actionId === "confirm-mainline") {
-    const id = objectId(record(view.raw, "active_mainline"));
-    if (id) run(() => api.confirmMainline(id));
+    const id = textField(view.raw, "mainline_id") || objectId(record(view.raw, "active_mainline"));
+    if (id) {
+      run(async () => {
+        await api.runMainlineQualityCheck(id);
+        const confirmed = await api.confirmProductionMainline(id);
+        const worldState = await api.createWorldState({
+          mainline_id: id,
+          reason: "Create World State from confirmed S5 mainline.",
+          payload: { source: "mainline_page_confirm_action" }
+        });
+        const worldStateId = textField(worldState.data, "id");
+        if (worldStateId) {
+          await api.createCaseGraphRun({
+            mainline_id: id,
+            world_state_id: worldStateId,
+            rule_version: "s5-frontend-case-graph-v1",
+            payload: { source: "mainline_page_confirm_action" }
+          });
+          await api.createStakeholderRun({
+            mainline_id: id,
+            world_state_id: worldStateId,
+            rule_version: "s5-frontend-stakeholder-v1",
+            payload: { source: "mainline_page_confirm_action" }
+          });
+        }
+        return confirmed;
+      });
+    }
   } else if (actionId === "run-pressure-test") {
     const id = objectId(record(view.raw, "latest_council"));
     if (id) run(() => api.runPressureTest(id, "人工压力测试：关键证据窗口延迟时风险是否升高"));
@@ -1429,7 +1845,209 @@ function handleAction(view: PageView, actionId: string, run: (fn: () => Promise<
 }
 
 function primarySectionAction(view: PageView, sectionId: string): { label: string; disabled?: boolean; run: (run: (fn: () => Promise<unknown>) => void) => void } | null {
-  if (view.page === "mainline" && sectionId === "gaps") return { label: "\u786e\u8ba4\u4e3b\u7ebf\u5e76\u751f\u6210\u63a8\u6f14\u8f93\u5165", run: (run) => handleAction(view, "confirm-mainline", run) };
+  if (view.page === "data" && sectionId === "signals") {
+    const topicId = textField(view.raw, "topic_id");
+    const signalId = firstId(sectionItems(view, "signals"));
+    return {
+      label: "Create package and add first signal",
+      disabled: !topicId || !signalId,
+      run: (run) => signalId && topicId && run(async () => {
+        const packageResult = await api.createSignalPackage({
+          topic_id: topicId,
+          name: "S4A analyst signal package",
+          rule_version: "s4a-frontend-package-v1",
+          reason: "Created from data signal workbench",
+          payload: { source: "data_page_primary_action" }
+        });
+        return api.addSignalPackageItem(packageResult.data.signal_package_id, {
+          signal_id: signalId,
+          rank: 1,
+          reason: "Added from data signal workbench",
+          payload: { source: "data_page_primary_action" }
+        });
+      })
+    };
+  }
+  if (view.page === "data" && sectionId === "packages") {
+    const firstPackage = sectionItems(view, "packages")[0];
+    const packageId = textField(firstPackage, "signal_package_id") || idOf(firstPackage);
+    const packageItems = record(firstPackage, "items");
+    const firstItem = Array.isArray(packageItems) ? packageItems[0] : undefined;
+    const signalId = textField(firstItem, "signal_id") || textField(record(firstItem, "signal"), "id");
+    return {
+      label: "Remove first packaged signal",
+      disabled: !packageId || !signalId,
+      run: (run) => packageId && signalId && run(() => api.removeSignalPackageItem(packageId, signalId))
+    };
+  }
+  if (view.page === "evidence" && sectionId === "evidence") {
+    const reviewId = textField(view.raw, "evidence_review_id");
+    return {
+      label: "Confirm evidence material",
+      disabled: !reviewId,
+      run: (run) => reviewId && run(() => api.updateEvidenceReview(reviewId, { status: "confirmed", reason: "confirmed from evidence review workbench" }))
+    };
+  }
+  if (view.page === "evidence" && sectionId === "media") {
+    const evidenceId = textField(view.raw, "evidence_id");
+    return {
+      label: "Attach and process media",
+      disabled: !evidenceId,
+      run: (run) => evidenceId && run(async () => {
+        const attachment = await api.createEvidenceAttachment(evidenceId, {
+          media_type: "video",
+          uri: "synthetic://frontend/evidence-review-attachment.mp4",
+          content: "synthetic frontend attachment transcript with minor identity metadata masked before display.",
+          is_synthetic: true,
+          payload: { source: "evidence_page_primary_action" }
+        });
+        const media = record(attachment.data, "media_asset");
+        const mediaId = textField(media, "id") || textField(media, "media_asset_id");
+        if (!mediaId) return attachment;
+        return api.createMediaProcessingRun({ media_asset_id: mediaId, processor: "asr", evidence_id: evidenceId, rule_version: "s4b-frontend-media-processing-v1" });
+      })
+    };
+  }
+  if (view.page === "evidence" && sectionId === "risk-factors") {
+    const topicId = textField(view.raw, "topic_id");
+    const evidenceId = textField(view.raw, "evidence_id");
+    return {
+      label: "Generate risk factors",
+      disabled: !evidenceId,
+      run: (run) => evidenceId && run(() => api.createRiskFactorRun({ topic_id: topicId || undefined, evidence_ids: [evidenceId], rule_version: "s4b-frontend-risk-factor-v1" }))
+    };
+  }
+  if (view.page === "evidence" && sectionId === "conflicts") {
+    const topicId = textField(view.raw, "topic_id");
+    const evidenceId = textField(view.raw, "evidence_id");
+    return {
+      label: "Run conflict detection",
+      disabled: !evidenceId,
+      run: (run) => evidenceId && run(() => api.createConflictDetectionRun({ topic_id: topicId || undefined, evidence_ids: [evidenceId], rule_version: "s4b-frontend-conflict-v1" }))
+    };
+  }
+  if (view.page === "mainline" && sectionId === "candidates") {
+    const nodeId = textField(view.raw, "first_node_id");
+    const nodeVersion = numberField(view.raw, "first_node_version");
+    return {
+      label: "Edit first mainline node",
+      disabled: !nodeId || nodeVersion === null,
+      run: (run) => nodeId && nodeVersion !== null && run(() => api.updateMainlineNode(nodeId, {
+        expected_version: nodeVersion,
+        title: "Reviewed main narrative node",
+        reason: "Edited from S5 mainline builder.",
+        payload: { source: "mainline_page_node_action" }
+      }))
+    };
+  }
+  if (view.page === "mainline" && sectionId === "graph") {
+    const mainlineId = textField(view.raw, "mainline_id");
+    return {
+      label: "Run mainline quality check",
+      disabled: !mainlineId,
+      run: (run) => mainlineId && run(() => api.runMainlineQualityCheck(mainlineId))
+    };
+  }
+  if (view.page === "mainline" && sectionId === "evidence") {
+    const mainlineId = textField(view.raw, "mainline_id");
+    return {
+      label: "Confirm mainline and create World State",
+      disabled: !mainlineId,
+      run: (run) => handleAction(view, "confirm-mainline", run)
+    };
+  }
+  if (view.page === "mainline" && sectionId === "stakeholders") {
+    const stakeholderId = textField(view.raw, "first_stakeholder_id") || firstId(sectionItems(view, "stakeholders"));
+    return {
+      label: "Review first stakeholder",
+      disabled: !stakeholderId,
+      run: (run) => stakeholderId && run(() => api.reviewStakeholder(stakeholderId, {
+        decision: "pass",
+        reason: "Stakeholder is evidence-backed and ready for S6 profile generation.",
+        payload: { source: "mainline_page_stakeholder_action" }
+      }))
+    };
+  }
+  if (view.page === "worldline" && sectionId === "interventions") {
+    const runId = textField(view.raw, "worldline_run_id");
+    return {
+      label: "Add evidence-window intervention",
+      disabled: !runId,
+      run: (run) => runId && run(() => api.addWorldlineIntervention(runId, {
+        action: "publish_evidence_window",
+        reason: "Added from S6 worldline simulation page.",
+        constraints: { must_preserve_evidence_refs: true, source: "worldline_page_intervention_action" }
+      }))
+    };
+  }
+  if (view.page === "worldline" && sectionId === "council") {
+    return {
+      label: "Prepare Agent Council",
+      disabled: false,
+      run: (run) => run(() => api.getFirstCouncilPage("xian"))
+    };
+  }
+  if (view.page === "council" && sectionId === "messages") {
+    const councilId = textField(view.raw, "council_session_id");
+    return {
+      label: "Run guarded Council",
+      disabled: !councilId,
+      run: (run) => councilId && run(async () => {
+        const council = await api.runCouncilSession(councilId);
+        const payload = record(council.data, "payload");
+        const resultId = textField(payload, "result_id");
+        if (!resultId) return council;
+        const review = await api.createReview("council_result", resultId, "v1", "TPL-COUNCIL-RESULT-V1");
+        await api.updateReview(review.data.review_id, "pass", ["Council result is schema-valid and evidence-bounded."], []);
+        await api.gateCheck(review.data.review_id);
+        return api.applyCouncilResult(resultId);
+      })
+    };
+  }
+  if (view.page === "council" && sectionId === "result") {
+    const resultId = textField(view.raw, "council_result_id");
+    return {
+      label: "Review and apply Council result",
+      disabled: !resultId,
+      run: (run) => resultId && run(async () => {
+        const review = await api.createReview("council_result", resultId, "v1", "TPL-COUNCIL-RESULT-V1");
+        await api.updateReview(review.data.review_id, "pass", ["Council result is schema-valid and evidence-bounded."], []);
+        await api.gateCheck(review.data.review_id);
+        return api.applyCouncilResult(resultId);
+      })
+    };
+  }
+  if (view.page === "brief" && sectionId === "claims") {
+    const reportId = textField(view.raw, "report_id");
+    return {
+      label: "Submit report review",
+      disabled: !reportId,
+      run: (run) => reportId && run(async () => {
+        const review = await api.submitReportReview(reportId);
+        await api.updateReview(review.data.review_id, "pass", ["Report claims are evidence-linked and version locked."], []);
+        return api.gateCheck(review.data.review_id);
+      })
+    };
+  }
+  if (view.page === "brief" && sectionId === "exports") {
+    const reportId = textField(view.raw, "report_id");
+    const existingReviewId = textField(view.raw, "review_id");
+    return {
+      label: "Publish and export report",
+      disabled: !reportId,
+      run: (run) => reportId && run(async () => {
+        let reviewId = existingReviewId;
+        if (!reviewId) {
+          const review = await api.submitReportReview(reportId);
+          reviewId = review.data.review_id;
+        }
+        await api.updateReview(reviewId, "pass", ["Report is ready for publication and export."], []);
+        await api.gateCheck(reviewId);
+        await api.publishReport(reportId);
+        return api.exportReport(reportId, { format: "markdown", reason: "Exported from S7A report page." });
+      })
+    };
+  }
   if (view.page === "worldline" && sectionId === "council") {
     const nodeId = objectId(record(view.raw, "current_node")) || firstId(sectionItems(view, "nodes"));
     return { label: "\u542f\u52a8\u591a\u4e3b\u4f53\u7814\u5224", disabled: !nodeId, run: (run) => nodeId && run(() => api.runCouncil(nodeId)) };
@@ -1564,7 +2182,7 @@ function cityRankDelta(item: unknown, index: number, mode: CityRankMode) {
 }
 
 function rankLabel(index: number) {
-  return ["1️⃣", "2️⃣", "3️⃣"][index] ?? String(index + 1);
+  return ["1", "2", "3"][index] ?? String(index + 1);
 }
 
 function buildVideoItems(signals: unknown[]) {
@@ -1701,8 +2319,8 @@ function splitCoordinates(coordinates: [number, number], index: number): [number
 function applyMapMode(map: maplibregl.Map, mode: CityMapMode) {
   setLayerVisibility(map, "amap", "visible");
   setLayerVisibility(map, "amap-satellite", "visible");
-  setRasterOpacity(map, "amap", mode === "satellite" ? 0 : 1);
-  setRasterOpacity(map, "amap-satellite", mode === "satellite" ? 1 : 0);
+  setBaseLayerOpacity(map, "amap", mode === "satellite" ? 0 : 1);
+  setBaseLayerOpacity(map, "amap-satellite", mode === "satellite" ? 1 : 0);
   if (map.getLayer("city-event-heat")) {
     map.setPaintProperty("city-event-heat", "heatmap-opacity", mode === "heat" ? 0.82 : mode === "satellite" ? 0.16 : 0.34);
     map.setPaintProperty("city-event-heat", "heatmap-intensity", mode === "heat" ? 1.34 : 0.82);
@@ -1718,40 +2336,20 @@ function setLayerVisibility(map: maplibregl.Map, layerId: string, visibility: "v
   if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", visibility);
 }
 
-function setRasterOpacity(map: maplibregl.Map, layerId: string, opacity: number) {
-  if (map.getLayer(layerId)) map.setPaintProperty(layerId, "raster-opacity", opacity);
+function setBaseLayerOpacity(map: maplibregl.Map, layerId: string, opacity: number) {
+  const layer = map.getLayer(layerId) as { type?: string } | undefined;
+  if (!layer) return;
+  if (layer.type === "background") map.setPaintProperty(layerId, "background-opacity", opacity);
+  else map.setPaintProperty(layerId, "raster-opacity", opacity);
 }
 
 function amapStyle(): maplibregl.StyleSpecification {
   return {
     version: 8,
-    sources: {
-      amap: {
-        type: "raster",
-        tiles: [
-          "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-          "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-          "https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-          "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
-        ],
-        tileSize: 256,
-        attribution: "高德地图"
-      },
-      "amap-satellite": {
-        type: "raster",
-        tiles: [
-          "https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
-          "https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
-          "https://webst03.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
-          "https://webst04.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}"
-        ],
-        tileSize: 256,
-        attribution: "高德卫星"
-      }
-    },
+    sources: {},
     layers: [
-      { id: "amap", type: "raster", source: "amap", paint: { "raster-opacity": 1, "raster-saturation": -0.05, "raster-contrast": -0.02 } },
-      { id: "amap-satellite", type: "raster", source: "amap-satellite", paint: { "raster-opacity": 0, "raster-saturation": -0.08, "raster-contrast": 0.08 } }
+      { id: "amap", type: "background", paint: { "background-color": "#e9efe8", "background-opacity": 1 } },
+      { id: "amap-satellite", type: "background", paint: { "background-color": "#1f2a32", "background-opacity": 0 } }
     ]
   };
 }
@@ -1805,6 +2403,19 @@ function arrayField(value: unknown, key: string): string[] {
   return Array.isArray(raw) ? raw.map(text) : [];
 }
 
+function arrayFrom(value: unknown, key: string): unknown[] {
+  const raw = record(value, key);
+  return Array.isArray(raw) ? raw : [];
+}
+
+function uniqueTags(entries: unknown[]): string[] {
+  const tags = new Set<string>();
+  entries.forEach((entry) => {
+    arrayFrom(entry, "tags").forEach((tag) => tags.add(text(tag)));
+  });
+  return Array.from(tags).filter(Boolean);
+}
+
 function record(value: unknown, key: string): unknown {
   if (typeof value === "object" && value !== null && key in value) return (value as JsonObject)[key];
   return undefined;
@@ -1828,10 +2439,10 @@ function displayText(value: string): string {
   if (match) return `社区公共服务源 ${match[1]}`;
 
   match = /^Campus supporting signal (\d+)$/.exec(value);
-  if (match) return `青澜中学同城风险补充信号 ${match[1]}`;
+  if (match) return `青澳中学同城风险补充信号 ${match[1]}`;
 
   match = /^Water service response signal (\d+)$/.exec(value);
-  if (match) return `停水服务响应补充信号 ${match[1]}`;
+  if (match) return `鍋滄按鏈嶅姟鍝嶅簲琛ュ厖淇″彿 ${match[1]}`;
 
   match = /^Supporting evidence item (\d+)$/.exec(value);
   if (match) return `支撑证据项 ${match[1]}`;
@@ -1890,11 +2501,19 @@ function mapPreviewThumbs(center: number[]) {
 }
 
 function amapTileUrl(x: number, y: number, zoom: number) {
-  const server = (Math.abs(x + y) % 4) + 1;
-  return `https://webrd0${server}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=${x}&y=${y}&z=${zoom}`;
+  return offlineMapTileUrl(x, y, zoom, "map");
 }
 
 function amapSatelliteTileUrl(x: number, y: number, zoom: number) {
-  const server = (Math.abs(x + y) % 4) + 1;
-  return `https://webst0${server}.is.autonavi.com/appmaptile?style=6&x=${x}&y=${y}&z=${zoom}`;
+  return offlineMapTileUrl(x, y, zoom, "satellite");
+}
+
+function offlineMapTileUrl(x: number, y: number, zoom: number, mode: "map" | "satellite") {
+  const dark = mode === "satellite";
+  const base = dark ? "#202b33" : "#e9efe8";
+  const line = dark ? "#3a4852" : "#c9d6c8";
+  const accent = dark ? "#667580" : "#a8bba6";
+  const label = `${zoom}/${x}/${y}`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="${base}"/><path d="M0 64H256M0 128H256M0 192H256M64 0V256M128 0V256M192 0V256" stroke="${line}" stroke-width="1"/><path d="M-20 172C58 96 112 219 276 84" fill="none" stroke="${accent}" stroke-width="9" opacity=".42"/><circle cx="${64 + Math.abs(x % 4) * 33}" cy="${58 + Math.abs(y % 4) * 29}" r="9" fill="${accent}" opacity=".55"/><text x="12" y="238" font-family="Arial" font-size="18" fill="${dark ? "#9fb0bd" : "#738775"}">${label}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }

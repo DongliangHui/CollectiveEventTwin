@@ -1,0 +1,47 @@
+- generic [ref=e3] [box=0,0,1351,1394]:
+  - banner [ref=e4] [box=0,0,1351,88]:
+    - generic [ref=e5] [box=28,18,315,51]:
+      - text: CollectiveEventTwin P0
+      - heading "Worldline Observer 调试台" [level=1] [ref=e6] [box=28,43,315,26]
+    - generic [ref=e7] [box=1004,27,319,34]:
+      - generic [ref=e8] [box=1004,31,57,26]:
+        - generic [ref=e9] [box=1014,37,17,14]: API
+        - strong [ref=e10] [box=1038,37,13,14]: ok
+      - link "产品页" [ref=e11] [cursor=pointer] [box=1071,27,62,34]:
+        - /url: /cases/CASE-CAMPUS-001/risk
+      - button "刷新" [ref=e12] [cursor=pointer] [box=1143,27,73,34]:
+        - img [ref=e13] [box=1156,36,16,16]
+        - text: 刷新
+      - button "Seed P0" [ref=e18] [cursor=pointer] [box=1226,27,97,34]:
+        - img [ref=e19] [box=1239,36,16,16]
+        - text: Seed P0
+  - generic [ref=e23] [box=0,88,1351,1306]:
+    - complementary [ref=e24] [box=0,88,300,1306]:
+      - generic [ref=e25] [box=18,106,263,16]: 案例
+      - button "CASE-CAMPUS-001 校园坠楼疑似欺凌群体风险" [ref=e47] [cursor=pointer] [box=18,134,263,104]:
+        - generic [ref=e48] [box=33,149,233,32]: CASE-CAMPUS-001
+        - generic [ref=e49] [box=33,187,233,36]: 校园坠楼疑似欺凌群体风险
+      - button "CASE-COMMUNITY-WATER-001 社区停水响应信任风险" [ref=e50] [cursor=pointer] [box=18,250,263,104]:
+        - generic [ref=e51] [box=33,265,233,32]: CASE-COMMUNITY-WATER-001
+        - generic [ref=e52] [box=33,303,233,36]: 社区停水响应信任风险
+      - button "CASE-S2-COLLECTION S2 Collection Workflow Ledger" [ref=e53] [cursor=pointer] [box=18,366,263,104]:
+        - generic [ref=e54] [box=33,381,233,22]: CASE-S2-COLLECTION
+        - generic [ref=e55] [box=33,409,233,46]: S2 Collection Workflow Ledger
+    - main [ref=e26] [box=300,88,1051,1306]:
+      - navigation [ref=e27] [box=324,112,1003,38]:
+        - button "S1 基础" [ref=e28] [cursor=pointer] [box=324,112,104,38]
+        - button "S1 Review" [ref=e29] [cursor=pointer] [box=436,112,104,38]
+        - button "S1 Ops" [ref=e30] [cursor=pointer] [box=548,112,104,38]
+        - button "S2 Sources" [ref=e31] [cursor=pointer] [box=660,112,104,38]
+        - button "接入" [ref=e32] [cursor=pointer] [box=772,112,104,38]
+        - button "信号" [ref=e33] [cursor=pointer] [box=884,112,104,38]
+        - button "证据" [ref=e34] [cursor=pointer] [box=996,112,104,38]
+        - button "主线" [ref=e35] [cursor=pointer] [box=1108,112,104,38]
+        - button "推演" [ref=e36] [cursor=pointer] [box=1220,112,104,38]
+        - button "研判" [ref=e37] [cursor=pointer] [box=1332,112,104,38]
+        - button "汇报" [ref=e38] [cursor=pointer] [box=1444,112,104,38]
+        - button "审计" [ref=e39] [cursor=pointer] [box=1556,112,104,38]
+      - generic [ref=e40] [box=324,166,1003,1189]:
+        - generic [ref=e56] [box=324,166,1003,102]
+        - paragraph [ref=e74] [box=324,282,1003,17]: "Navigation: Users, Roles, Audit, Reviews, Ops · 12 enabled actions."
+        - generic [ref=e75] [box=324,313,1003,1042]

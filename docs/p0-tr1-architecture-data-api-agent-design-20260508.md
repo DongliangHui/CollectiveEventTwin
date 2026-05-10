@@ -2,7 +2,15 @@
 
 Date: 2026-05-08
 
-Status: implementation contract
+Status: superseded for backend/agent/LLM delivery
+
+Superseded by:
+
+- `docs/p0-production-grade-delivery-plan-20260508.md`
+
+Revision note:
+
+The original TR1 accepted a deterministic P0 backend path. That is no longer the delivery bar. The current delivery requirement is production-grade backend code for ingestion framework, algorithms, Temporal activities, Agent runtime, and LLM execution. Data connector onboarding may remain limited, but product runtime must not rely on mock data, static runtime fixtures, or frontend-only business state.
 
 ## Architecture
 
@@ -120,4 +128,3 @@ P0 API can execute deterministic services directly for low-latency demo paths, b
 - Mutating business actions write `audit_logs`.
 - Workflow-style operations write `workflow_runs`.
 - OpenTelemetry hooks are available behind configuration for future commercial deployment.
-

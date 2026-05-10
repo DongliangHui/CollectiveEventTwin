@@ -9,9 +9,10 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+pysqlite:///./worldline_p0.db"
     redis_url: str = "redis://localhost:6379/0"
     temporal_address: str = "localhost:7233"
-    cors_origins: str = "http://localhost:4173,http://127.0.0.1:4173"
+    cors_origins: str = "http://localhost:4173,http://127.0.0.1:4173,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5178,http://127.0.0.1:5178"
     auto_create_tables: bool = False
     log_level: str = "INFO"
+    object_store_path: str = "artifacts/object-store"
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -19,4 +20,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
